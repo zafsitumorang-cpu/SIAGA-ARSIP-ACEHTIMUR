@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node app.mjs",
-    "dev": "node --watch app.mjs"
+    "dev": "node --watch app.mjs",
+    "backup": "node scripts/backup.mjs",
+    "uat": "node scripts/uat.mjs"
   },
   "engines": {
     "node": ">=20"
