@@ -30,8 +30,9 @@ Buka `http://localhost:3000`.
 5. Masuk sebagai `admin`; tambahkan arsip baru dan cek perubahan jumlah dashboard.
 6. Sebagai `admin`, buka Pengaturan; buat akun pegawai baru, ubah peran/subbagian, lalu nonaktifkan dan aktifkan kembali akun tersebut.
 7. Tambahkan klasifikasi baru dari Pengaturan, lalu pastikan pilihan muncul pada form arsip.
-8. Gunakan pencarian dan tombol Ekspor Excel/CSV.
-9. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, dan ekspor tercatat.
+8. Buat akun `recorder` dan `uploader` pada subbagian yang sama; pastikan pencatat dapat menyimpan metadata dan pengunggah dapat menambahkan berkas privat pada arsip tersebut.
+9. Gunakan pencarian dan tombol Ekspor Excel/CSV.
+10. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, unggah, dan ekspor tercatat.
 
 ## Batasan pilot
 
