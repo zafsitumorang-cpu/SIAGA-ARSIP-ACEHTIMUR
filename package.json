@@ -1,0 +1,14 @@
+{
+  "name": "siaga-arsip-acehtimur",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MVP SIAGA ARSIP untuk uji coba tata kelola arsip digital Bawaslu Kabupaten Aceh Timur.",
+  "type": "module",
+  "scripts": {
+    "start": "node app.mjs",
+    "dev": "node --watch app.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
