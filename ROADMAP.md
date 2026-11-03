@@ -9,6 +9,7 @@
 
 ## Minggu 2 — Fondasi aplikasi
 - Selesai pada MVP: login, akun demo, role/subbagian, otorisasi server-side.
+- Selesai pada MVP: admin dapat membuat/mengubah/mengaktifkan/menonaktifkan akun; alur `recorder` dan `uploader` dapat dipisahkan.
 - Selesai pada MVP: form surat masuk/keluar dan unggah berkas privat.
 - Selesai pada MVP: daftar/filter metadata, dashboard internal, dan halaman publik agregat.
 
