@@ -71,6 +71,38 @@ async function route(req, res) {
     if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai').length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
     if (pathname === '/api/archives' && req.method === 'GET') return send(res, 200, { items: visibleArchives(u, url).map(archivePayload), classifications: db.classifications, subsections });
     if (pathname === '/api/users' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.users.filter(x => x.active).map(safeUser) }); }
+    if (pathname === '/api/admin/users' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: db.users.map(safeUser) }); }
+    if (pathname === '/api/admin/roles' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: Object.values(roles) }); }
+    if (pathname === '/api/admin/subsections' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: subsections }); }
+    if (pathname === '/api/admin/users' && req.method === 'POST') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const b = await body(req); const username = String(b.username || '').trim(); const name = String(b.name || '').trim(); const password = String(b.password || ''); const role = String(b.role || 'employee');
+      if (!username || !name || password.length < 8 || !Object.values(roles).includes(role)) return send(res, 422, { error: 'Username, nama, kata sandi minimal 8 karakter, dan peran wajib valid.' });
+      if (db.users.some(x => x.username.toLowerCase() === username.toLowerCase())) return send(res, 422, { error: 'Username sudah digunakan.' });
+      const needsSubsection = !['admin', 'leader'].includes(role); const subsection = needsSubsection ? String(b.subsection || '') : null;
+      if (needsSubsection && !subsections.includes(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
+      const created = { id: id('user'), username, name, passwordHash: hash(password), role, subsection, email: String(b.email || '').trim(), active: true };
+      db.users.push(created); audit(u.id, 'create_user', 'user', created.id, created.username); await persist(); return send(res, 201, safeUser(created));
+    }
+    if (pathname.startsWith('/api/admin/users/') && req.method === 'PATCH') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const uid = pathname.split('/')[4]; const target = db.users.find(x => x.id === uid); if (!target) return send(res, 404, { error: 'Pengguna tidak ditemukan.' });
+      const b = await body(req); const role = b.role === undefined ? target.role : String(b.role); const name = b.name === undefined ? target.name : String(b.name).trim();
+      if (!Object.values(roles).includes(role) || !name) return send(res, 422, { error: 'Nama atau peran tidak valid.' });
+      if (target.id === u.id && b.active === false) return send(res, 422, { error: 'Akun admin yang sedang dipakai tidak dapat dinonaktifkan.' });
+      const needsSubsection = !['admin', 'leader'].includes(role); const subsection = needsSubsection ? String(b.subsection === undefined ? target.subsection || '' : b.subsection) : null;
+      if (needsSubsection && !subsections.includes(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
+      target.name = name; target.email = b.email === undefined ? target.email : String(b.email).trim(); target.role = role; target.subsection = subsection;
+      if (b.password !== undefined && String(b.password).length) { if (String(b.password).length < 8) return send(res, 422, { error: 'Kata sandi minimal 8 karakter.' }); target.passwordHash = hash(String(b.password)); }
+      if (b.active !== undefined) target.active = Boolean(b.active);
+      audit(u.id, 'update_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
+    }
+    if (pathname.startsWith('/api/admin/users/') && pathname.endsWith('/disable') && req.method === 'POST') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const uid = pathname.split('/')[4]; const target = db.users.find(x => x.id === uid); if (!target) return send(res, 404, { error: 'Pengguna tidak ditemukan.' });
+      if (target.id === u.id) return send(res, 422, { error: 'Akun admin yang sedang dipakai tidak dapat dinonaktifkan.' });
+      target.active = false; audit(u.id, 'disable_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
+    }
     if (pathname === '/api/admin/classifications' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama klasifikasi wajib diisi.' }); if (!db.classifications.includes(value)) db.classifications.push(value); audit(u.id, 'create_classification', 'classification', value); await persist(); return send(res, 201, { classifications: db.classifications }); }
     if (pathname === '/api/admin/categories' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama kategori wajib diisi.' }); if (!db.categories.includes(value)) db.categories.push(value); audit(u.id, 'create_category', 'category', value); await persist(); return send(res, 201, { categories: db.categories }); }
     if (pathname === '/api/archives' && req.method === 'POST') { if (!['admin', 'recorder'].includes(u.role)) return send(res, 403, { error: 'Peran ini tidak dapat mencatat arsip.' }); const b = await body(req); if (!b.type || !['incoming', 'outgoing'].includes(b.type) || !b.number || !b.subject || !b.classification || !b.subsection) return send(res, 422, { error: 'Lengkapi tipe, nomor, perihal, klasifikasi, dan subbagian.' }); const a = { id: id('archive'), type: b.type, number: b.number, letterDate: b.letterDate || now().slice(0, 10), receivedDate: b.type === 'incoming' ? (b.receivedDate || now().slice(0, 10)) : undefined, origin: b.origin || '', destination: b.destination || '', subject: b.subject, signatory: b.signatory || '', classification: b.classification, subsection: b.subsection, fileName: b.fileName || '', fileId: b.fileName ? id('file') : '', createdBy: u.id, createdAt: now(), dispositions: [] }; db.archives.unshift(a); audit(u.id, 'create', 'archive', a.id, a.number); await persist(); return send(res, 201, archivePayload(a)); }
