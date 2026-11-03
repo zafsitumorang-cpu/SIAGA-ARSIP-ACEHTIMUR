@@ -14,6 +14,8 @@ Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pim
 
 Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md).
 
+Backup lokal tersedia melalui `npm run backup`, UAT otomatis melalui `npm run uat`, dan panduan deployment ada di [DEPLOYMENT.md](DEPLOYMENT.md).
+
 ## Mulai membaca
 
 1. [PRD.md](PRD.md) — tujuan, cakupan, pengguna, ukuran keberhasilan.
