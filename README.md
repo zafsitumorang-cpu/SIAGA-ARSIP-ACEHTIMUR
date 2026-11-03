@@ -12,7 +12,7 @@ npm start
 
 Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Untuk produksi, pindahkan penyimpanan ke database relasional dan object storage privat sesuai `ARCHITECTURE.md`.
 
-Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md).
+Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md). Admin dapat membuat akun `recorder`, `uploader`, atau pegawai dari menu Pengaturan dan menetapkan satu subbagian.
 
 Backup lokal tersedia melalui `npm run backup`, UAT otomatis melalui `npm run uat`, dan panduan deployment ada di [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -31,6 +31,7 @@ Backup lokal tersedia melalui `npm run backup`, UAT otomatis melalui `npm run ua
 
 - Surat masuk dan surat keluar.
 - Disposisi dan status: Belum ditindaklanjuti, Sedang diproses, Selesai.
+- Alur terpisah: pencatat menyimpan metadata, pengunggah menambahkan berkas privat.
 - Pegawai melihat satu subbagian; pimpinan dan admin lintas subbagian.
 - Publik hanya melihat angka agregat masuk/keluar per tahun.
 - Estimasi migrasi: 1.000 PDF Drive + 300 surat fisik dipindai = sekitar 1.300 arsip.
