@@ -12,6 +12,8 @@ npm start
 
 Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Untuk produksi, pindahkan penyimpanan ke database relasional dan object storage privat sesuai `ARCHITECTURE.md`.
 
+Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md).
+
 ## Mulai membaca
 
 1. [PRD.md](PRD.md) — tujuan, cakupan, pengguna, ukuran keberhasilan.
