@@ -1,17 +1,15 @@
 # API — SIAGA ARSIP
 
-Kontrak konseptual REST/JSON. Versi, autentikasi transport, pagination, dan kode kesalahan difinalkan setelah stack dipilih. Semua endpoint internal menerapkan autentikasi, otorisasi per aksi, dan scope subbagian di server.
+Kontrak konseptual REST/JSON. Jalur di bawah ini juga dipakai oleh MVP Node.js untuk uji coba; pada migrasi Laravel, prefix autentikasi dapat disesuaikan tanpa mengubah aturan bisnis. Semua endpoint internal menerapkan autentikasi, otorisasi per aksi, dan scope subbagian di server.
 
 ## Publik
 
-- `GET /api/public/statistics?year={year}` → jumlah agregat masuk/keluar per tahun.
+- `GET /api/public/stats?year={year}` → jumlah agregat masuk/keluar per tahun (nama kontrak produksi yang direncanakan: `/api/public/statistics`).
 - Tidak ada endpoint publik untuk daftar, detail, file, disposisi, atau identitas pihak.
 
 ## Autentikasi dan akun
 
-- `POST /api/auth/login`
-- `POST /api/auth/logout`
-- `GET /api/auth/me`
+- MVP: `POST /api/login`, `POST /api/logout`, `GET /api/me`.
 - `POST /api/admin/users`, `PATCH /api/admin/users/{id}`, `POST /api/admin/users/{id}/disable`
 - `GET /api/admin/roles`, `GET /api/admin/subsections`
 
@@ -39,6 +37,7 @@ Kontrak konseptual REST/JSON. Versi, autentikasi transport, pagination, dan kode
 - `GET/POST/PATCH /api/admin/archive-categories`
 - `GET /api/admin/audit-events?actor=&action=&from=&to=`
 - `GET /api/users` — daftar pengguna aktif untuk admin/pimpinan, tanpa password hash.
+- `GET /api/admin/users` — daftar semua akun (termasuk nonaktif) untuk admin, tanpa password hash.
 - `POST /api/admin/classifications` — admin menambah pilihan klasifikasi.
 - `POST /api/admin/categories` — admin menambah kategori arsip untuk perluasan bertahap.
 - Endpoint konfigurasi tidak boleh mengubah hak akses secara implisit.
