@@ -16,7 +16,7 @@
 - [x] Rancang endpoint publik yang hanya mengembalikan agregat.
 
 ## 2. Build MVP
-- [x] Login lokal dan administrasi akun — akun demo siap; UI administrasi penuh menunggu pemilik produk.
+- [x] Login lokal dan administrasi akun — admin dapat membuat, mengubah, mengaktifkan, dan menonaktifkan akun dari menu Pengaturan.
 - [x] Role dan pembatasan data server-side per subbagian.
 - [x] Modul surat masuk/keluar dan daftar klasifikasi admin endpoint.
 - [x] Upload privat PDF/JPG/XLSX/DOCX dan kontrol akses download.
