@@ -26,6 +26,7 @@
 | D-20 | Migrasi awal diperkirakan 1.000 PDF + 300 surat fisik = 1.300 arsip | Estimasi pengguna |
 | D-21 | Gunakan 10 dummy surat masuk + 10 dummy surat keluar untuk demo | Disepakati |
 | D-22 | Target pilot sekitar satu bulan lagi | Disepakati sebagai perkiraan |
+| D-23 | MVP uji coba dikirim sebagai aplikasi Node.js 20 tanpa dependensi eksternal agar dapat dijalankan langsung di environment yang tersedia; rancangan produksi tetap mengarah pada Laravel 13 + Livewire 4, PostgreSQL, dan object storage privat | Keputusan implementasi pilot |
 
 ## Keputusan terbuka
 
