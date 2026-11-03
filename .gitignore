@@ -1,5 +1,6 @@
 data/data.json
 data/files/*
 !data/files/.gitkeep
+data/backups/
 node_modules/
 .env
