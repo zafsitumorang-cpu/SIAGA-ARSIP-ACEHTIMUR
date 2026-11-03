@@ -29,5 +29,9 @@ try {
   const dispositions = await request('/api/archives'); const d = dispositions.items.find(x => x.dispositions.length)?.dispositions[0]; assert(Boolean(d), 'pegawai dapat melihat disposisi yang ditujukan ke subbagian');
   const status = await request(`/api/dispositions/${d.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'Selesai' }) }); assert(status.dispositions[0].status === 'Selesai', 'penerima dapat menyelesaikan disposisi');
   const csv = await request('/api/export.csv'); assert(String(csv).includes('Jenis,Nomor'), 'ekspor CSV tersedia');
+  const systemAdmin = await fetch(base + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: 'admin123' }) }); const systemAdminSid = systemAdmin.headers.get('set-cookie').split(';')[0].split('=')[1];
+  const createdUser = await fetch(base + '/api/admin/users', { method: 'POST', headers: { 'Content-Type': 'application/json', Cookie: `sid=${systemAdminSid}` }, body: JSON.stringify({ username: 'uat.user', name: 'UAT User', password: 'uatpass123', role: 'employee', subsection: 'Administrasi' }) }).then(r => r.json()); assert(createdUser.username === 'uat.user', 'admin dapat membuat akun');
+  const disabledUser = await fetch(base + `/api/admin/users/${createdUser.id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Cookie: `sid=${systemAdminSid}` }, body: JSON.stringify({ active: false }) }).then(r => r.json()); assert(disabledUser.active === false, 'admin dapat menonaktifkan akun');
+  const disabledLogin = await fetch(base + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'uat.user', password: 'uatpass123' }) }); assert(disabledLogin.status === 422, 'akun nonaktif tidak dapat login');
   console.log('UAT SIAGA ARSIP lulus.');
 } finally { child.kill('SIGTERM'); await fs.rm(dataDir, { recursive: true, force: true }); }
