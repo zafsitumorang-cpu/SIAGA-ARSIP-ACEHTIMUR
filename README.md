@@ -2,6 +2,16 @@
 
 Kumpulan ini berisi rancangan awal sistem tata kelola arsip digital untuk Bawaslu Kabupaten Aceh Timur. Rancangan disusun dari laporan aksi perubahan dan hasil wawancara kebutuhan awal.
 
+## Menjalankan MVP uji coba
+
+MVP runnable tersedia di `app.mjs` dan memakai Node.js 20+ tanpa dependensi eksternal. Data uji disimpan lokal di `data/data.json` dan dibuat otomatis saat pertama dijalankan.
+
+```bash
+npm start
+```
+
+Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Untuk produksi, pindahkan penyimpanan ke database relasional dan object storage privat sesuai `ARCHITECTURE.md`.
+
 ## Mulai membaca
 
 1. [PRD.md](PRD.md) — tujuan, cakupan, pengguna, ukuran keberhasilan.
