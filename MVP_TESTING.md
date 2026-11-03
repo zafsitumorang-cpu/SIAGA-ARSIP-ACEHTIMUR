@@ -28,8 +28,10 @@ Buka `http://localhost:3000`.
 3. Masuk sebagai `pimpinan`; buka Arsip surat dan kirim disposisi pada salah satu surat masuk.
 4. Masuk sebagai pegawai pada subbagian tujuan; buka Disposisi dan ubah status menjadi `Sedang diproses`, lalu `Selesai`.
 5. Masuk sebagai `admin`; tambahkan arsip baru dan cek perubahan jumlah dashboard.
-6. Gunakan pencarian dan tombol Ekspor Excel/CSV.
-7. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, dan ekspor tercatat.
+6. Sebagai `admin`, buka Pengaturan; buat akun pegawai baru, ubah peran/subbagian, lalu nonaktifkan dan aktifkan kembali akun tersebut.
+7. Tambahkan klasifikasi baru dari Pengaturan, lalu pastikan pilihan muncul pada form arsip.
+8. Gunakan pencarian dan tombol Ekspor Excel/CSV.
+9. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, dan ekspor tercatat.
 
 ## Batasan pilot
 
