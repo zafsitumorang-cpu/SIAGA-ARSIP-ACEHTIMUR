@@ -38,6 +38,9 @@ Kontrak konseptual REST/JSON. Versi, autentikasi transport, pagination, dan kode
 - `GET/POST/PATCH /api/admin/classifications`
 - `GET/POST/PATCH /api/admin/archive-categories`
 - `GET /api/admin/audit-events?actor=&action=&from=&to=`
+- `GET /api/users` — daftar pengguna aktif untuk admin/pimpinan, tanpa password hash.
+- `POST /api/admin/classifications` — admin menambah pilihan klasifikasi.
+- `POST /api/admin/categories` — admin menambah kategori arsip untuk perluasan bertahap.
 - Endpoint konfigurasi tidak boleh mengubah hak akses secara implisit.
 
 ## Pola respons
