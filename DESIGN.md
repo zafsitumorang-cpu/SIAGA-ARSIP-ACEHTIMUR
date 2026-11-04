@@ -60,3 +60,17 @@ Warna status harus selalu disertai teks. Palet utama mengikuti desain SIAGA ARSI
 - Bentuk preview berkas tiap jenis, ukuran unggah maksimum, serta dukungan preview XLSX/DOCX.
 - Detail dashboard admin/pimpinan dan metrik selain jumlah arsip serta disposisi tertunda.
 - Template email dan format ekspor Excel.
+
+## Landing page — redesign November 2026
+
+Portal publik menggunakan gaya editorial institusi untuk pembaca publik dan staf kantor: latar putih hangat (#faf9f5), teks arang (#272825), aksen merah marun (#8c2634), heading serif Georgia, body sans. Komposisi: identitas dan login; pembuka dengan foto koleksi sebagai ilustrasi; statistik agregat dari API dan filter tahun; tiga langkah pengelolaan; penjelasan akses; footer. Foto disimpan di public/images/archive-library.jpg, sumber Unsplash, atribusi pada footer. Tidak digunakan sebagai foto kantor Bawaslu.
+
+Semua kelas baru dibatasi pada lp-* dan landing. Pertahankan tampilan internal. Hindari pencarian publik semu, angka kuartal fiktif, klaim Cloudflare/Next.js dan alamat kontak yang belum terverifikasi. Error statistik menyediakan coba lagi; angka nol tetap ditampilkan. Mode halaman: Persuade, dengan penekanan pada keterbacaan dan informasi institusi.
+
+### Pembaruan palet Bawaslu
+Landing memakai merah logo #E32F27 pada identitas, merah #BD241F untuk tombol yang kontras dengan teks putih, emas #FFC107 untuk penekanan dan CTA pada merah, hitam #17181B, serta putih. Font Manrope disimpan lokal di public/fonts. Hero gelap, heading sans tebal, foto dengan sudut 18px, statistik putih pada latar abu muda. Ini palet dari desain Bawaslu yang tersedia sebelumnya; aset logo resmi belum tersedia.
+
+### Header, footer, et authentification
+Header publik merah #BD241F dengan teks putih dan tombol emas; footer #17181B dengan teks abu terang. Login memakai kelas auth-* dengan panel identitas gelap, judul emas, form putih, dan CTA merah. Username/password kosong saat dibuka, label terhubung ke input, toggle kata sandi, indikator pengiriman, serta error inline. Peran ditentukan server, bukan pilihan dekoratif. Akun demo dalam details; bantuan akun diarahkan ke admin tanpa tautan pemulihan fiktif.
+
+Panel gelap login memakai foto abstrak Pexels ID 3109807 (https://www.pexels.com/photo/3109807/), disimpan lokal di public/images/login-abstract.jpg, dengan lapisan hitam 83–88% melalui CSS. Gambar dekoratif; teks tetap memiliki opacity penuh.

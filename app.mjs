@@ -118,6 +118,6 @@ async function route(req, res) {
   if (pathname === '/' || pathname === '/app') return staticFile(path.join(PUBLIC, 'index.html'), res);
   return send(res, 404, { error: 'Not found' });
 }
-async function staticFile(file, res) { try { const data = await fs.readFile(file); const ext = path.extname(file); const type = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' }[ext] || 'application/octet-stream'; send(res, 200, data, type, { 'Cache-Control': 'no-cache' }); } catch { send(res, 404, 'Not found', 'text/plain'); } }
+async function staticFile(file, res) { try { const data = await fs.readFile(file); const ext = path.extname(file); const type = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.ttf': 'font/ttf' }[ext] || 'application/octet-stream'; send(res, 200, data, type, { 'Cache-Control': 'no-cache' }); } catch { send(res, 404, 'Not found', 'text/plain'); } }
 const server = http.createServer((req, res) => route(req, res).catch(err => { console.error(err); send(res, 500, { error: 'Terjadi kesalahan server.' }); }));
 server.listen(PORT, () => console.log(`SIAGA ARSIP berjalan di http://localhost:${PORT}`));
