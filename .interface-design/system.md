@@ -84,3 +84,11 @@ Use the exact Indonesian labels `Belum ditindaklanjuti`, `Sedang diproses`, and 
 ## Accessibility and states
 
 Visible keyboard focus, semantic form labels, text plus color for status, responsive table overflow, reduced-motion support, and clear empty/error feedback are part of the baseline. Every interactive control keeps native keyboard behavior and a minimum comfortable hit area.
+
+## Current internal workspace (supersedes earlier warm/green tokens)
+
+User selected Able Pro dashboard as visual reference. Use light #f7f8fa canvas/sidebar, white panels, #263238 ink, #657180 secondary text, #e5e9ef borders, Bawaslu #bd241f accent and #ffc107 identity detail. Manrope local font, 13px body, 23–26px page headings/numbers, 10–11px supporting metadata; 4px spacing base, 20–24px panel rhythm, 12px panel radius, 7–8px controls. Border-only panels. Sidebar 272px, collapsible desktop / drawer below 900px. Reuse .workspace and public/workspace.css. Dashboard leads with relevant actions and factual archival data; no decorative fake sparklines or commercial demo numbers. Landing and login retain their scoped design.
+
+Navigation update: charcoal #17181B sidebar; gold #FFC107 selected item with charcoal text; red #BD241F topbar with white text and dark red #A51F1B search input. White content panels remain. Gold keyboard focus on dark/red chrome. Applies equally to mobile drawer and profile footer.
+
+Default Able Pro fidelity correction: Inter font locally served (regular/semibold/bold); desktop 280px side / 48px content inset / 260px welcome banner / 194px metric cards / ~3.15:1 chart band. Mini-charts must use real monthly data. Banner illustration is an original generated archive box, not the demo rocket. Scope changes to workspace, retain dark sidebar/red header/gold selection from user.
