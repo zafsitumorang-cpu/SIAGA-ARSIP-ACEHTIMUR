@@ -27,6 +27,10 @@ try {
   await request('/api/logout', { method: 'POST' });
   await request('/api/login', { method: 'POST', body: JSON.stringify({ username: 'pegawai.hukum', password: 'pegawai123' }) });
   const dispositions = await request('/api/archives'); const d = dispositions.items.find(x => x.dispositions.length)?.dispositions[0]; assert(Boolean(d), 'pegawai dapat melihat disposisi yang ditujukan ke subbagian');
+  const inbox = await request('/api/notifications'); assert(inbox.items.some(n => n.id === d.id && n.status === 'Belum ditindaklanjuti'), 'notifikasi disposisi diterima oleh subbagian tujuan');
+  const otherLogin = await fetch(base + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'pegawai.administrasi', password: 'pegawai123' }) });
+  const otherCookie = otherLogin.headers.get('set-cookie').split(';')[0];
+  const otherInbox = await fetch(base + '/api/notifications', { headers: { Cookie: otherCookie } }).then(r => r.json()); assert(!otherInbox.items.some(n => n.id === d.id), 'notifikasi tidak bocor ke subbagian lain');
   const status = await request(`/api/dispositions/${d.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: 'Selesai' }) }); assert(status.dispositions[0].status === 'Selesai', 'penerima dapat menyelesaikan disposisi');
   const csv = await request('/api/export.csv'); assert(String(csv).includes('Jenis,Nomor'), 'ekspor CSV tersedia');
   const systemAdmin = await fetch(base + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: 'admin123' }) }); const systemAdminSid = systemAdmin.headers.get('set-cookie').split(';')[0].split('=')[1];

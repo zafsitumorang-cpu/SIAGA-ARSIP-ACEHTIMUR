@@ -92,3 +92,5 @@ User selected Able Pro dashboard as visual reference. Use light #f7f8fa canvas/s
 Navigation update: charcoal #17181B sidebar; gold #FFC107 selected item with charcoal text; red #BD241F topbar with white text and dark red #A51F1B search input. White content panels remain. Gold keyboard focus on dark/red chrome. Applies equally to mobile drawer and profile footer.
 
 Default Able Pro fidelity correction: Inter font locally served (regular/semibold/bold); desktop 280px side / 48px content inset / 260px welcome banner / 194px metric cards / ~3.15:1 chart band. Mini-charts must use real monthly data. Banner illustration is an original generated archive box, not the demo rocket. Scope changes to workspace, retain dark sidebar/red header/gold selection from user.
+
+Motion: feedback-only, 120–220ms; native CSS/WAAPI, reduced-motion alternatives, no fake loading delays. Gold request activity strip; skeletons for asynchronous pages; submit buttons busy/disabled; scoped disposition popover; dismissible semantic toasts. Keep async response guards when changing navigation. Badge counts active tasks and never implies unread state.

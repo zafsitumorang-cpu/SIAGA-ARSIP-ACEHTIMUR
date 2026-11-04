@@ -53,3 +53,6 @@ Kontrak konseptual REST/JSON. Jalur di bawah ini juga dipakai oleh MVP Node.js u
 ## OCR dan email
 
 OCR dijalankan melalui pekerjaan latar belakang setelah berkas lolos pemeriksaan. Status: pending, processing, complete, failed. Email dikirim melalui adaptor provider dan kegagalannya dicatat tanpa menggagalkan pembuatan disposisi.
+
+### GET /api/notifications
+Memerlukan sesi. Mengembalikan maksimal 20 disposisi terbaru, diurutkan berdasarkan createdAt. Admin/pimpinan melihat cakupan lintas subbagian. Pengguna lain hanya menerima disposisi untuk user/subbagiannya dari arsip yang diizinkan canSee. Setiap item: id (ID disposisi), text, subject, status, createdAt. Panel UI mengambil daftar ini ketika dibuka. Endpoint ini tidak menandai dibaca dan bukan layanan push real-time.
