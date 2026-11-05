@@ -17,7 +17,8 @@
     "test:database": "node scripts/database-tests.mjs",
     "test:migration": "node scripts/migration-tests.mjs",
     "test:query": "node scripts/query-tests.mjs",
-    "test:export": "node scripts/export-tests.mjs"
+    "test:export": "node scripts/export-tests.mjs",
+    "test:files": "node scripts/file-model-tests.mjs"
   },
   "engines": {
     "node": ">=22"

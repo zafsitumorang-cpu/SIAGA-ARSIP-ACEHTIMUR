@@ -1,5 +1,7 @@
 # API — SIAGA ARSIP
 
+Pembaruan 02.1: payload arsip berizin menambahkan view `documents[]` menurut [FILE_MODEL.md](FILE_MODEL.md), tanpa menulis ulang data lama. Header `X-SIAGA-Revision` menampilkan SHA checkout untuk verifikasi rilis demo (unknown bila Git tidak tersedia); body health/config tetap kompatibel.
+
 Kontrak konseptual REST/JSON dan catatan implementasi Node.js. Tidak ada migrasi Laravel pada paket saat ini. Semua endpoint internal menerapkan autentikasi, otorisasi per aksi, dan scope subbagian di server.
 
 ## Kontrak aktual tahap fondasi — 5 November 2026

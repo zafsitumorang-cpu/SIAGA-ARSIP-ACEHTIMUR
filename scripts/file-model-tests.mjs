@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {archiveDocuments,archiveFileIds} from '../lib/archive-files.mjs';
+let checks=0;const pass=message=>{checks++;console.log('✓ '+message);};
+assert.deepEqual(archiveDocuments({type:'incoming'}),[]);pass('metadata-only archive has no invented document');
+const legacy={type:'incoming',fileId:'file_current',fileName:'baru.pdf',fileVersions:[{fileId:'file_old',fileName:'lama.pdf',checksum:'a'.repeat(64)}]};
+const before=JSON.stringify(legacy),docs=archiveDocuments(legacy);
+assert.equal(docs[0].id,'document_primary');assert.equal(docs[0].currentVersionId,'file_current');assert.deepEqual(docs[0].versions.map(v=>v.number),[1,2]);assert.equal(docs[0].purpose,'scan');pass('legacy main and historical versions gain stable IDs and chronological numbers');
+assert.equal(docs[0].versions[0].uploadedBy,null);assert.equal(docs[0].versions[0].uploadedAt,null);assert.equal(docs[0].versions[0].reason,null);assert.equal(docs[0].versions[0].legacy,true);pass('missing historical provenance remains explicitly unknown');
+assert.equal(JSON.stringify(legacy),before);docs[0].title='Changed view';assert.equal(JSON.stringify(legacy),before);pass('reading or editing normalized view never mutates source metadata');
+assert.equal(archiveDocuments({...legacy,type:'outgoing'})[0].purpose,'final');pass('outgoing primary purpose is final without claiming human QC');
+const duplicate=archiveDocuments({...legacy,fileVersions:[...legacy.fileVersions,legacy.fileVersions[0],{fileId:'file_current',fileName:'baru.pdf'}]});assert.equal(duplicate[0].versions.length,2);pass('duplicate legacy references do not invent additional versions');
+const current=archiveDocuments({...legacy,fileUploadedBy:'u_operator',fileUploadedAt:'2026-11-05T00:00:00Z',fileReason:'Koreksi hasil pindai'})[0].versions[1];assert.equal(current.uploadedBy,'u_operator');assert.equal(current.legacy,false);assert.equal(current.reason,'Koreksi hasil pindai');pass('recorded uploader timestamp and reason survive normalization');
+const model={documents:[{id:'document_primary',kind:'primary',currentVersionId:'file_new',versions:[{id:'file_new',fileId:'file_new',number:1}]},{id:'document_attachment',kind:'attachment',title:'Lampiran A',currentVersionId:'file_attachment',versions:[{id:'file_attachment',fileId:'file_attachment',number:1}]}]};
+assert.deepEqual(archiveFileIds(model),['file_new','file_attachment']);assert.equal(archiveDocuments(model)[1].id,'document_attachment');pass('primary document and independent attachments keep separate identity and references');
+assert.deepEqual(archiveFileIds({...legacy,documents:model.documents}),['file_current','file_old','file_new','file_attachment']);pass('all binary references remain enumerable during mixed-format rollout');
+const rolled=archiveDocuments({...model,fileId:'file_after_rollback',fileName:'latest.pdf',type:'incoming'});assert.equal(rolled[0].currentVersionId,'file_after_rollback');assert.equal(rolled[0].versions.length,2);assert.equal(rolled[1].currentVersionId,'file_attachment');pass('old-writer replacement is reconciled without altering attachments');
+assert.deepEqual(archiveFileIds({fileId:'../invalid'}),['../invalid']);assert.deepEqual(archiveDocuments({fileId:'../invalid'}),[]);pass('invalid legacy references remain visible to integrity checks without becoming download IDs');
+console.log(`${checks} file model checks passed.`);

@@ -2,7 +2,13 @@
 
 Tanggal: **5 November 2026, WIB**. Dasar: [AUDIT_MASTER.md](AUDIT_MASTER.md), dokumen RA 25 halaman, kebutuhan FR-01–22 dan baseline `75a19c6`. Dokumen ini menggantikan urutan/checklist TASKS/ROADMAP lama sebagai daftar pelaksanaan terkini.
 
-Audit dan perencanaan sudah disusun. **01.1 selesai pada kode/pengujian lokal, CI dan penyajian aset demo; tugas lainnya tetap terbuka.** Commit fitur `1716aa1`, Application checks `42000447214` success. Bukti fitur yang sudah ada tercatat di audit, sehingga tidak perlu membangun ulang login, PostgreSQL, tampilan Bawaslu, filter, metadata editor atau ekspor yang telah berjalan. Bukti pemasangan dan UAT manusia dicatat terpisah pada deploy/STATUS.md dan MVP_TESTING.md.
+Status pekerjaan berurutan tercatat pada checklist di bawah dan [FEATURE_PROGRESS.md](FEATURE_PROGRESS.md), dengan tes/commit/CI/demo terpisah dari penerimaan manusia. Fondasi 01.1 dan fitur lama tetap digunakan; tidak dibangun ulang. Bukti UAT kantor tetap dicatat di MVP_TESTING.md.
+
+## Prioritas pemilik terbaru — fitur dan kelengkapan
+
+Urutan aktif: 02.1 → 02.2 → 02.3 → 02.4 → 03 → 04 → 05 → 07 → 08, lalu alat bantu aplikasi/migrasi sesuai dependensi. 01.2, 01.3, seluruh 06.x dan 11.x berstatus **ditunda: keamanan**. Cek izin dasar, validasi data dan regresi yang diperlukan fitur tetap diterapkan. Deployment publik hanya demo dummy; tidak ada perubahan akun/data nyata atau rahasia dalam repo.
+
+SOP/Juknis, pelatihan, pilot kantor, evaluasi/KPI, inventaris fisik dan penetapan tim/PIC adalah pekerjaan kantor. Pengembangan hanya menyiapkan template/alat bantu; pelaksanaannya tidak dicentang tanpa bukti kantor. Bila keputusan 00 belum ada, gunakan asumsi konservatif yang terdokumentasi dan dapat diubah, tanpa mengklaim persetujuan kantor.
 
 ## Cara mengerjakan satu per satu
 
@@ -18,17 +24,17 @@ Audit dan perencanaan sudah disusun. **01.1 selesai pada kode/pengujian lokal, C
 | Paket | Prioritas/status | Fokus | Ketergantungan | Owner utama |
 |---|---|---|---|---|
 | 00 | Awal, sebagian perlu keputusan | Sumber kebenaran, istilah, izin dan scope | Tidak ada | PO + ARS + DEV |
-| 01 | **Dikerjakan pertama** | Retry unggah, admin terakhir, default role aman | Tidak ada untuk perbaikan teknis | DEV |
-| 02 | Tinggi | Versi, lampiran dan keutuhan file | 01; keputusan lampiran 00 | DEV + ARS |
+| 01 | 01.1 selesai; 01.2/01.3 ditunda: keamanan | Retry unggah, admin terakhir, default role aman | Tidak ada untuk perbaikan teknis | DEV |
+| 02 | Tinggi | Versi, lampiran dan keutuhan file | 01.1; asumsi lampiran 00 | DEV + ARS |
 | 03 | Tinggi | Disposisi end-to-end dan notifikasi | Keputusan penerima 00; detail 02 dapat menyusul | DEV + UAT |
-| 04 | Tinggi | Kelengkapan, QC dan indeks arsip | 00, 01, 02 | DEV + ARS |
+| 04 | Tinggi | Kelengkapan, QC dan indeks arsip | Asumsi 00, 01.1, 02 | DEV + ARS |
 | 05 | Wajib/bersyarat sesuai scope | Master klasifikasi dan kategori | 00, 04 | DEV + ARS |
-| 06 | Tinggi sebelum operasional | Akun, audit, keamanan file dan akses | 00; berjalan bersama fitur terkait | DEV + OPS |
-| 07 | Bertahap bersama paket fitur | UI/UX, aksesibilitas dan konsistensi | 01–06 untuk alur terkait | DEV + UAT |
+| 06 | ditunda: keamanan (cek izin dasar fitur tetap) | Akun, audit, keamanan file dan akses | 00; berjalan bersama fitur terkait | DEV + OPS |
+| 07 | Bertahap bersama paket fitur | UI/UX, aksesibilitas dan konsistensi | Fitur terkait; 06 ditunda | DEV + UAT |
 | 08 | Sebelum migrasi massal | Query SQL, performa, kesiapan perubahan skema | Model 02/03/05 dan data uji | DEV + OPS |
 | 09 | Sebelum arsip nyata | Inventaris, migrasi dan rekonsiliasi | 00, 02, 04, 05, 06, 08; gate 11 untuk data nyata | ARS + DEV |
 | 10 | Sebelum penerimaan kantor | SOP/Juknis, pelatihan dan pengukuran manfaat | Draft 00; pelatihan pada alur stabil | ARS + PO + UAT |
-| 11 | **DITUNDA pengguna** | Offsite/restore dan operasi server | Pilihan sarana/PIC; wajib sebelum data nyata | OPS + PO |
+| 11 | ditunda: keamanan | Offsite/restore dan operasi server | Pilihan sarana/PIC; wajib sebelum data nyata | OPS + PO |
 | 12 | Gerbang peluncuran | UAT lintas peran, pilot dan go/no-go | Semua MUST/gate relevan, termasuk 11 | PO + UAT + OPS |
 | 13 | Setelah pilot/bersyarat | OCR, email, kategori/integrasi lanjutan | Pilot stabil dan keputusan scope | PO + DEV |
 
@@ -45,12 +51,12 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 ## 01 — Perbaiki integritas alur dan keselamatan akun
 
 - [x] **01.1 — Retry unggah tanpa arsip ganda (A-01).** ID metadata dipakai kembali saat upload diulang; feedback sukses parsial, penguncian metadata dan retry berkunci operasi tersedia. Server menjaga replay create/upload, konflik payload, izin dan persistensi restart. **Bukti:** keamanan JSON/PostgreSQL 187, database 8, browser retry 10; regresi metadata/interaksi dan UAT dasar lulus. Batas: kunci/draft hanya selama dialog terbuka, bukan pemulihan lintas reload; file yatim akibat gagal commit DB tetap 02.4. UAT manusia pada dummy mengikuti MVP_TESTING.md; bukan izin memakai arsip nyata.
-- [ ] **01.2 — Lindungi admin terakhir (A-02).** Tolak nonaktif/penurunan role yang menghilangkan seluruh admin aktif; periksa pada transaksi termasuk dua perubahan bersamaan. **Selesai:** selalu tersisa admin aktif; perubahan admin lain yang sah tetap berjalan; UI menjelaskan penolakan; ada regresi JSON/PostgreSQL.
-- [ ] **01.3 — Default akun dengan hak minimal (A-06).** Pilih role dasar yang sesuai keputusan atau wajib memilih; gunakan nama role Indonesia dan konfirmasi akses admin. **Selesai:** membuat akun biasa tidak tanpa sengaja membuat admin; role/subbagian valid di server dan perubahan diaudit.
+- [ ] **01.2 — Lindungi admin terakhir (A-02).** **ditunda: keamanan.** Tolak nonaktif/penurunan role yang menghilangkan seluruh admin aktif; periksa pada transaksi termasuk dua perubahan bersamaan. **Selesai:** selalu tersisa admin aktif; perubahan admin lain yang sah tetap berjalan; UI menjelaskan penolakan; ada regresi JSON/PostgreSQL.
+- [ ] **01.3 — Default akun dengan hak minimal (A-06).** **ditunda: keamanan.** Pilih role dasar yang sesuai keputusan atau wajib memilih; gunakan nama role Indonesia dan konfirmasi akses admin. **Selesai:** membuat akun biasa tidak tanpa sengaja membuat admin; role/subbagian valid di server dan perubahan diaudit.
 
 ## 02 — Versi, lampiran dan keutuhan berkas
 
-- [ ] **02.1 — Rancang model versi/lampiran.** Bedakan dokumen utama, berkas final, lampiran dan penggantian versi; simpan ID, nomor versi, nama, tipe, ukuran, checksum, pengunggah/waktu serta alasan penggantian. **Selesai:** relasi stabil dan rencana normalisasi fileVersions lama; aktor/waktu yang tidak diketahui ditandai, tidak direkayasa.
+- [x] **02.1 — Rancang model versi/lampiran.** **Implementasi:** normalisasi read-only dan kontrak FILE_MODEL.md; 11 pemeriksaan model lulus; regresi lama dan CI menjadi gerbang rilis. Tidak ada migrasi massal/penulisan akun atau arsip demo. Bedakan dokumen utama, berkas final, lampiran dan penggantian versi; simpan ID, nomor versi, nama, tipe, ukuran, checksum, pengunggah/waktu serta alasan penggantian. **Selesai:** relasi stabil dan rencana normalisasi fileVersions lama; aktor/waktu yang tidak diketahui ditandai, tidak direkayasa.
 - [ ] **02.2 — UI ganti dan riwayat (A-03/A-07).** Tambahkan aksi Ganti berkas/Riwayat untuk pihak berwenang dan unduh versi lama melalui pemeriksaan scope tiap permintaan. **Selesai:** v1→v2 tidak menghilangkan v1; pegawai asing/anonim ditolak; riwayat terbaca; penetapan kembali versi aktif bila dibutuhkan membuat revisi/audit, bukan menulis ulang bukti lama.
 - [ ] **02.3 — Lampiran independen.** Unggah/lihat/unduh lebih dari satu lampiran sesuai scope pilot. **Selesai:** penggantian lampiran A tidak mengganti B; kelengkapan utama/lampiran jelas; ukuran/tipe/error setiap file ditangani.
 - [ ] **02.4 — Konsistensi commit file (A-10).** Stage file dan finalisasi metadata secara aman; tangani gagal tulis/DB, retry dan dua unggahan bersamaan; siapkan rekonsiliasi file yatim read-only/dry-run. **Selesai:** kegagalan tidak memberi unduh palsu atau kehilangan versi; cleanup hanya kandidat yang terbukti tidak direferensikan.
@@ -79,12 +85,12 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 
 ## 06 — Akun, audit dan keamanan operasional aplikasi
 
-- [ ] **06.1 — Siklus akun.** Ganti password sendiri dengan verifikasi aman, kewajiban ganti awal bila disahkan, reset via admin dan pencabutan sesi yang jelas; validasi profil/email. **Selesai:** semua peran bisa memakai akun riil; pemulihan akun tidak bergantung berbagi password di chat; MFA dievaluasi untuk role tinggi.
-- [ ] **06.2 — Audit yang dapat ditelusuri (A-09).** Filter/pagination aktor/aksi/tanggal/arsip, hasil tindakan dan korelasi request; label Indonesia. **Selesai:** create/edit/upload/version/download/access/disposition/export/delete yang tersedia tercatat konsisten tanpa isi sensitif; pembacaan/ekspor log dibatasi sesuai keputusan.
-- [ ] **06.3 — Integritas dan retensi audit.** Role DB dengan hak minimal, proteksi perubahan log, kebijakan retensi dan peninjauan log lama. **Selesai:** hak dan batas perlindungan terbukti; jangan mengklaim tamper-proof hanya karena API tidak menyediakan edit.
-- [ ] **06.4 — Kebijakan upload.** Batas konfigurabel konsisten UI/proxy/server; signature/ekstensi/checksum tetap; tentukan scan malware/karantina dan timeout/error. **Selesai:** file ditolak/karantina tidak diunduh sebagai dokumen sah. Konversi .doc lama ditangani dalam migrasi bila diperlukan; jangan memperluas allowlist tanpa kebutuhan.
-- [ ] **06.5 — Regresi akses menyeluruh.** Uji setiap role untuk ID langsung, versi/lampiran, detail, preview, ekspor, notifikasi, audit dan arsip terhapus. **Selesai:** seluruh endpoint baru memeriksa izin server, termasuk akun nonaktif/perubahan subbagian/sesi habis.
-- [ ] **06.6 — Rahasia dan anti-penyalahgunaan.** Rotasi token/kunci yang pernah dibagikan secara privat; evaluasi rate limit di belakang Caddy, percobaan login dan logging tanpa rahasia. **Selesai:** credential lama dicabut sesuai jenisnya, tidak masuk repo/log dan kebijakan limit tidak mengunci seluruh pegawai tanpa penanganan.
+- [ ] **06.1 — Siklus akun.** **ditunda: keamanan.** Ganti password sendiri dengan verifikasi aman, kewajiban ganti awal bila disahkan, reset via admin dan pencabutan sesi yang jelas; validasi profil/email. **Selesai:** semua peran bisa memakai akun riil; pemulihan akun tidak bergantung berbagi password di chat; MFA dievaluasi untuk role tinggi.
+- [ ] **06.2 — Audit yang dapat ditelusuri (A-09).** **ditunda: keamanan.** Filter/pagination aktor/aksi/tanggal/arsip, hasil tindakan dan korelasi request; label Indonesia. **Selesai:** create/edit/upload/version/download/access/disposition/export/delete yang tersedia tercatat konsisten tanpa isi sensitif; pembacaan/ekspor log dibatasi sesuai keputusan.
+- [ ] **06.3 — Integritas dan retensi audit.** **ditunda: keamanan.** Role DB dengan hak minimal, proteksi perubahan log, kebijakan retensi dan peninjauan log lama. **Selesai:** hak dan batas perlindungan terbukti; jangan mengklaim tamper-proof hanya karena API tidak menyediakan edit.
+- [ ] **06.4 — Kebijakan upload.** **ditunda: keamanan.** Batas konfigurabel konsisten UI/proxy/server; signature/ekstensi/checksum tetap; tentukan scan malware/karantina dan timeout/error. **Selesai:** file ditolak/karantina tidak diunduh sebagai dokumen sah. Konversi .doc lama ditangani dalam migrasi bila diperlukan; jangan memperluas allowlist tanpa kebutuhan.
+- [ ] **06.5 — Regresi akses menyeluruh.** **ditunda: keamanan.** Uji setiap role untuk ID langsung, versi/lampiran, detail, preview, ekspor, notifikasi, audit dan arsip terhapus. **Selesai:** seluruh endpoint baru memeriksa izin server, termasuk akun nonaktif/perubahan subbagian/sesi habis.
+- [ ] **06.6 — Rahasia dan anti-penyalahgunaan.** **ditunda: keamanan.** Rotasi token/kunci yang pernah dibagikan secara privat; evaluasi rate limit di belakang Caddy, percobaan login dan logging tanpa rahasia. **Selesai:** credential lama dicabut sesuai jenisnya, tidak masuk repo/log dan kebijakan limit tidak mengunci seluruh pegawai tanpa penanganan.
 
 ## 07 — UI/UX dan aksesibilitas
 
@@ -122,10 +128,10 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 
 Bagian ini hanya rencana. Pengguna sudah meminta melewatinya untuk sementara; jangan memasang layanan baru atau meminta credential sampai pekerjaan ini dilanjutkan.
 
-- [ ] **11.1 — Verifikasi backup/restore.** Tambah checksum snapshot metadata, validasi manifest/binary/referensi, pemulihan ke database/direktori kosong, pertahankan akun/hak akses dengan sesi dicabut. **Selesai:** DB dan file bisa dipulihkan di lingkungan bersih; snapshot rusak/target berisi ditolak; uji ini berbeda dari impor yang mereset akun.
-- [ ] **11.2 — Offsite terenkripsi.** Pilih tujuan sesuai anggaran/kebijakan kantor; konfigurasi privat, pengiriman, verifikasi hasil, retensi dan alarm. **Selesai:** satu salinan terenkripsi tersimpan di luar VPS dan dapat dipulihkan; ada PIC serta catatan RPO/RTO.
-- [ ] **11.3 — Monitoring dan kapasitas.** Health eksternal/DB/disk, backup terakhir, kegagalan deployment, retensi backup/release dan patch/reboot terencana. **Selesai:** alarm diuji dan diterima PIC; cleanup tidak menghapus release aktif/cadangan yang dibutuhkan.
-- [ ] **11.4 — Hardening/runbook.** Verifikasi firewall/Caddy, DB/SSH privat, user service, rahasia, rotasi kunci, sertifikat, lokasi data dan prosedur insiden. **Selesai:** bukti server nyata, bukan hanya fixture container, serta persetujuan lokasi/operasi kantor tercatat.
+- [ ] **11.1 — Verifikasi backup/restore.** **ditunda: keamanan.** Tambah checksum snapshot metadata, validasi manifest/binary/referensi, pemulihan ke database/direktori kosong, pertahankan akun/hak akses dengan sesi dicabut. **Selesai:** DB dan file bisa dipulihkan di lingkungan bersih; snapshot rusak/target berisi ditolak; uji ini berbeda dari impor yang mereset akun.
+- [ ] **11.2 — Offsite terenkripsi.** **ditunda: keamanan.** Pilih tujuan sesuai anggaran/kebijakan kantor; konfigurasi privat, pengiriman, verifikasi hasil, retensi dan alarm. **Selesai:** satu salinan terenkripsi tersimpan di luar VPS dan dapat dipulihkan; ada PIC serta catatan RPO/RTO.
+- [ ] **11.3 — Monitoring dan kapasitas.** **ditunda: keamanan.** Health eksternal/DB/disk, backup terakhir, kegagalan deployment, retensi backup/release dan patch/reboot terencana. **Selesai:** alarm diuji dan diterima PIC; cleanup tidak menghapus release aktif/cadangan yang dibutuhkan.
+- [ ] **11.4 — Hardening/runbook.** **ditunda: keamanan.** Verifikasi firewall/Caddy, DB/SSH privat, user service, rahasia, rotasi kunci, sertifikat, lokasi data dan prosedur insiden. **Selesai:** bukti server nyata, bukan hanya fixture container, serta persetujuan lokasi/operasi kantor tercatat.
 
 ## 12 — UAT dan gerbang peluncuran
 
@@ -143,4 +149,4 @@ Bagian ini hanya rencana. Pengguna sudah meminta melewatinya untuk sementara; ja
 
 ## Pekerjaan pertama yang direkomendasikan
 
-**01.1 sudah selesai pada kode/tes.** Berikutnya yang direkomendasikan adalah **01.2 — Perlindungan admin terakhir**, lalu **01.3 — Default role aman**, kemudian **02 — Riwayat versi/lampiran**. Ketiganya belum dimulai dalam paket 01.1. Keputusan 00 dicatat bertahap; tugas yang tidak bergantung keputusan tidak perlu menunggu seluruh rapat selesai. Backup 11 tetap ditunda; demonstrasi publik tetap memakai dummy sampai gerbang keamanan/operasional ditutup.
+**01.1 sudah selesai.** Urutan aktif dimulai dari **02.1 model versi/lampiran**, kemudian 02.2, 02.3, 02.4 dan paket fitur sesuai dependensi. 01.2, 01.3, 06.x dan paket 11 ditunda: keamanan. Dokumen/alat bantu kantor tidak membuktikan kegiatan kantor sudah terlaksana. Demonstrasi publik tetap dummy sampai gerbang keamanan/operasional ditutup.

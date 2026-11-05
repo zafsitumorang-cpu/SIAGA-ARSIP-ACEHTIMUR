@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
@@ -10,9 +11,11 @@ import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
 import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs';
 import {archiveCsv,archiveXlsx} from './lib/archive-export.mjs';
 import {requestReceipt,matchesReceipt} from './lib/request-receipt.mjs';
+import {archiveDocuments} from './lib/archive-files.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
+let revision='unknown';try{revision=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();}catch{}
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 const FILE_DIR = path.join(DATA_DIR, 'files');
 const DATA_FILE = path.join(DATA_DIR, 'data.json');
@@ -72,7 +75,7 @@ function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
   return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
 }
-function archivePayload(a) { const {creationReceipt,uploadReceipts,...visible}=a;return { ...visible, metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -204,6 +207,7 @@ async function route(req, res) {
 }
 async function staticFile(file, res) { try { const data = await fs.readFile(file); const ext = path.extname(file); const type = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.ttf': 'font/ttf' }[ext] || 'application/octet-stream'; send(res, 200, data, type, { 'Cache-Control': 'no-cache' }); } catch { send(res, 404, 'Not found', 'text/plain'); } }
 const server=http.createServer(async(req,res)=>{
+  res.setHeader('X-SIAGA-Revision',revision);
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; font-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(SECURE_COOKIE)res.setHeader('Strict-Transport-Security','max-age=31536000');
   try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}res._defer=true;await storage.transaction(async(data,dirty)=>{db=data;markDirty=dirty;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
   catch(error){res._defer=false;if(!res.headersSent)send(res,error.status||500,{error:error.status?error.message:'Terjadi kesalahan server.'});else res.end();if(!error.status)console.error('Request gagal:',error.code||error.name);}
