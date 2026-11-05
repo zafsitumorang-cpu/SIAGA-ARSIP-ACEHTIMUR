@@ -17,3 +17,7 @@ Tindak lanjut dapat berjalan dari belum ditindaklanjuti ke sedang diproses atau 
 ## 03.3 — kompatibilitas status dan retry
 
 PATCH status mewajibkan versi hasil baca agar semua penulis ikut pemeriksaan konflik. Tab/klien lama harus memuat ulang setelah rilis ini. Key retry berlaku untuk satu tindakan/payload per aktor; mengubah input membuat operasi baru. Draft catatan dan kunci disimpan selama dialog terbuka, bukan penyimpanan lintas reload. Data lama tanpa field version memakai jumlah event historis sebagai versi awal dan tidak ditulis ulang saat sekadar dibaca.
+
+## 03.4 — makna daftar kerja dan ringkasan
+
+Staf pertama-tama melihat tugas individu sendiri + tugas tim subbagian; admin/pimpinan melihat semua penugasan dalam pengawasan. Filter semua dalam cakupan baca boleh menampilkan tugas individu rekan sebagai baca-saja, sesuai akses baca arsip yang sudah berlaku. Ringkasan tugas aktif/selesai tidak mengikuti pencarian dan diberi label tanpa filter; active adalah yang dapat ditindaklanjuti/diawasi dan belum selesai. Tahun filter memakai tahun surat, bukan tahun disposisi dibuat. CSV status tidak menyertakan instruksi/catatan. Keputusan membaca instruksi individual yang lebih sempit tetap memerlukan kebijakan kantor; fitur ini tidak memperluas scope.

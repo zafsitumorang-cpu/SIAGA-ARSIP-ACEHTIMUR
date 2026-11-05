@@ -8,12 +8,13 @@ import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
 import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
-import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs';
-import {archiveCsv,archiveXlsx} from './lib/archive-export.mjs';
+import {archiveFilters,matchesArchive,archivePage,orderedArchives} from './lib/archive-query.mjs';
+import {archiveCsv,archiveXlsx,serializeCsv} from './lib/archive-export.mjs';
 import {requestReceipt,matchesReceipt} from './lib/request-receipt.mjs';
 import {archiveDocuments,archiveFileIds,appendArchiveVersion,validFileId} from './lib/archive-files.mjs';
 import {stageArchiveFile} from './lib/file-io.mjs';
 import {canUpdateDisposition,dispositionRecipients,dispositionUpdate} from './lib/dispositions.mjs';
+import {dispositionWorklist} from './lib/disposition-query.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -107,7 +108,7 @@ async function route(req, res) {
   if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !year || a.letterDate.startsWith(year)); return send(res, 200, { year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length }); }
   if (pathname.startsWith('/api/')) {
     const u = requireAuth(req, res); if (!u) return;
-    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai').length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
+    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
     if(pathname==='/api/archives'&&req.method==='GET'){
       const result=archivePage(visibleArchives(u,url),url.searchParams);
       const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
@@ -215,6 +216,17 @@ async function route(req, res) {
       let data;try{data=await fs.readFile(path.join(FILE_DIR,fileId));}catch{fail(404,'Berkas belum diunggah ke penyimpanan sistem.');}
       audit(u.id,'download','archive_file',fileId,archive.number);await persist();
       return send(res,200,data,version?.mime||'application/pdf',{'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(version?.fileName||'arsip')}`});
+    }
+    if(['/api/dispositions','/api/dispositions/export.csv'].includes(pathname)&&req.method==='GET'){
+      const result=dispositionWorklist(db.archives.map(archive=>({...archive,dispositions:archive.dispositions.map(dispositionPayload)})),u,url.searchParams);
+      if(pathname.endsWith('.csv')){
+        // Export every matching task, not merely the current page.
+        const ordered=orderedArchives(result.rows);
+        const csv=serializeCsv([['Nomor surat','Perihal','Subbagian','Penerima','Status disposisi','Dibuat','Pembaruan terakhir'],...ordered.map(item=>[item.archive.number,item.archive.subject,item.archive.subsection,item.assignedUserName||item.assignedSubsection,item.status,item.createdAt,item.updates.at(-1)?.at||item.createdAt])]);
+        audit(u.id,'export','disposition','search',`${result.rows.length} disposisi; CSV`);await persist();return send(res,200,csv,'text/csv; charset=utf-8',{'Content-Disposition':'attachment; filename="disposisi.csv"'});
+      }
+      const params=new URLSearchParams(url.searchParams);if(!params.has('page'))params.set('page','1');if(!params.has('page_size'))params.set('page_size','25');
+      return send(res,200,{...archivePage(result.rows,params),summary:result.summary,filters:result.filters});
     }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/disposition-recipients')&&req.method==='GET'){
       if(!isWide(u))fail(403,'Khusus admin/pimpinan.');

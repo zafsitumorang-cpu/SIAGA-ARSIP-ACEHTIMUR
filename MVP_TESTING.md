@@ -113,3 +113,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 03.3 — retry, dua tab dan respons terlambat
 
 `test:dispositions`: 54 pemeriksaan JSON/PostgreSQL, termasuk create/update receipt, payload conflict, paralel, version CAS wajib, ID event, receipt privat dan persistensi replay setelah restart. Fixture regresi status lama kini menyertakan expectedVersion hasil baca. Browser `disposition-retry.cjs`: 7 skenario double-submit, respons create/update sengaja diputus setelah backend sukses, konflik dua tab dengan draft, reload tanpa menghapus catatan, dropdown gagal pulih dan respons setelah navigasi. Browser disposisi lama 10 tetap lulus; data/akun semua lokal sementara.
+
+### 03.4 — daftar kerja, ringkasan dan ekspor status
+
+`test:dispositions` kini 76 pemeriksaan JSON/PostgreSQL: scope default/saya/tim/semua baca, status dan pencarian/tahun gabungan, ringkasan vs dashboard, validasi, pagination 16 tugas dan ekspor seluruh halaman/header kosong tanpa catatan privat. Browser `disposition-worklist.cjs` 10 skenario daftar/filter/page-size/CSV/detail/empty/retry/360px/role dan error JS. Browser disposisi/retry lama tetap 17; regresi arsip, edit, versi/lampiran dan create tetap dijalankan. Ini bukan benchmark SQL/VPS, pelatihan kantor, atau penerimaan pilot.

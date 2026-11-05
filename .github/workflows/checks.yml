@@ -32,6 +32,7 @@ jobs:
           node --check public/archive-files.js
           node --check public/disposition-create.js
           node --check public/disposition-history.js
+          node --check public/disposition-worklist.js
       - run: npm run uat
       - run: npm run test:migration
       - run: npm run test:query
