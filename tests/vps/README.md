@@ -19,3 +19,16 @@ docker run --rm --network none siaga-upgrade-integration missing-file
 Pada managed cloud, gunakan socket Docker lokal dan proxy/CA sesuai skill runtime; tambahkan `--secret id=proxy_ca,src="$CODEX_PROXY_CERT"` saat build bila diperlukan. Jangan menyalin CA sesi ke image.
 
 Skenario: migrasi sukses dengan sumber lama tetap utuh, hash/file kredensial privat, PostgreSQL backup dan restore 20 rekaman sintetis; kegagalan start final mengembalikan layanan lama; file hilang non-demo menggagalkan migrasi dan mengembalikan layanan lama. Tes helper yang lebih cepat tersedia melalui `npm run test:migration` dan GitHub Actions.
+
+## Pemasang timer backup
+
+Setelah image di atas tersedia, uji installer dari working tree melalui mount read-only (tidak memasang unit pada host):
+
+```bash
+docker run --rm --network none \
+  --mount "type=bind,src=$(pwd)/scripts/install-backup-timer.sh,dst=/fixture/install-backup-timer.sh,readonly" \
+  --mount "type=bind,src=$(pwd)/tests/vps/backup-test.py,dst=/fixture/backup-test.py,readonly" \
+  --entrypoint python3 siaga-upgrade-integration /fixture/backup-test.py
+```
+
+Tes memeriksa backup PostgreSQL/manifest nyata, validasi unit dan kalender Asia/Jakarta, pemasangan yang tidak mengganti PID aplikasi, cleanup saat backup awal gagal, penolakan overwrite unit dan tidak tercetaknya credential. Pengelola systemd/timer tetap dimodelkan; tes kalender bukan bukti timer server nyata sudah dipasang atau telah berjalan pada jam terjadwal.

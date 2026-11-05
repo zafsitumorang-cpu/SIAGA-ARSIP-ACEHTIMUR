@@ -2,6 +2,8 @@
 
 **Status terbaru:** operator melaporkan upgrade commit `82a9327` selesai, dan pemeriksaan independen mengonfirmasi health/config produksi, HTTPS, aset baru serta penolakan akses anonim. Lihat [STATUS.md](STATUS.md) untuk bukti, sumber informasi dan pekerjaan yang belum selesai. Instruksi instalasi di bawah adalah referensi; jangan mengulangi bootstrap/impor pada database yang kini aktif.
 
+Pemasang backup harian pukul 02:00 WIB tersedia di [AUTOMATION.md](AUTOMATION.md). Ini dipasang satu kali tanpa restart aplikasi; keberadaan script tidak berarti timer sudah aktif pada VPS. Deployment otomatis dari GitHub masih memerlukan pengaturan tersendiri.
+
 Untuk VPS yang sudah diinventarisasi dengan layanan `siaga-arsip.service` dan data JSON di `/var/lib/siaga-arsip`, lihat [prosedur upgrade khusus](UPGRADE_EXISTING_VPS.md). Skrip menyiapkan release/database terpisah, snapshot final, pengujian kandidat dan pemulihan bila pergantian gagal. Eksekusi pada server tetap dilakukan melalui akses operator; keberadaan skrip bukan bukti migrasi sudah dilakukan.
 
 Domain tidak diperlukan untuk mengerjakan atau menguji kode. Produksi baru dibuka setelah HTTPS, database, akses dan backup tervalidasi. Domain pengguna adalah `siaga-arsipbawasluacehtimur.web.id`, dengan IP VPS `43.173.51.195`. Tidak ada perubahan SSH, DNS, konfigurasi proxy atau data VPS yang dilakukan oleh paket panduan ini.
