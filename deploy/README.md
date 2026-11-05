@@ -46,6 +46,16 @@ Jika aplikasi dijalankan dalam container produksi, set HOST=0.0.0.0 dan publish 
 
 Melalui Console/Run commands VPS, periksa sebelum mengganti release:
 
+Jika checkout terbaru sudah tersedia, `bash scripts/vps-check.sh` merangkum OS/kapasitas, versi perangkat lunak, status layanan, binding port 3000 serta status health/config lokal. Skrip hanya membaca, tidak menginstal paket atau mengubah konfigurasi; tidak mencetak environment, password atau respons API selain boolean status yang dikenali. Untuk mengambil skrip dari GitHub sebelum menjalankannya, simpan ke file sementara dan baca isinya terlebih dahulu:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/zafsitumorang-cpu/SIAGA-ARSIP-ACEHTIMUR/main/scripts/vps-check.sh -o /tmp/siaga-vps-check.sh
+cat /tmp/siaga-vps-check.sh
+bash /tmp/siaga-vps-check.sh
+```
+
+Pemeriksaan minimum yang setara dapat dijalankan langsung:
+
 ```bash
 node --version
 psql --version
