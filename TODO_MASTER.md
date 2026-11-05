@@ -2,7 +2,7 @@
 
 Tanggal: **5 November 2026, WIB**. Dasar: [AUDIT_MASTER.md](AUDIT_MASTER.md), dokumen RA 25 halaman, kebutuhan FR-01–22 dan baseline `75a19c6`. Dokumen ini menggantikan urutan/checklist TASKS/ROADMAP lama sebagai daftar pelaksanaan terkini.
 
-Audit dan perencanaan sudah disusun. **01.1 selesai pada kode dan pengujian lokal; tugas lainnya tetap terbuka.** Bukti fitur yang sudah ada tercatat di audit, sehingga tidak perlu membangun ulang login, PostgreSQL, tampilan Bawaslu, filter, metadata editor atau ekspor yang telah berjalan. Bukti pemasangan dan UAT manusia dicatat terpisah pada deploy/STATUS.md dan MVP_TESTING.md.
+Audit dan perencanaan sudah disusun. **01.1 selesai pada kode/pengujian lokal, CI dan penyajian aset demo; tugas lainnya tetap terbuka.** Commit fitur `1716aa1`, Application checks `42000447214` success. Bukti fitur yang sudah ada tercatat di audit, sehingga tidak perlu membangun ulang login, PostgreSQL, tampilan Bawaslu, filter, metadata editor atau ekspor yang telah berjalan. Bukti pemasangan dan UAT manusia dicatat terpisah pada deploy/STATUS.md dan MVP_TESTING.md.
 
 ## Cara mengerjakan satu per satu
 
