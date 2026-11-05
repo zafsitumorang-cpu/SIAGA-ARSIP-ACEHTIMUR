@@ -4,6 +4,10 @@ Tanggal: 4 November 2026 (Asia/Jakarta). Basis kode: commit a12e258.
 
 **Keputusan teknis: NO-GO untuk peluncuran operasional dan penggunaan arsip nyata.** Cocok untuk demonstrasi/UAT terbatas dengan data dummy, akses terkontrol, dan pemberitahuan bahwa ini MVP. Tampilan siap dipresentasikan tidak sama dengan kontrol produksi siap digunakan.
 
+## Pembaruan setelah migrasi VPS — 5 November 2026
+
+Operator melaporkan upgrade commit 82a9327 mencapai tahap 7/7 dengan snapshot sumber, impor PostgreSQL, reset credential lama, verifikasi kandidat dan pergantian ke layanan baru. Pemeriksaan eksternal read-only mengonfirmasi HTTPS 200, health 200/ok, config 200/demoMode=false, statistik 20 arsip, akses anonim internal 401 dan aset baru; browser login tidak menampilkan akun demo serta layout mobile lulus pemeriksaan. Detail sumber bukti dan checkpoint ada di [deploy/STATUS.md](deploy/STATUS.md). Ini memperbarui catatan lama tentang pemasangan/HTTPS yang belum dilakukan; agen tetap tidak menginspeksi VPS melalui SSH. Backup masih lokal. Status NO-GO untuk arsip nyata tetap berlaku sampai backup offsite/restore, UAT, scope fitur wajib dan gate operasional/penerimaan ditutup.
+
 ## Pembaruan implementasi — 5 November 2026
 
 Bagian audit awal di bawah adalah rekaman temuan pada a12e258, bukan hasil pengujian kode terbaru. Paket fondasi telah diuji pada direktori sementara dan PostgreSQL lokal:

@@ -1,4 +1,6 @@
-# Paket pemasangan VPS — belum dieksekusi pada VPS pengguna
+# Pemasangan dan operasi VPS
+
+**Status terbaru:** operator melaporkan upgrade commit `82a9327` selesai, dan pemeriksaan independen mengonfirmasi health/config produksi, HTTPS, aset baru serta penolakan akses anonim. Lihat [STATUS.md](STATUS.md) untuk bukti, sumber informasi dan pekerjaan yang belum selesai. Instruksi instalasi di bawah adalah referensi; jangan mengulangi bootstrap/impor pada database yang kini aktif.
 
 Untuk VPS yang sudah diinventarisasi dengan layanan `siaga-arsip.service` dan data JSON di `/var/lib/siaga-arsip`, lihat [prosedur upgrade khusus](UPGRADE_EXISTING_VPS.md). Skrip menyiapkan release/database terpisah, snapshot final, pengujian kandidat dan pemulihan bila pergantian gagal. Eksekusi pada server tetap dilakukan melalui akses operator; keberadaan skrip bukan bukti migrasi sudah dilakukan.
 
@@ -6,7 +8,7 @@ Domain tidak diperlukan untuk mengerjakan atau menguji kode. Produksi baru dibuk
 
 Pengguna melaporkan Caddy sudah melayani port 80/443, SSH aktif di port 22 dan port aplikasi 3000 dibatasi dari luar. Gunakan Caddy yang sudah berjalan. Verifikasi domain secara publik tidak membuktikan versi Node/database, mode produksi, backup, atau versi backend yang terpasang.
 
-Pemeriksaan read-only 5 November 2026 (Asia/Jakarta): DNS A mengarah ke 43.173.51.195; HTTP mengembalikan 308 dan HTTPS homepage 200. Checksum JavaScript publik cocok dengan `a12e258`, berbeda dari rilis fondasi `810afb7`; health/config mengembalikan 401. Ini membuktikan aset frontend lama masih disajikan dan kontrak endpoint terbaru belum terlihat, bukan identifikasi pasti commit backend. Fokus berikutnya adalah inventarisasi/upgrade aplikasi aktif dengan mempertahankan data, kemudian verifikasi ulang endpoint, mode dan aset. Tidak ada login atau mutasi data VPS dalam pemeriksaan ini.
+Pemeriksaan awal sebelum migrasi pada 5 November 2026: DNS A mengarah ke 43.173.51.195; HTTP mengembalikan 308 dan HTTPS homepage 200, tetapi aset masih cocok dengan `a12e258` dan health/config mengembalikan 401. Catatan ini adalah keadaan sebelum upgrade. Hasil setelah upgrade ada di STATUS.md; tidak ada login independen atau mutasi data VPS melalui koneksi agen dalam pemeriksaan publik tersebut.
 
 ## Persyaratan
 

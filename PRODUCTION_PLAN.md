@@ -1,6 +1,6 @@
 # Rencana pengembangan menuju produksi — SIAGA ARSIP
 
-Diperbarui 5 November 2026, Asia/Jakarta. Pengguna sudah membeli server dan domain; spesifikasi aktual, nama domain, OS, jenis IP dan backup belum diverifikasi. Audit awal berbasis a12e258. Paket kode pertama kini mengimplementasikan kontrol keamanan inti, PostgreSQL, CLI migrasi/impor dan backup dengan manifest; lihat pembaruan LAUNCH_READINESS.md untuk bukti dan batasnya. Konfigurasi VPS belum dipasang. Informasi IP dari pengguna: 43.173.51.195; akses SSH dan DNS belum diubah.
+Diperbarui 5 November 2026, Asia/Jakarta. Operator telah melaporkan inventaris Ubuntu 24.04, Node 22, RAM sekitar 2 GiB/disk 40 GiB dan migrasi PostgreSQL melalui skrip commit 82a9327. Domain siaga-arsipbawasluacehtimur.web.id mengarah ke 43.173.51.195; HTTPS, health/config produksi, statistik 20 arsip, aset baru dan pembatasan anonim sudah diperiksa dari luar. Bukti dan batas verifikasi ada di [deploy/STATUS.md](deploy/STATUS.md). Audit awal berbasis a12e258; hardening dan migrasi awal kini terpasang sesuai laporan operator, sedangkan backup offsite, pemulihan menyeluruh, fitur dan gate penerimaan tetap terbuka. Agen tidak memiliki koneksi SSH langsung.
 
 ## Sasaran rilis pertama
 
@@ -39,7 +39,7 @@ Pencatatan dan pemeliharaan surat masuk/keluar; berkas privat; disposisi; akses 
 Informasi awal: domain, provider/paket, CPU/RAM/disk, OS, IPv4 publik atau NAT, jenis dukungan, backup bawaan. Gunakan mekanisme akses SSH yang aman ketika pemasangan benar-benar dimulai; kata sandi tidak perlu ditaruh di dokumen/repo.
 
 - Konfigurasi user deploy non-root, SSH key dan firewall; jangan mengekspos database ke internet.
-- Pada VPS Ubuntu yang sesuai: Nginx sebagai reverse proxy, HTTPS dengan perpanjangan sertifikat otomatis, Node.js dikelola systemd dan PostgreSQL lokal/privat.
+- VPS ini sudah menggunakan Caddy untuk HTTPS/reverse proxy; pertahankan instalasi tersebut, dengan Node.js dikelola systemd dan PostgreSQL lokal/privat. Verifikasi restart dan perpanjangan sertifikat melalui operasi rutin.
 - Bila NAT, pastikan terlebih dahulu forwarding/reverse proxy untuk domain dan HTTPS; jangan mengasumsikan A record saja cukup.
 - Pisahkan direktori release dari data persisten; secrets di environment terproteksi; batas unggah di proxy dan aplikasi selaras.
 - Deploy staging dengan dummy dan akses terbatas; periksa domain, HTTPS, restart, logs, penggunaan resource dan endpoint health yang sesuai.

@@ -19,7 +19,7 @@ Backup lokal tersedia melalui `npm run backup`, UAT otomatis melalui `npm run ua
 
 ## Status pengembangan menuju produksi
 
-Paket 5 November 2026 memperkuat scope subbagian, autentikasi/sesi, validasi unggah, transaksi PostgreSQL, impor terkendali dan backup dengan manifest. GitHub Actions menjalankan UAT serta regresi keamanan/database. Ini belum menyatakan siap peluncuran: pemasangan VPS, HTTPS, backup offsite, uji pemulihan menyeluruh dan penerimaan fitur masih perlu diselesaikan. Lihat pembaruan [LAUNCH_READINESS.md](LAUNCH_READINESS.md) dan [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md).
+Paket 5 November 2026 memperkuat scope subbagian, autentikasi/sesi, validasi unggah, transaksi PostgreSQL, impor terkendali dan backup dengan manifest. GitHub Actions menjalankan UAT serta regresi keamanan/database/migrasi. Operator kini melaporkan migrasi VPS selesai; HTTPS, health/config produksi dan aset baru telah diperiksa dari luar, lihat [status deployment](deploy/STATUS.md). Ini belum menyatakan siap peluncuran arsip nyata: backup offsite, uji pemulihan menyeluruh, UAT dan penerimaan fitur masih perlu diselesaikan. Lihat [LAUNCH_READINESS.md](LAUNCH_READINESS.md) dan [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md).
 
 ## Mulai membaca
 
