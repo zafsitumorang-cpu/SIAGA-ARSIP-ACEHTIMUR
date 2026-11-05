@@ -116,7 +116,8 @@
 .archive-pagination select{width:auto;min-width:65px}
 .archive-pagination button:disabled{opacity:.45;cursor:default}
 #archiveResults.is-loading{opacity:.6}
-#archiveExport[aria-disabled=true]{opacity:.5;cursor:default}
+#archiveExport[aria-disabled=true],#archiveExportXlsx[aria-disabled=true]{opacity:.5;cursor:default}
+.archive-sort-hint{font-size:12px;margin:-8px 0 18px}
 #archiveSearchForm .field{min-width:0}
 #archiveFilterError[hidden]{display:none}
 @media(max-width:720px){.archive-basic-grid,.archive-filter-grid{grid-template-columns:1fr}.archive-filter-actions>span{width:100%}#archiveAdvanced summary span{display:block;margin:6px 0 0}.archive-pagination{align-items:flex-start}.archive-pagination>div{width:100%;justify-content:space-between}}

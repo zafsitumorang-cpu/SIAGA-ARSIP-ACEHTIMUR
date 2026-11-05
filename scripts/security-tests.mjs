@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import pg from 'pg';
+import {readSheet} from 'read-excel-file/node';
 import {createStore} from '../lib/store.mjs';
 import {tokenHash} from '../lib/security.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');let checks=0;
@@ -13,7 +14,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,ms));
 async function start(dataDir,port,extra={}){const child=spawn(process.execPath,['app.mjs'],{cwd:root,env:{...process.env,DATABASE_URL:'',NODE_ENV:'test',DEMO_MODE:'true',DATA_DIR:dataDir,PORT:String(port),...extra},stdio:['ignore','pipe','pipe']});let error='';child.stderr.on('data',c=>error+=c);for(let i=0;i<100;i++){if(child.exitCode!==null)throw Error(`Startup gagal: ${error.slice(0,500)}`);try{if((await fetch(`http://127.0.0.1:${port}/api/health`)).ok)return child;}catch{}await wait(50);}child.kill();throw Error('Startup timeout');}
 async function stop(child){if(child.exitCode!==null)return;child.kill();await new Promise(r=>child.once('exit',r));}
 async function suite(extra={},label='JSON',port=3401){const dir=await fs.mkdtemp(path.join(os.tmpdir(),'siaga-security-'));let child;const base=`http://127.0.0.1:${port}`;
-async function req(route,{method='GET',data,cookie,headers={},marker=true}={}){const r=await fetch(base+route,{method,headers:{'Content-Type':'application/json',...(marker?{'X-SIAGA-Request':'1'}:{}),...(cookie?{Cookie:cookie}:{}),...headers},...(data?{body:JSON.stringify(data)}:{})});const bytes=await r.text();let body;try{body=JSON.parse(bytes);}catch{body=bytes;}return {status:r.status,body,cookie:r.headers.get('set-cookie')?.split(';')[0],headers:r.headers};}
+async function req(route,{method='GET',data,cookie,headers={},marker=true}={}){const r=await fetch(base+route,{method,headers:{'Content-Type':'application/json',...(marker?{'X-SIAGA-Request':'1'}:{}),...(cookie?{Cookie:cookie}:{}),...headers},...(data?{body:JSON.stringify(data)}:{})});const bytes=Buffer.from(await r.arrayBuffer()),raw=bytes.toString('utf8');let body;try{body=JSON.parse(raw);}catch{body=raw;}return {status:r.status,body,bytes,cookie:r.headers.get('set-cookie')?.split(';')[0],headers:r.headers};}
 const login=(username,password)=>req('/api/login',{method:'POST',data:{username,password}});
 try{child=await start(dir,port,extra);console.log(`Storage: ${label}`);const admin=await login('admin','admin123');check(admin.status===200,'login scrypt');
 check((await req('/api/archives')).status===401,'anonymous internal API rejected');
@@ -81,6 +82,19 @@ const foreign=await req('/api/archives?subsection=Administrasi&page=1&page_size=
 const dated=await req('/api/archives?from=2026-10-01&to=2026-10-31&page=1&page_size=10',{cookie:admin.cookie});check(dated.body.total===10&&dated.body.items.every(item=>item.letterDate>='2026-10-01'&&item.letterDate<='2026-10-31'),'date range is inclusive and based on letter date');
 const exported=await req('/api/export.csv?'+combined,{cookie:admin.cookie});check(exported.status===200&&exported.body.includes('SEC/MOVE')&&!exported.body.includes('SEC/EDIT'),'CSV applies same combined filters and ignores page slicing');
 const exportAll=await req('/api/export.csv?q=AT%2F&page=1&page_size=10',{cookie:admin.cookie});check(exportAll.status===200&&exportAll.body.trim().split(/\r?\n/).length===21,'CSV exports all 20 matching seed records beyond the displayed page');
+check((await req('/api/export.xlsx')).status===401,'anonymous XLSX export rejected');
+const excel=await req('/api/export.xlsx?q=AT%2F&page=1&page_size=10',{cookie:admin.cookie});const excelRows=await readSheet(excel.bytes);
+check(excel.status===200&&excel.headers.get('content-type')==='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'&&excel.headers.get('content-disposition').includes('.xlsx')&&excelRows.length===21,'XLSX is a readable workbook with all matching rows beyond page size');
+const sortedSeed=(await req('/api/archives?q=AT%2F&page=1&page_size=25',{cookie:admin.cookie})).body.items;
+check(excelRows.slice(1).every((row,index)=>row[1]===sortedSeed[index].number)&&excelRows[0][8]==='Status disposisi'&&excelRows.slice(1).every(row=>row[8]==='Tanpa disposisi'),'XLSX follows list order with explicit no-disposition status');
+const scopedExcel=await req('/api/export.xlsx',{cookie:hukum.cookie});const scopedRows=await readSheet(scopedExcel.bytes);check(scopedRows.length>1&&scopedRows.slice(1).every(row=>row[7]==='Hukum'),'XLSX never exposes foreign employee subsection');
+const deniedExcel=await req('/api/export.xlsx?subsection=Administrasi',{cookie:hukum.cookie});check((await readSheet(deniedExcel.bytes)).length===1,'XLSX foreign filter returns only headers');
+check((await req('/api/export.xlsx?from=2026-12-01&to=2026-01-01',{cookie:admin.cookie})).status===422,'XLSX rejects invalid query criteria');
+await req(`/api/dispositions/${assigned.body.dispositions[0].id}/status`,{method:'PATCH',cookie:admin.cookie,data:{status:'Selesai'}});
+const completeQuery=new URLSearchParams({status:'Selesai',q:'SEC/EDIT'});const completeList=await req('/api/archives?'+completeQuery,{cookie:admin.cookie});const completeExcel=await req('/api/export.xlsx?'+completeQuery,{cookie:admin.cookie});const completeRows=await readSheet(completeExcel.bytes);
+check(completeList.body.items.length===1&&completeRows.length===2&&completeRows[1][1]==='SEC/EDIT'&&completeRows[1][8]==='Selesai'&&!JSON.stringify(completeRows).includes('SECRET_INSTRUCTION_TEST'),'completed-status filter exports status without confidential instruction');
+const completeCsv=await req('/api/export.csv?'+completeQuery,{cookie:admin.cookie});check(completeCsv.body.includes('"Status disposisi"')&&completeCsv.body.includes('"Selesai"')&&!completeCsv.body.includes('SECRET_INSTRUCTION_TEST'),'CSV includes disposition status with same scope and minimization');
+const exportAudit=(await req('/api/admin/audit',{cookie:admin.cookie})).body.items;check(exportAudit.some(event=>event.action==='export'&&event.detail.includes('XLSX'))&&exportAudit.some(event=>event.action==='export'&&event.detail.includes('CSV')),'both export formats are audited');
 const before=(await req('/api/public/stats')).body.total;await stop(child);child=await start(dir,port,extra);check((await req('/api/public/stats')).body.total===before,'records survive restart');check((await req('/api/me',{cookie:admin.cookie})).status===200,'server sessions survive restart');
 const loggedOut=await req('/api/logout',{method:'POST',cookie:admin.cookie});check(loggedOut.status===200&&(await req('/api/me',{cookie:admin.cookie})).status===401,'logout revokes session');
 const expiring=await login('admin','admin123');const probeStore=await createStore({file:path.join(dir,'data.json'),databaseUrl:extra.DATABASE_URL});try{await probeStore.transaction(async(d,dirty)=>{const session=d.sessions.find(s=>s.id===tokenHash(expiring.cookie.slice(4)));assert.ok(session);session.expiresAt=Date.now()-1;dirty();assert.ok(!JSON.stringify(d.sessions).includes(expiring.cookie.slice(4)));});}finally{await probeStore.close();}check((await req('/api/me',{cookie:expiring.cookie})).status===401,'server expiry rejects old token; session stores only token hash');

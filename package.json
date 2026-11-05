@@ -16,13 +16,18 @@
     "test:security": "node scripts/security-tests.mjs",
     "test:database": "node scripts/database-tests.mjs",
     "test:migration": "node scripts/migration-tests.mjs",
-    "test:query": "node scripts/query-tests.mjs"
+    "test:query": "node scripts/query-tests.mjs",
+    "test:export": "node scripts/export-tests.mjs"
   },
   "engines": {
     "node": ">=22"
   },
   "dependencies": {
     "file-type": "^22.3.0",
-    "pg": "^8.23.1"
+    "pg": "^8.23.1",
+    "write-excel-file": "^4.1.1"
+  },
+  "devDependencies": {
+    "read-excel-file": "^9.3.14"
   }
 }

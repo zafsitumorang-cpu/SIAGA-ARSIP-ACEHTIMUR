@@ -8,6 +8,7 @@ import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
 import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
 import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs';
+import {archiveCsv,archiveXlsx} from './lib/archive-export.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -169,7 +170,12 @@ async function route(req, res) {
       const items = db.archives.filter(a => canSee(u, a)).flatMap(a => a.dispositions.filter(d => isWide(u) || d.assignedUserId === u.id || (u.subsection && d.assignedSubsection === u.subsection)).map(d => ({ id: d.id, text: `Disposisi untuk ${a.number}`, subject: a.subject, status: d.status, createdAt: d.createdAt })));
       return send(res, 200, { items: items.sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,20) });
     }
-    if (pathname === '/api/export.csv' && req.method === 'GET') { const rows = visibleArchives(u, url); const csv = ['Jenis,Nomor,Tanggal,Asal,Tujuan,Perihal,Klasifikasi,Subbagian', ...rows.map(a => [a.type === 'incoming' ? 'Masuk' : 'Keluar', a.number, a.letterDate, a.origin, a.destination, a.subject, a.classification, a.subsection].map(v => `"${String(v || '').replace(/^[=+@\-\t\r]/,m=>"'"+m).replaceAll('"', '""')}"`).join(','))].join('\n'); audit(u.id, 'export', 'archive', 'search', `${rows.length} data`); await persist(); return send(res, 200, csv, 'text/csv; charset=utf-8', { 'Content-Disposition': 'attachment; filename="siaga-arsip-export.csv"' }); }
+    if(['/api/export.csv','/api/export.xlsx'].includes(pathname)&&req.method==='GET'){
+      const rows=visibleArchives(u,url),xlsx=pathname.endsWith('.xlsx');
+      const data=xlsx?await archiveXlsx(rows):archiveCsv(rows);
+      audit(u.id,'export','archive','search',`${rows.length} data; ${xlsx?'XLSX':'CSV'}`);await persist();
+      return send(res,200,data,xlsx?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'text/csv; charset=utf-8',{'Content-Disposition':`attachment; filename="siaga-arsip-export.${xlsx?'xlsx':'csv'}"`});
+    }
     if (pathname === '/api/admin/audit' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.audit.slice(0, 100).map(x => ({ ...x, actorName: db.users.find(y => y.id === x.actorId)?.name || 'Publik' })) }); }
   }
   if(pathname.startsWith('/assets/')){const target=path.resolve(PUBLIC,pathname.slice(8));if(!target.startsWith(PUBLIC+path.sep))return send(res,404,{error:'Not found'});return staticFile(target,res);}

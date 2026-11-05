@@ -31,7 +31,7 @@ Buka `http://localhost:3000`.
 6. Sebagai `admin`, buka Pengaturan; buat akun pegawai baru, ubah peran/subbagian, lalu nonaktifkan dan aktifkan kembali akun tersebut.
 7. Tambahkan klasifikasi baru dari Pengaturan, lalu pastikan pilihan muncul pada form arsip.
 8. Buat akun `recorder` dan `uploader` pada subbagian yang sama; pastikan pencatat dapat menyimpan metadata dan pengunggah dapat menambahkan berkas privat pada arsip tersebut.
-9. Gunakan pencarian dan tombol Ekspor CSV; format XLSX belum tersedia.
+9. Gunakan pencarian dan tombol Ekspor CSV / Ekspor Excel (.xlsx).
 10. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, unggah, dan ekspor tercatat.
 
 ## Batasan pilot
@@ -56,9 +56,20 @@ Regresi API ada dalam npm run test:security (JSON dan PostgreSQL ketika PG_TEST_
 
 1. Buka Arsip surat → Filter lanjutan. Gabungkan jenis, tahun, klasifikasi, subbagian dan rentang tanggal surat dengan kata kunci; klik Terapkan. Semua kriteria harus berlaku bersamaan. Batas tanggal termasuk tanggal awal/akhir.
 2. Pilih 10 per halaman, berpindah Berikutnya/Sebelumnya dan pastikan baris tidak berulang. Mengubah filter atau ukuran halaman mengembalikan halaman pertama. Pilihan ukuran tersedia 10/25/50/100.
-3. Ekspor CSV harus memuat seluruh hasil sesuai filter dan izin, termasuk baris pada halaman lain. Tombol dinonaktifkan ketika gagal memuat atau hasil kosong.
+3. Ekspor CSV dan Excel harus memuat seluruh hasil sesuai filter dan izin, termasuk baris pada halaman lain, serta urutan sama dengan daftar (waktu pencatatan terbaru lalu ID). Tombol dinonaktifkan ketika gagal memuat atau hasil kosong.
 4. Pegawai hanya melihat subbagian sendiri; selector subbagian terkunci. Manipulasi query tidak boleh memperluas akses.
 5. Rentang tanggal terbalik ditolak tanpa menghapus isian. Reset filter mengembalikan daftar. Gangguan jaringan menawarkan Coba lagi, dan respons lambat tidak menimpa halaman lain setelah navigasi.
 6. Ubah metadata pada hasil filter, lalu pastikan kriteria tetap diterapkan. Beranda/grafik/disposisi tetap memakai seluruh data berizin. Periksa filter/pager pada HP.
 
 Pengujian otomatis: `npm run test:query`, regresi keamanan JSON/PostgreSQL dan `tests/browser/archive-search.cjs`. Daftar kini memakai pagination API, tetapi store dan cache dashboard/disposisi masih memuat data lengkap; uji beban VPS tetap terpisah.
+
+### Hasil UAT pengguna — 5 November 2026
+
+Pengguna melaporkan PPPS=5 arsip, ditambah surat keluar=3, lalu rentang tanggal sampai 8 September=1. Pilihan 10/25/50/100 ada dan halaman kedua menampilkan 11–20. CSV berisi 20/5/1 baris sesuai kriteria; login/ekspor tercatat di audit. Tidak ada arsip diubah. Filter Selesai belum diuji pengguna karena contoh belum memiliki disposisi. Kolom status CSV yang sebelumnya belum ada ditambahkan pada paket ekspor berikutnya.
+
+## Uji Excel dan status disposisi
+
+1. Dengan 10 per halaman dan lebih dari 10 hasil, klik Ekspor Excel (.xlsx). Buka di Excel/LibreOffice dan cocokkan seluruh hasil, filter serta urutan dengan daftar. Periksa nomor surat, aksara Indonesia dan tanggal ISO tetap utuh.
+2. Kedua format harus memuat Status disposisi. Arsip tanpa penugasan berisi Tanpa disposisi; beberapa status berbeda dirangkum dengan titik koma. Instruksi/catatan privat tidak ikut.
+3. Pada data dummy lingkungan uji, buat disposisi, tandai Selesai lalu terapkan filter Selesai. Cocokkan daftar, CSV dan XLSX; pastikan akun subbagian lain tetap tidak dapat mengekspor arsip itu. Uji ini tidak boleh dilakukan pada arsip nyata tanpa kebutuhan kerja.
+4. Pastikan audit mencatat format/jumlah data. Pengujian otomatis tersedia di `npm run test:export`, `npm run test:security` serta browser pencarian. Uji unduh lokal sudah mencakup XLSX terbaca dan filter Selesai; penerimaan pengguna pada produksi masih terpisah.

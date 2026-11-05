@@ -61,8 +61,14 @@ Pengguna melaporkan UAT metadata pada OUT/AT/010/2026 lulus: perihal wajib, peru
 
 Commit fitur `510923efed3adcb382d63b3e2d923de3f3bed672` sudah didorong ke main; Application checks run 41980336831 selesai success. Pemantauan HTTPS sekitar 252 detik mendeteksi checksum app.js, archive-search.js dan workspace.css sesuai rilis. Root/health/config HTTP 200, health ok=true, demoMode=false, arsip anonim HTTP 401, dan statistik tetap 20 arsip (10 masuk/10 keluar). Ini mengonfirmasi penyajian aset baru melalui deployment otomatis; tidak ada login atau mutasi produksi oleh agen. Penerimaan filter/pagination oleh pengguna tetap perlu dilakukan melalui akun sendiri.
 
+### UAT pencarian dan paket XLSX — 5 November
+
+Pengguna melaporkan filter PPPS=5, PPPS+keluar=3, ditambah tanggal sampai 8 September=1. Ukuran halaman 10/25/50/100 tersedia; halaman kedua memuat arsip 11–20. CSV 20/5/1 baris sesuai filter. Tidak ada arsip diubah; login dan ekspor tercatat di audit. Selesai belum dapat diuji pengguna karena data contoh belum memiliki disposisi. Ini memperbarui catatan penerimaan pencarian di atas.
+
+Paket ekspor menambahkan XLSX yang dapat diunduh, kolom Status disposisi di kedua format, keterangan urutan pencatatan terbaru dan urutan ekspor sesuai daftar. Semua status unik dirangkum; tanpa penugasan ditulis Tanpa disposisi; instruksi/catatan tidak diekspor. Schema SQL tetap sama. Lokal: keamanan 151 (JSON/PostgreSQL), ekspor/round trip XLSX 8 termasuk 1.300 arsip, query 8, UAT 15 dan browser 14. Browser menguji unduh seluruh halaman/hasil filter dan disposisi Selesai pada data sementara. Instalasi dependensi produksi saja dapat menghasilkan XLSX; npm audit nol kerentanan. Penerimaan XLSX/Selesai di produksi dan pengujian resource VPS masih terpisah. Bukti rollout dicatat setelah aset baru terverifikasi dari domain.
+
 1. Pemilik server mengambil credential admin secara privat, login, mengganti password awal dan memetakan akun riil/peran/subbagian.
 2. Jadwalkan backup, salin terenkripsi ke lokasi terpisah, tetapkan retensi dan alarm, lalu uji restore database beserta binary ke lingkungan bersih. Backup yang dilaporkan masih lokal.
 3. UAT pengguna: catat surat uji, unggah/unduh berizin, disposisi, pembatasan peran/subbagian dan pergantian sesi. Data 20 arsip lama bukan bukti dokumen asli telah tersedia.
-4. Verifikasi restart/redeploy dan beban representatif. Selesaikan atau sepakati ruang lingkup fitur wajib yang masih terbuka (izin edit recorder, XLSX, histori versi); lakukan penerimaan pengguna untuk filter/pagination baru.
+4. Verifikasi restart/redeploy dan beban representatif. Selesaikan atau sepakati ruang lingkup fitur wajib yang masih terbuka (izin edit recorder, histori versi); lakukan penerimaan pengguna untuk XLSX/status Selesai.
 5. Tutup gate keamanan/operasional dan penerimaan LAUNCH_READINESS.md sebelum memakai arsip nyata. Mode produksi aktif tidak berarti seluruh kebutuhan peluncuran telah selesai.

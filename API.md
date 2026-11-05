@@ -4,7 +4,7 @@ Kontrak konseptual REST/JSON dan catatan implementasi Node.js. Tidak ada migrasi
 
 ## Kontrak aktual tahap fondasi — 5 November 2026
 
-Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` mengikuti seluruh filter dan scope pencarian; XLSX belum ada. DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
+Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual `GET /api/export.csv` dan `GET /api/export.xlsx` mengikuti seluruh filter dan scope pencarian. DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
 
 ### Pencarian dan pagination aktual
 
@@ -23,7 +23,15 @@ Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bil
 
 Adanya `page` atau `page_size` mengaktifkan respons `{items,page,page_size,total,pages,classifications,subsections,years}`. Urutan berdasarkan createdAt terbaru lalu id menaik; halaman berlebih diarahkan ke halaman terakhir. Hasil kosong memiliki total 0, page 1 dan pages 1. Parameter tidak valid ditolak 422. `years` hanya berasal dari arsip yang boleh dilihat pengguna, sebelum filter pencarian.
 
-Tanpa kedua parameter pagination, kontrak daftar tanpa halaman tetap dipertahankan untuk dashboard/disposisi. Store saat ini masih memuat dataset lengkap ke memori: ini pembatasan respons daftar, belum pagination/query SQL. `GET /api/export.csv` menerima delapan kriteria yang sama dan mengekspor seluruh hasil berizin, mengabaikan parameter halaman.
+Tanpa kedua parameter pagination, kontrak daftar tanpa halaman tetap dipertahankan untuk dashboard/disposisi. Store saat ini masih memuat dataset lengkap ke memori: ini pembatasan respons daftar, belum pagination/query SQL.
+
+### Ekspor aktual
+
+`GET /api/export.csv` dan `GET /api/export.xlsx` menerima delapan kriteria yang sama, mengekspor seluruh hasil berizin dan mengabaikan parameter halaman. Urutan sama dengan daftar paginasi: waktu pencatatan terbaru, lalu id menaik. Keduanya dicatat sebagai event `export` dengan jumlah data dan format; tanpa isi metadata/instruksi dalam audit. Query tidak valid ditolak 422 dan tanpa sesi ditolak 401.
+
+Kolom: Jenis, Nomor, Tanggal, Asal, Tujuan, Perihal, Klasifikasi, Subbagian, Status disposisi. Kolom terakhir berisi status unik dari semua disposisi arsip, dipisah titik koma; tanpa penugasan ditulis `Tanpa disposisi`. Filter status mencocokkan minimal satu disposisi, sedangkan kolom ekspor tetap merangkum semua status. Instruksi dan catatan tindak lanjut tidak diekspor.
+
+XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. Semua nilai ditulis sebagai tipe String untuk mempertahankan nomor/tanggal ISO dan mencegah interpretasi formula. CSV memakai UTF-8 BOM, kutip standar, CRLF, serta awalan apostrof untuk teks yang berpotensi formula (termasuk setelah whitespace). Hasil kosong API tetap menghasilkan header saja. XLSX dibuat dalam memori; uji 1.300 rekaman sintetis bukan bukti performa/resource VPS.
 
 ## Publik
 
@@ -44,7 +52,7 @@ Tanpa kedua parameter pagination, kontrak daftar tanpa halaman tetap dipertahank
 - `PATCH /api/archives/{id}` — hanya peran pengelola yang berwenang; perubahan tercatat.
 - `POST /api/archives/{id}/files` — pengunggah yang berwenang membuat sesi unggah/unggah berkas.
 - `GET /api/archives/{id}/files/{fileId}/download` — server memeriksa izin dan mengeluarkan akses singkat/stream privat.
-- `POST /api/archives/export` — hasil XLSX dibatasi pada rekaman yang terlihat dan field yang diizinkan.
+- `GET /api/export.csv`, `GET /api/export.xlsx` — hasil pencarian berizin, seluruh halaman, dengan audit.
 - `DELETE /api/archives/{id}` — penghapusan logis/admin sesuai kebijakan yang kelak disahkan; tidak ada hard delete umum.
 
 ## Disposisi

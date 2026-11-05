@@ -5,7 +5,7 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
   if(!wide)filters.subsection='';state.filters=filters;
   const options=(items,value,empty)=>`<option value="">${empty}</option>`+items.map(item=>`<option value="${esc(item)}" ${item===value?'selected':''}>${esc(item)}</option>`).join('');
   const years=[...new Set([filters.year,String(new Date().getFullYear()),...state.archives.map(item=>item.letterDate?.slice(0,4))].filter(Boolean))].sort().reverse();
-  root.innerHTML=`<div class="title-row archive-page-heading"><div><div class="eyebrow">Pusat dokumen</div><h1>Arsip surat</h1></div><div class="archive-header-actions"><a class="btn btn-soft" id="archiveExport" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor CSV</a>${canRecord()?'<button class="btn btn-primary" id="addArchive">+ Tambah arsip</button>':''}</div></div>
+  root.innerHTML=`<div class="title-row archive-page-heading"><div><div class="eyebrow">Pusat dokumen</div><h1>Arsip surat</h1></div><div class="archive-header-actions"><a class="btn btn-soft" id="archiveExport" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor CSV</a><a class="btn btn-soft" id="archiveExportXlsx" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor Excel (.xlsx)</a>${canRecord()?'<button class="btn btn-primary" id="addArchive">+ Tambah arsip</button>':''}</div></div>
   <section class="panel"><form id="archiveSearchForm" role="search" aria-label="Filter arsip surat"><fieldset class="archive-filter-fields"><legend class="sr-only">Kriteria pencarian arsip</legend><div class="archive-basic-grid">
   <div class="field"><label for="search">Kata kunci</label><input id="search" name="q" type="search" maxlength="200" value="${esc(filters.q)}" placeholder="Nomor, perihal, asal atau tujuan"></div>
   <div class="field"><label for="type">Jenis surat</label><select id="type" name="type"><option value="">Semua jenis</option><option value="incoming" ${filters.type==='incoming'?'selected':''}>Surat masuk</option><option value="outgoing" ${filters.type==='outgoing'?'selected':''}>Surat keluar</option></select></div>
@@ -18,7 +18,7 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
   <div class="field"><label for="archiveTo">Tanggal surat sampai</label><input id="archiveTo" name="to" type="date" value="${esc(filters.to)}"></div></div></details>
   <div class="archive-filter-actions"><span class="muted">Semua kriteria diterapkan bersamaan.</span><button type="button" class="btn btn-soft" id="reset">Reset filter</button><button type="submit" class="btn btn-primary" id="applyArchiveFilters">Terapkan</button></div></fieldset></form>
   <p id="archiveFilterError" class="archive-edit-error" role="alert" hidden></p><div id="archiveResults" aria-busy="true">${loading()}</div></section>`;
-  const form=root.querySelector('#archiveSearchForm'),results=root.querySelector('#archiveResults'),error=root.querySelector('#archiveFilterError'),exportLink=root.querySelector('#archiveExport');
+  const form=root.querySelector('#archiveSearchForm'),results=root.querySelector('#archiveResults'),error=root.querySelector('#archiveFilterError'),exports=[root.querySelector('#archiveExport'),root.querySelector('#archiveExportXlsx')];
   let sequence=0,lastResult=null;
   const current=()=>isCurrent()&&root.querySelector('#archiveSearchForm')===form;
   const params=()=>new URLSearchParams(Object.entries(state.filters).filter(([,value])=>value));
@@ -31,13 +31,13 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
   }
   function paint(data){
     const first=data.total?(data.page-1)*data.page_size+1:0,last=Math.min(data.total,data.page*data.page_size);
-    results.innerHTML=`<p class="archive-result-summary" role="status">${data.total?`Menampilkan ${first}–${last} dari ${data.total} arsip`:'Tidak ada arsip yang sesuai filter.'}</p>${data.items.length?rowsHtml(data.items):'<div class="empty">Coba ubah kriteria atau gunakan Reset filter.</div>'}<div class="archive-pagination"><label for="archivePageSize">Per halaman <select id="archivePageSize">${[10,25,50,100].map(size=>`<option ${size===data.page_size?'selected':''}>${size}</option>`).join('')}</select></label><span>Halaman ${data.page} dari ${data.pages}</span><div><button class="btn btn-soft" id="archivePrevious" ${data.page<=1?'disabled':''}>Sebelumnya</button><button class="btn btn-soft" id="archiveNext" ${data.page>=data.pages?'disabled':''}>Berikutnya</button></div></div>`;
+    results.innerHTML=`<p class="archive-result-summary" role="status">${data.total?`Menampilkan ${first}–${last} dari ${data.total} arsip`:'Tidak ada arsip yang sesuai filter.'}</p><p class="muted archive-sort-hint">Urutan: waktu pencatatan terbaru. Ekspor mengikuti urutan yang sama.</p>${data.items.length?rowsHtml(data.items):'<div class="empty">Coba ubah kriteria atau gunakan Reset filter.</div>'}<div class="archive-pagination"><label for="archivePageSize">Per halaman <select id="archivePageSize">${[10,25,50,100].map(size=>`<option ${size===data.page_size?'selected':''}>${size}</option>`).join('')}</select></label><span>Halaman ${data.page} dari ${data.pages}</span><div><button class="btn btn-soft" id="archivePrevious" ${data.page<=1?'disabled':''}>Sebelumnya</button><button class="btn btn-soft" id="archiveNext" ${data.page>=data.pages?'disabled':''}>Berikutnya</button></div></div>`;
     bindActions();root.querySelector('#archivePrevious').onclick=()=>load(data.page-1);root.querySelector('#archiveNext').onclick=()=>load(data.page+1);
     root.querySelector('#archivePageSize').onchange=event=>{state.archivePageSize=Number(event.target.value);load(1);};
   }
   async function load(page=state.archivePage||1){
     const request=++sequence,query=params();query.set('page',String(page));query.set('page_size',String(state.archivePageSize||25));
-    error.hidden=true;exportLink.removeAttribute('href');exportLink.setAttribute('aria-disabled','true');exportLink.tabIndex=-1;busy(true);
+    error.hidden=true;for(const link of exports){link.removeAttribute('href');link.setAttribute('aria-disabled','true');link.tabIndex=-1;}busy(true);
     try{
       const data=await api('/api/archives?'+query);
       if(request!==sequence||!current())return;
@@ -46,7 +46,7 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
       if(Array.isArray(data.classifications)){state.classifications=data.classifications;form.elements.classification.innerHTML=options(data.classifications,form.elements.classification.value,'Semua klasifikasi');}
       if(Array.isArray(data.years)){const selected=form.elements.year.value;form.elements.year.innerHTML=options([...new Set([selected,...data.years].filter(Boolean))].sort().reverse(),selected,'Semua tahun');}
       const criteria=new URLSearchParams(query);criteria.delete('page');criteria.delete('page_size');
-      if(data.total){exportLink.href='/api/export.csv?'+criteria;exportLink.removeAttribute('aria-disabled');exportLink.tabIndex=0;}
+      if(data.total)exports.forEach((link,index)=>{link.href=`/api/export.${index?'xlsx':'csv'}?`+criteria;link.removeAttribute('aria-disabled');link.tabIndex=0;});
       paint(data);
     }catch(failure){
       if(request!==sequence||!current())return;

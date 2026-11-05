@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {readSheet} from 'read-excel-file/node';
+import {archiveCsv,archiveXlsx,archiveExportRows,exportHeaders} from '../lib/archive-export.mjs';
+
+let checks=0;const pass=message=>{checks++;console.log('✓ '+message);};
+const make=(id,extra={})=>({id,type:'incoming',number:'0001/AT/2026',letterDate:'2026-11-05',origin:'Bawaslu Aceh Timur',destination:'',subject:'Uji “arsip”, baris satu\nbaris dua & <teks> 🇮🇩',classification:'Administrasi umum',subsection:'Hukum',createdAt:'2026-11-05T00:00:00Z',dispositions:[],...extra});
+const records=[make('b'),make('a',{dispositions:[{status:'Selesai',instruction:'PRIVATE_INSTRUCTION'},{status:'Sedang diproses'},{status:'Selesai'}]}),make('c',{createdAt:'2026-11-06T00:00:00Z',type:'outgoing'})];
+const original=JSON.stringify(records);const grid=archiveExportRows(records);
+assert.deepEqual(grid.map(row=>row[8]),['Tanpa disposisi','Sedang diproses; Selesai','Tanpa disposisi']);assert.equal(grid[0][0],'Keluar');assert.equal(JSON.stringify(records),original);pass('export orders latest then ID without mutating archives and deduplicates statuses');
+const workbook=await archiveXlsx(records);assert.ok(Buffer.isBuffer(workbook));const read=await readSheet(workbook,{trim:false});
+assert.deepEqual(read[0],exportHeaders);assert.equal(read.length,4);assert.equal(read[1][1],'0001/AT/2026');assert.equal(read[1][2],'2026-11-05');pass('independent XLSX reader opens workbook with textual identifiers dates and all columns');
+assert.equal(read[1][5],records[0].subject);assert.equal(read[2][8],'Sedang diproses; Selesai');assert.ok(!JSON.stringify(read).includes('PRIVATE_INSTRUCTION'));pass('XLSX preserves Unicode punctuation multiline content while omitting instructions');
+const probes=['=1+1','+SUM(A1)','-1+2','@SUM(A1)','\t=1+1',' =1+1','https://example.invalid','00123'];
+const probeRecords=probes.map((subject,index)=>make(String(index),{subject}));const probeXlsx=await readSheet(await archiveXlsx(probeRecords),{trim:false});
+assert.deepEqual(probeXlsx.slice(1).map(row=>row[5]),probes);pass('formula-like text URLs and leading zeros remain literal XLSX strings');
+const csv=archiveCsv(probeRecords);assert.ok(csv.startsWith('\uFEFF"Jenis","Nomor"'));for(const value of probes.slice(0,6))assert.ok(csv.includes('"\''+value+'"'));assert.ok(csv.includes('"https://example.invalid"'));pass('CSV uses UTF-8 BOM and neutralizes formulas even after leading whitespace');
+const multiline=archiveCsv(records);assert.ok(multiline.includes('"Uji “arsip”, baris satu\nbaris dua & <teks> 🇮🇩"'));assert.ok(archiveCsv([make('q',{subject:'Kata "kutip"'})]).includes('"Kata ""kutip"""'));assert.ok(multiline.includes('"Status disposisi"'));pass('CSV quotes embedded commas line breaks and double quotes with status column');
+assert.deepEqual(await readSheet(await archiveXlsx([])),[exportHeaders]);pass('empty authorized result remains a valid header-only workbook');
+const many=Array.from({length:1300},(_,index)=>make('archive_'+String(index).padStart(4,'0'),{number:'TEST/'+index}));const manyRows=await readSheet(await archiveXlsx(many));assert.equal(manyRows.length,1301);assert.equal(new Set(manyRows.slice(1).map(row=>row[1])).size,1300);pass('1300 synthetic archives round trip without truncation or duplication');
+console.log(`${checks} export checks passed.`);
