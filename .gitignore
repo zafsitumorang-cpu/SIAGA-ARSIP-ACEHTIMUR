@@ -4,3 +4,6 @@ data/files/*
 data/backups/
 node_modules/
 .env
+
+.env.*
+!.env.example

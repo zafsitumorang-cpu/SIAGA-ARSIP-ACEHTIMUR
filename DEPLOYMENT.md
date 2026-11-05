@@ -2,9 +2,10 @@
 
 ## Pilot
 
-Jalankan langsung dengan Node.js 20+:
+Jalankan demo langsung dengan Node.js 22+ (disarankan 24 LTS):
 
 ```bash
+npm ci
 npm start
 ```
 
@@ -19,8 +20,8 @@ Gunakan volume persisten untuk `data/`. Jangan menjalankan pilot dengan data pro
 
 ## Produksi
 
-Pilih layanan terkelola yang disetujui Bawaslu/pejabat TI. Konfigurasikan domain HTTPS, volume data privat, backup di lokasi terpisah, monitoring, rotasi kredensial, dan pembatasan akses admin. Untuk skala dan tata kelola produksi, migrasikan penyimpanan JSON MVP ke PostgreSQL dan object storage privat sesuai `ARCHITECTURE.md`.
+Ikuti [runbook VPS](deploy/README.md) untuk PostgreSQL, bootstrap admin, environment produksi, systemd dan contoh Nginx. Set DEMO_MODE=false secara eksplisit; Dockerfile default masih menyalakan demo Railway. Produksi menolak startup tanpa DATABASE_URL dan APP_ORIGIN HTTPS. Simpan berkas privat di direktori data persisten; port aplikasi/database hanya lokal. Konfigurasikan HTTPS, backup terenkripsi di lokasi terpisah, monitoring dan akses admin sebelum arsip nyata. Contoh konfigurasi belum dipasang di VPS pengguna.
 
 ## Health check
 
-`GET /api/public/stats` dapat digunakan sebagai pemeriksaan dasar bahwa aplikasi merespons. Endpoint ini hanya mengembalikan angka agregat.
+`GET /api/health` mengembalikan `{ "ok": true }` setelah akses database berhasil. Ini bukan pemeriksaan kapasitas disk, integritas file atau backup. `GET /api/config` hanya menunjukkan mode demo; statistik publik tetap agregat.

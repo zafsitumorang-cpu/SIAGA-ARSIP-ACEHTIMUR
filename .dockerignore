@@ -1,0 +1,11 @@
+.git
+node_modules
+.env
+.env.*
+!.env.example
+data/*
+!data/files
+data/files/*
+!data/files/.gitkeep
+backups
+*.log

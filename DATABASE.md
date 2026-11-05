@@ -1,6 +1,12 @@
 # DATABASE — SIAGA ARSIP
 
-Skema konseptual; tipe SQL dan provider ditentukan saat pilihan stack disepakati. Semua entitas menggunakan ID stabil dan cap waktu UTC; UI menampilkan waktu Asia/Jakarta. Berkas disimpan di object storage privat, bukan sebagai blob publik di database.
+## Implementasi saat ini — 5 November 2026
+
+Schema PostgreSQL v1 tersedia di [db/schema.sql](db/schema.sql), diakses melalui [lib/store.mjs](lib/store.mjs). Tabel aktual: siaga_users, siaga_archives, siaga_dispositions, siaga_audit, siaga_sessions, siaga_classifications, siaga_categories dan siaga_meta. FK mengikat pencatat/arsip, disposisi/arsip dan sesi/pengguna. Atribut lainnya masih JSONB; riwayat file/status tersimpan di payload, bukan seluruh tabel konseptual terpisah. Transaksi dan advisory lock menjaga perubahan antarproses; aplikasi masih memuat seluruh dataset, sehingga pagination/query SQL dan uji beban diperlukan. CLI migrate/bootstrap/import/export dan batas pemulihannya dijelaskan di [deploy/README.md](deploy/README.md).
+
+## Skema sasaran
+
+Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entitas menggunakan ID stabil dan cap waktu UTC; format waktu UI mengikuti browser. Berkas saat ini berada di direktori privat, bukan blob publik di database; object storage adalah opsi pengembangan.
 
 ## Entitas utama
 

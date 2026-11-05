@@ -1,0 +1,15 @@
+BEGIN;
+CREATE TABLE IF NOT EXISTS siaga_meta (id text PRIMARY KEY, payload jsonb NOT NULL);
+CREATE TABLE IF NOT EXISTS siaga_users (id text PRIMARY KEY, username text NOT NULL UNIQUE, payload jsonb NOT NULL);
+CREATE TABLE IF NOT EXISTS siaga_archives (id text PRIMARY KEY, subsection text NOT NULL, recorded_by text NOT NULL REFERENCES siaga_users(id), payload jsonb NOT NULL);
+CREATE INDEX IF NOT EXISTS siaga_archives_scope ON siaga_archives(subsection);
+CREATE TABLE IF NOT EXISTS siaga_dispositions (id text PRIMARY KEY, archive_id text NOT NULL REFERENCES siaga_archives(id), payload jsonb NOT NULL);
+CREATE INDEX IF NOT EXISTS siaga_dispositions_archive ON siaga_dispositions(archive_id);
+CREATE TABLE IF NOT EXISTS siaga_audit (id text PRIMARY KEY, occurred_at timestamptz NOT NULL, payload jsonb NOT NULL);
+CREATE INDEX IF NOT EXISTS siaga_audit_time ON siaga_audit(occurred_at DESC);
+CREATE TABLE IF NOT EXISTS siaga_sessions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES siaga_users(id), expires_at timestamptz NOT NULL, payload jsonb NOT NULL);
+CREATE INDEX IF NOT EXISTS siaga_sessions_expiry ON siaga_sessions(expires_at);
+CREATE TABLE IF NOT EXISTS siaga_classifications (id text PRIMARY KEY, payload jsonb NOT NULL);
+CREATE TABLE IF NOT EXISTS siaga_categories (id text PRIMARY KEY, payload jsonb NOT NULL);
+INSERT INTO siaga_meta(id,payload) VALUES ('schema_version','1') ON CONFLICT DO NOTHING;
+COMMIT;

@@ -1,5 +1,9 @@
 # ARCHITECTURE — SIAGA ARSIP
 
+## Implementasi saat ini — 5 November 2026
+
+Backend memakai Node.js HTTP bawaan, bukan Laravel; frontend JavaScript/CSS. Produksi mewajibkan PostgreSQL melalui `lib/store.mjs` dan schema `db/schema.sql`. Entitas terpisah memakai FK/index inti dan atribut JSONB; query masih memuat dataset dan memakai lock transaksi bersama, belum pencarian SQL berhalaman. JSON tetap tersedia untuk demo lokal. Berkas disimpan privat di DATA_DIR/files, diakses melalui aplikasi setelah otorisasi; object storage/worker belum diterapkan. Rancangan sasaran di bawah tidak berarti seluruh komponen sudah tersedia. Runbook aktual: [deploy/README.md](deploy/README.md).
+
 ## Rekomendasi awal
 
 Gunakan aplikasi web modular (awal: modular monolith) dengan API backend, basis data relasional, object storage privat untuk dokumen, dan worker terpisah untuk OCR/email. Pendekatan ini cukup sederhana untuk pilot sekitar 1.300 rekaman, namun menjaga batas modul untuk perluasan. Vendor dan bahasa/framework belum dipilih.

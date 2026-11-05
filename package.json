@@ -8,9 +8,19 @@
     "start": "node app.mjs",
     "dev": "node --watch app.mjs",
     "backup": "node scripts/backup.mjs",
-    "uat": "node scripts/uat.mjs"
+    "uat": "node scripts/uat.mjs",
+    "db:migrate": "node scripts/database.mjs migrate",
+    "db:bootstrap": "node scripts/database.mjs bootstrap",
+    "db:import": "node scripts/database.mjs import",
+    "db:export": "node scripts/database.mjs export",
+    "test:security": "node scripts/security-tests.mjs",
+    "test:database": "node scripts/database-tests.mjs"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
+  },
+  "dependencies": {
+    "file-type": "^22.3.0",
+    "pg": "^8.23.1"
   }
 }

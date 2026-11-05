@@ -1,0 +1,22 @@
+[Unit]
+Description=SIAGA ARSIP
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=siaga
+Group=siaga
+WorkingDirectory=/opt/siaga/app
+EnvironmentFile=/etc/siaga/siaga.env
+ExecStart=/usr/bin/node /opt/siaga/app/app.mjs
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/siaga
+
+[Install]
+WantedBy=multi-user.target

@@ -4,17 +4,22 @@ Kumpulan ini berisi rancangan awal sistem tata kelola arsip digital untuk Bawasl
 
 ## Menjalankan MVP uji coba
 
-MVP runnable tersedia di `app.mjs` dan memakai Node.js 20+ tanpa dependensi eksternal. Data uji disimpan lokal di `data/data.json` dan dibuat otomatis saat pertama dijalankan.
+Implementasi tersedia di `app.mjs` dengan Node.js 22+ (disarankan 24 LTS), frontend JavaScript/CSS, serta dependensi `pg` dan `file-type`. Ini bukan aplikasi Laravel. Mode demo menyimpan data lokal di `data/data.json` dan membuat data dummy saat database belum ada; mode produksi memerlukan PostgreSQL dan tidak membuat akun demo.
 
 ```bash
+npm ci
 npm start
 ```
 
-Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Untuk produksi, pindahkan penyimpanan ke database relasional dan object storage privat sesuai `ARCHITECTURE.md`.
+Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Jangan memakai akun atau data demo untuk arsip nyata. Mode produksi, migrasi PostgreSQL dan bootstrap admin dijelaskan di [deploy/README.md](deploy/README.md).
 
 Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md). Admin dapat membuat akun `recorder`, `uploader`, atau pegawai dari menu Pengaturan dan menetapkan satu subbagian.
 
 Backup lokal tersedia melalui `npm run backup`, UAT otomatis melalui `npm run uat`, dan panduan deployment ada di [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## Status pengembangan menuju produksi
+
+Paket 5 November 2026 memperkuat scope subbagian, autentikasi/sesi, validasi unggah, transaksi PostgreSQL, impor terkendali dan backup dengan manifest. GitHub Actions menjalankan UAT serta regresi keamanan/database. Ini belum menyatakan siap peluncuran: pemasangan VPS, HTTPS, backup offsite, uji pemulihan menyeluruh dan penerimaan fitur masih perlu diselesaikan. Lihat pembaruan [LAUNCH_READINESS.md](LAUNCH_READINESS.md) dan [PRODUCTION_PLAN.md](PRODUCTION_PLAN.md).
 
 ## Mulai membaca
 

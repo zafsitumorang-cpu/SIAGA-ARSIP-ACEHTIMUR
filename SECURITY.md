@@ -1,5 +1,16 @@
 # SECURITY — SIAGA ARSIP
 
+## Kontrol kode saat ini — 5 November 2026
+
+- Password scrypt dengan salt unik (N=32768, r=8, p=3); SHA-256 lama hanya diterima untuk upgrade login di demo. Impor produksi mengganti password dan menonaktifkan akun lama, kecuali admin bootstrap pilihan.
+- Token sesi acak disimpan sebagai hash, kedaluwarsa delapan jam, bertahan saat restart, dicabut saat logout/perubahan akun. Produksi mewajibkan PostgreSQL, APP_ORIGIN HTTPS dan cookie Secure/HttpOnly/SameSite=Lax; tidak melakukan seed demo.
+- Mutasi API memerlukan X-SIAGA-Request: 1; Origin dan Sec-Fetch-Site diperiksa. Rate limiter login per proses, header CSP dan header keamanan lain diterapkan. Nginx satu VPS membuat alamat socket sama bagi pengguna; batas per username tetap berlaku, batas IP gabungan perlu dipantau.
+- Scope tulis pencatat dan pembacaan/pembaruan disposisi diperiksa di server. Penugasan dibatasi pada subbagian pemilik arsip sampai kebijakan berbagi ditetapkan.
+- Body dibatasi sebelum buffering; unggah maksimal 15 MB dengan pemeriksaan signature/ekstensi/MIME dan checksum SHA-256. Ini belum pemindaian malware.
+- Audit baca/detail ditambahkan; instruksi disposisi baru tidak disalin ke audit. Pada PostgreSQL, aplikasi menambahkan event tanpa memperbarui event lama. Role database pemilik masih dapat mengubah tabel; audit belum tamper-proof dan log lama saat impor perlu ditinjau.
+
+Regresi otomatis: `npm run test:security`; pengujian PostgreSQL memerlukan PG_TEST_URL lokal. Kontrol VPS, HTTPS nyata, offsite backup, pemindaian malware dan kebijakan retensi belum diverifikasi. Daftar di bawah tetap merupakan sasaran pilot, bukan klaim semuanya sudah dipasang.
+
 ## Tujuan dan data
 
 Sistem memuat korespondensi resmi, berkas lampiran, instruksi disposisi, akun pegawai, dan audit aktivitas. Sebagian arsip lanjutan yang disebutkan pengguna dapat memuat data pribadi atau informasi sensitif. Dokumen asli bersifat privat secara default. Halaman publik hanya memuat hitungan agregat surat masuk/keluar.

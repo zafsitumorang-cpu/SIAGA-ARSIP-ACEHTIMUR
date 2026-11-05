@@ -1,6 +1,10 @@
 # API — SIAGA ARSIP
 
-Kontrak konseptual REST/JSON. Jalur di bawah ini juga dipakai oleh MVP Node.js untuk uji coba; pada migrasi Laravel, prefix autentikasi dapat disesuaikan tanpa mengubah aturan bisnis. Semua endpoint internal menerapkan autentikasi, otorisasi per aksi, dan scope subbagian di server.
+Kontrak konseptual REST/JSON dan catatan implementasi Node.js. Tidak ada migrasi Laravel pada paket saat ini. Semua endpoint internal menerapkan autentikasi, otorisasi per aksi, dan scope subbagian di server.
+
+## Kontrak aktual tahap fondasi — 5 November 2026
+
+Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` dengan q/type/year/status mengikuti scope pencarian; XLSX belum ada. Filter classification/page, PATCH/DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
 
 ## Publik
 
