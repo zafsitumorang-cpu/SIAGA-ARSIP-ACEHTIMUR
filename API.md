@@ -108,3 +108,11 @@ Permintaan pertama yang berhasil menghasilkan 201; pengulangan kunci/payload sam
 Receipt berupa hash kunci dan payload disimpan dalam JSONB arsip, tidak dikembalikan lewat payload publik/internal daftar/detail. Receipt bertahan setelah restart; transaksi store menjaga dua retry bersamaan menghasilkan satu perubahan. Koreksi metadata/penggantian berkas yang lebih baru tidak diputar balik saat replay. Tidak ada perubahan schema SQL atau perluasan izin.
 
 Perlindungan mengikuti kunci operasi, bukan keunikan nomor surat atau checksum global. Kunci/draft form saat ini hanya selama dialog terbuka; reload browser atau menutup lalu memulai pencatatan baru membuat operasi baru. Jika status simpan belum pasti, UI meminta retry/periksa daftar sebelum memulai lagi. Pemulihan draft lintas reload dan rekonsiliasi file yatim karena kegagalan commit DB tetap pekerjaan terpisah (07.1/02.4).
+
+### Versi berkas — TODO 02.2
+
+Payload documents memuat versi dengan `available`, `uploadedByName` serta provenance. `POST /api/archives/{id}/files` tetap menerima upload lama; tambahan opsional: `documentId` (default document_primary), `reason` dan `expectedVersionId` (ID aktif yang dibaca klien, null untuk awal). Ketidaksesuaian versi aktif menghasilkan 409 sebelum binary ditulis. Alasan yang disediakan harus berisi 1–1000 karakter. UI penggantian meminta alasan; klien lama boleh tidak menyertakannya dan histori menyatakan tidak dicatat.
+
+Setiap upload menambah versi immutable, pengunggah/waktu, checksum dan cermin primary flat. `GET /api/files/{fileId}` kini melayani versi terdahulu juga, dengan nama/tipe versi itu dan scope arsip yang sama; anonim 401, rekaman di luar scope 404. Tidak ada URL berkas publik.
+
+Untuk memakai versi lama sebagai revisi baru, POST endpoint files dengan `sourceVersionId`, `documentId`, `expectedVersionId` dan `reason`. Binary sumber harus menjadi versi dalam dokumen itu; hasil memakai ID baru dan sourceVersionId untuk lineage, tanpa menulis ulang riwayat. Admin/uploader yang berwenang dapat mengganti/memulihkan; role pembaca hanya melihat/unduh. Receipt replay diperiksa sebelum konflik expectedVersionId sehingga respons sukses terputus aman diulang.

@@ -18,7 +18,7 @@ Field flat fileId/fileName/fileMime/fileSize/fileChecksum tetap menjadi cermin p
 
 `archiveFileIds()` menghimpun referensi flat, histori dan seluruh versi lampiran untuk pemeriksaan integritas yang sudah ada. Ini menjaga kompatibilitas job backup lokal setelah format berkembang; tidak memasang backup/offsite/restore baru. Referensi legacy tidak valid tidak dipromosikan menjadi URL download, tetapi tetap dipertahankan dalam daftar pemeriksaan agar tidak disembunyikan sebagai backup lengkap.
 
-02.2 menambahkan writer/UI riwayat dan download lama berizin. 02.3 mengaktifkan lampiran independen. 02.4 menangani staging/commit binary dan rekonsiliasi. Masing-masing memiliki tes, commit dan gerbang CI/demo terpisah. Rilis memberikan header publik X-SIAGA-Revision berisi SHA checkout (unknown bila Git tidak tersedia), tanpa akun/data, untuk membuktikan pemasangan setiap langkah tanpa login demo.
+02.2 menyediakan writer/UI riwayat dan download lama berizin. Writer mencatat pengunggah/waktu/alasan, menjaga cermin flat, dan memakai expectedVersionId untuk mencegah penimpaan tab usang. Penggunaan versi lama membuat binary/versi baru dengan sourceVersionId. 02.3 mengaktifkan lampiran independen. 02.4 menangani staging/commit binary dan rekonsiliasi. Masing-masing memiliki tes, commit dan gerbang CI/demo terpisah. Rilis memberikan header publik X-SIAGA-Revision berisi SHA checkout (unknown bila HEAD tidak tersedia), tanpa akun/data, untuk membuktikan pemasangan setiap langkah tanpa login demo.
 
 ## Batas aplikasi dan pekerjaan kantor
 

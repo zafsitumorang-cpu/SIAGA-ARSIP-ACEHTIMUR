@@ -120,6 +120,12 @@
 .archive-sort-hint{font-size:12px;margin:-8px 0 18px}
 .archive-create-fields{border:0;margin:0;padding:0;min-width:0}
 .archive-create-legend{font-size:13px;font-weight:600;margin-bottom:14px}
+.archive-files-dialog{max-width:1000px!important}
+.archive-document{border-top:1px solid #e5e9ef;padding:16px 0;margin-top:12px}
+.archive-document h4{margin:0 0 8px}
+.version-upload-form{margin-top:16px}
+.version-error[hidden]{display:none!important}
+.version-upload-form .actions{flex-wrap:wrap}
 #archiveForm .actions{flex-wrap:wrap}
 #archiveForm [hidden]{display:none!important}
 #archiveForm fieldset:disabled{opacity:.7}

@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import {fileTypeFromBuffer} from 'file-type';
 import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
@@ -10,7 +11,7 @@ import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
 import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs';
 import {archiveCsv,archiveXlsx} from './lib/archive-export.mjs';
 import {requestReceipt,matchesReceipt} from './lib/request-receipt.mjs';
-import {archiveDocuments} from './lib/archive-files.mjs';
+import {archiveDocuments,archiveFileIds,appendArchiveVersion,validFileId} from './lib/archive-files.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -75,7 +76,7 @@ function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
   return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
 }
-function archivePayload(a) { const {creationReceipt,uploadReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:validFileId(version.fileId)&&existsSync(path.join(FILE_DIR,version.fileId))}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && validFileId(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -179,14 +180,35 @@ async function route(req, res) {
     }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/files')&&req.method==='POST'){
       const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a)||!['admin','uploader'].includes(u.role))return send(res,403,{error:'Anda tidak berwenang mengunggah berkas ini.'});
-      const file=await validateUpload(await body(req));
-      const receipt=requestReceipt(req,u.id,'archive:upload:'+a.id,{name:file.name,mime:file.mime,size:file.raw.length,checksum:file.checksum});
+      const b=await body(req),documentId=b.documentId||'document_primary';
+      if(typeof documentId!=='string')fail(422,'Dokumen tidak valid.');
+      const document=archiveDocuments(a).find(item=>item.id===documentId);
+      if(!document&&documentId!=='document_primary')fail(404,'Dokumen tidak ditemukan.');
+      let input=b;
+      if(b.sourceVersionId){
+        const source=document?.versions.find(version=>version.id===b.sourceVersionId);
+        if(!source||!validFileId(source.fileId))fail(404,'Versi sumber tidak ditemukan.');
+        let raw;try{raw=await fs.readFile(path.join(FILE_DIR,source.fileId));}catch{fail(404,'Berkas sumber belum tersedia.');}
+        let actual;try{actual=await fileTypeFromBuffer(raw);}catch{fail(422,'Isi berkas sumber tidak valid.');}input={fileName:source.fileName,mimeType:actual?.mime,data:raw.toString('base64')};
+      }
+      const file=await validateUpload(input);
+      const reason=b.reason===undefined?null:text(b.reason,'Alasan perubahan',1000,true);
+      const fingerprint={name:file.name,mime:file.mime,size:file.raw.length,checksum:file.checksum,...(b.reason!==undefined?{reason}:{}),...(Object.hasOwn(b,'expectedVersionId')?{expectedVersionId:b.expectedVersionId}:{}),...(b.sourceVersionId?{sourceVersionId:b.sourceVersionId}:{})};
+      const receipt=requestReceipt(req,u.id,'archive:upload:'+a.id+(documentId==='document_primary'?'':':'+documentId),fingerprint);
       if(receipt&&(a.uploadReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
+      if(Object.hasOwn(b,'expectedVersionId')&&b.expectedVersionId!==(document?.currentVersionId||null))fail(409,'Versi aktif sudah berubah. Muat ulang riwayat sebelum mengganti berkas.');
       const fileId=id('file');await fs.writeFile(path.join(FILE_DIR,fileId),file.raw,{mode:0o600,flag:'wx'});
-      a.fileVersions||=[];if(a.fileId)a.fileVersions.push({fileId:a.fileId,fileName:a.fileName,mime:a.fileMime,size:a.fileSize,checksum:a.fileChecksum});
-      Object.assign(a,{fileId,fileName:file.name,fileMime:file.mime,fileSize:file.raw.length,fileChecksum:file.checksum});if(receipt)(a.uploadReceipts||=[]).push(receipt);audit(u.id,'upload','archive_file',fileId,a.number);await persist();return send(res,201,archivePayload(a));
+      appendArchiveVersion(a,documentId,file,{fileId,uploadedBy:u.id,uploadedAt:now(),reason,sourceVersionId:b.sourceVersionId||null});
+      if(receipt)(a.uploadReceipts||=[]).push(receipt);audit(u.id,'upload','archive_file',fileId,a.number);await persist();return send(res,201,archivePayload(a));
     }
-    if (pathname.startsWith('/api/files/') && req.method === 'GET') { const fileId = pathname.split('/')[3]; const a = db.archives.find(x => x.fileId === fileId); if (!a || !canSee(u, a)) return send(res, 404, { error: 'Berkas tidak ditemukan.' }); if(!/^file_[a-zA-Z0-9_-]+$/.test(fileId))return send(res,404,{error:'Berkas tidak ditemukan.'});const filePath = path.join(FILE_DIR, fileId); try { const data = await fs.readFile(filePath); audit(u.id, 'download', 'archive_file', fileId, a.number); await persist(); return send(res, 200, data, a.fileMime || 'application/pdf', { 'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(a.fileName||'arsip')}` }); } catch { return send(res, 404, { error: 'Berkas belum diunggah ke penyimpanan sistem.' }); } }
+    if(pathname.startsWith('/api/files/')&&req.method==='GET'){
+      const fileId=pathname.split('/')[3];if(!validFileId(fileId))fail(404,'Berkas tidak ditemukan.');
+      const archive=db.archives.find(item=>canSee(u,item)&&archiveFileIds(item).includes(fileId));if(!archive)fail(404,'Berkas tidak ditemukan.');
+      const version=archiveDocuments(archive).flatMap(document=>document.versions).find(item=>item.fileId===fileId);
+      let data;try{data=await fs.readFile(path.join(FILE_DIR,fileId));}catch{fail(404,'Berkas belum diunggah ke penyimpanan sistem.');}
+      audit(u.id,'download','archive_file',fileId,archive.number);await persist();
+      return send(res,200,data,version?.mime||'application/pdf',{'Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(version?.fileName||'arsip')}`});
+    }
     if (pathname.startsWith('/api/archives/') && pathname.endsWith('/dispositions') && req.method === 'POST') { if (!isWide(u)) return send(res, 403, { error: 'Hanya pimpinan atau admin yang dapat membuat disposisi.' }); const aid = pathname.split('/')[3]; const a = db.archives.find(x => x.id === aid); if (!a || !canSee(u, a)) return send(res, 404, { error: 'Arsip tidak ditemukan.' }); const b = await body(req);if(a.type!=='incoming')fail(422,'Disposisi hanya untuk surat masuk.');if(b.assignedSubsection!==a.subsection)fail(422,'Tujuan disposisi harus sesuai subbagian arsip.');if(b.assignedUserId&&!db.users.some(x=>x.id===b.assignedUserId&&x.active&&x.subsection===a.subsection))fail(422,'Penerima tidak valid.');text(b.instruction,'Instruksi',4000,true);const d = { id: id('disp'), assignedUserId: b.assignedUserId || '', assignedSubsection: b.assignedSubsection || '', instruction: b.instruction || '', status: 'Belum ditindaklanjuti', createdBy: u.id, createdAt: now(), updates: [] }; a.dispositions.push(d); db.notifications.push({ id: id('notif'), userId: d.assignedUserId, text: `Disposisi baru untuk ${a.number}`, read: false, createdAt: now() }); audit(u.id, 'create_disposition', 'archive', a.id, 'Disposisi dibuat'); await persist(); return send(res, 201, archivePayload(a)); }
     if (pathname.startsWith('/api/dispositions/') && pathname.endsWith('/status') && req.method === 'PATCH') { const did = pathname.split('/')[3]; const a = db.archives.find(x => x.dispositions.some(d => d.id === did)); const d = a?.dispositions.find(x => x.id === did); if (!a || !d || !canSee(u,a) || (!isWide(u) && d.assignedUserId !== u.id && d.assignedSubsection !== u.subsection)) return send(res, 403, { error: 'Anda tidak berwenang memperbarui disposisi ini.' }); const b = await body(req); if (!['Belum ditindaklanjuti', 'Sedang diproses', 'Selesai'].includes(b.status)) return send(res, 422, { error: 'Status tidak valid.' }); d.status = b.status; d.updates.push({ status: b.status, note: b.note || '', by: u.id, at: now() }); audit(u.id, 'update_disposition', 'disposition', did, b.status); await persist(); return send(res, 200, archivePayload(a)); }
     if (pathname === '/api/notifications' && req.method === 'GET') {

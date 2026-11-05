@@ -85,3 +85,9 @@ Gunakan arsip dummy/staging. Jangan menguji dengan arsip nyata. Deployment publi
 5. Pencatat tetap hanya mencatat subbagian sendiri dan tidak mengunggah; pengunggah/admin sesuai izin yang sudah berlaku. Uji keyboard dan tampilan HP.
 
 Bukti lokal: keamanan 187 pemeriksaan JSON/PostgreSQL, database 8, browser retry 10, regresi browser metadata 9 dan interaksi 15; UAT dasar 15 lulus. Petunjuk browser ada di tests/browser/README.md. Perlindungan ini berlaku untuk retry dengan kunci operasi sama; draft/kunci belum dipulihkan setelah reload/menutup dialog dan memulai operasi baru.
+
+## Uji berkas dan riwayat versi — 02.2
+
+Pada dummy, buka Arsip → Berkas & versi (atau Detail → Berkas & riwayat versi). Unggah v1, Ganti berkas dengan alasan menjadi v2, unduh v1 dan cocokkan isi/nama. Pastikan pengunggah/waktu/alasan tampil. Gunakan v1 sebagai versi baru: hasil v3 baru dengan riwayat v1/v2 utuh. Data legacy yang tidak mencatat aktor/waktu harus tertulis Tidak diketahui, file hilang tertulis belum tersedia.
+
+Simulasikan respons sukses upload terputus lalu retry; jumlah versi tetap satu untuk tindakan itu. Perubahan dari tab lain menghasilkan konflik dan mempertahankan draft sampai Muat ulang dipilih. Pegawai satu subbagian dapat melihat/unduh histori tanpa kontrol ganti; pegawai asing dan anonim ditolak server. Uji HP/keyboard. `npm run test:versions` menjalankan suite JSON serta PostgreSQL bila PG_TEST_URL lokal tersedia; browser: tests/browser/file-versions.cjs. Pelaksanaan UAT kantor belum diklaim oleh tersedianya skenario ini.
