@@ -51,7 +51,7 @@ log(){ printf '%s\n' "$*"; }
 run(){ "$@" >>"$log_file" 2>&1; }
 rollback(){
   local status="$?"
-  trap - EXIT INT TERM
+  trap - EXIT INT TERM HUP
   if [[ "$complete" != 1 ]]; then
     log 'Upgrade belum selesai; menjalankan pemulihan yang aman.'
     if [[ "$unit_created" = 1 ]]; then

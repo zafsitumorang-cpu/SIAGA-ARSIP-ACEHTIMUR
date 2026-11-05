@@ -32,3 +32,7 @@ Setelah upgrade berhasil dan pengguna mulai menulis ke PostgreSQL, kembali ke JS
 ## Setelah berhasil
 
 `systemctl is-active siaga`, health `{"ok":true}` dan config `{"demoMode":false}` adalah pemeriksaan awal. Ambil akses admin lewat Console privat. Pertahankan backup lama sampai pemulihan penuh diuji. Backup masih lokal; jadwal, salinan terenkripsi offsite, retensi, alert dan uji restore menyeluruh belum dipasang oleh skrip. Arsip dummy tidak dihapus otomatis. Lengkapi UAT/fitur dan gate LAUNCH_READINESS.md sebelum memakai arsip nyata.
+
+## Bukti pengujian dan batas
+
+`npm run test:migration` menguji placeholder, preservasi sumber/binary/checksum, penolakan file hilang/symlink, kredensial privat dan penolakan overwrite. Harness [tests/vps](../tests/vps/README.md) menguji importer/API dengan PostgreSQL 16 pada Ubuntu 24.04, transisi sukses dan rollback akibat start gagal/file hilang. Pengelola systemd dan edge HTTPS dimodelkan; unit divalidasi, tetapi pengujian tidak menggantikan verifikasi PID1 systemd, Caddy/TLS, firewall, restart server atau beban pada VPS nyata.
