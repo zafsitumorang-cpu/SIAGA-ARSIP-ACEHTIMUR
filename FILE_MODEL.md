@@ -20,6 +20,8 @@ Field flat fileId/fileName/fileMime/fileSize/fileChecksum tetap menjadi cermin p
 
 02.2 menyediakan writer/UI riwayat dan download lama berizin. Writer mencatat pengunggah/waktu/alasan, menjaga cermin flat, dan memakai expectedVersionId untuk mencegah penimpaan tab usang. Penggunaan versi lama membuat binary/versi baru dengan sourceVersionId. 02.3 mengaktifkan lampiran independen. 02.4 menangani staging/commit binary dan rekonsiliasi. Masing-masing memiliki tes, commit dan gerbang CI/demo terpisah. Rilis memberikan header publik X-SIAGA-Revision berisi SHA checkout (unknown bila HEAD tidak tersedia), tanpa akun/data, untuk membuktikan pemasangan setiap langkah tanpa login demo.
 
+Pada 02.3, form Tambah lampiran dan version writer memakai documentId independen; primary/lampiran lain tetap utuh. Placeholder primary tetap tersedia bila lampiran masuk terlebih dahulu. Normalisasi rollback tidak mewariskan fileUploadedBy/At lama kepada file flat baru yang belum dikenal canonical model; provenance file itu tetap unknown. Ini mencegah penebakan aktor/waktu ketika writer rilis lama tidak mengenal metadata versi baru.
+
 ## Batas aplikasi dan pekerjaan kantor
 
 Fitur tidak membuktikan scan telah benar, surat sudah sah, SOP disahkan, operator dilatih atau inventaris fisik selesai. Status QC dan template akan disediakan pada paket terkait; bukti pelaksanaan tetap dari kantor. Pengembangan/rilis publik hanya menggunakan dummy sampai keamanan/operasional diperkuat. 01.2, 01.3, 06.x dan 11 tetap ditunda: keamanan; izin dasar untuk arsip/versi/lampiran tetap diperiksa.

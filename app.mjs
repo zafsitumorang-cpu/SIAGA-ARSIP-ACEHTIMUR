@@ -180,10 +180,13 @@ async function route(req, res) {
     }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/files')&&req.method==='POST'){
       const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a)||!['admin','uploader'].includes(u.role))return send(res,403,{error:'Anda tidak berwenang mengunggah berkas ini.'});
-      const b=await body(req),documentId=b.documentId||'document_primary';
+      const b=await body(req),newAttachment=b.kind==='attachment'&&!b.documentId;
+      if(b.kind!==undefined&&!['primary','attachment'].includes(b.kind))fail(422,'Jenis dokumen tidak valid.');
+      const attachmentTitle=newAttachment?text(b.documentTitle,'Nama lampiran',200,true):null;
+      let documentId=newAttachment?'new_attachment':b.documentId||'document_primary';
       if(typeof documentId!=='string')fail(422,'Dokumen tidak valid.');
-      const document=archiveDocuments(a).find(item=>item.id===documentId);
-      if(!document&&documentId!=='document_primary')fail(404,'Dokumen tidak ditemukan.');
+      const document=newAttachment?null:archiveDocuments(a).find(item=>item.id===documentId);
+      if(!document&&documentId!=='document_primary'&&!newAttachment)fail(404,'Dokumen tidak ditemukan.');
       let input=b;
       if(b.sourceVersionId){
         const source=document?.versions.find(version=>version.id===b.sourceVersionId);
@@ -193,11 +196,12 @@ async function route(req, res) {
       }
       const file=await validateUpload(input);
       const reason=b.reason===undefined?null:text(b.reason,'Alasan perubahan',1000,true);
-      const fingerprint={name:file.name,mime:file.mime,size:file.raw.length,checksum:file.checksum,...(b.reason!==undefined?{reason}:{}),...(Object.hasOwn(b,'expectedVersionId')?{expectedVersionId:b.expectedVersionId}:{}),...(b.sourceVersionId?{sourceVersionId:b.sourceVersionId}:{})};
-      const receipt=requestReceipt(req,u.id,'archive:upload:'+a.id+(documentId==='document_primary'?'':':'+documentId),fingerprint);
+      const fingerprint={name:file.name,mime:file.mime,size:file.raw.length,checksum:file.checksum,...(b.reason!==undefined?{reason}:{}),...(Object.hasOwn(b,'expectedVersionId')?{expectedVersionId:b.expectedVersionId}:{}),...(b.sourceVersionId?{sourceVersionId:b.sourceVersionId}:{}),...(newAttachment?{attachmentTitle}:{})};
+      const receipt=requestReceipt(req,u.id,newAttachment?'archive:attachment:'+a.id:'archive:upload:'+a.id+(documentId==='document_primary'?'':':'+documentId),fingerprint);
       if(receipt&&(a.uploadReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
       if(Object.hasOwn(b,'expectedVersionId')&&b.expectedVersionId!==(document?.currentVersionId||null))fail(409,'Versi aktif sudah berubah. Muat ulang riwayat sebelum mengganti berkas.');
       const fileId=id('file');await fs.writeFile(path.join(FILE_DIR,fileId),file.raw,{mode:0o600,flag:'wx'});
+      if(newAttachment){documentId=id('document');a.documents=archiveDocuments(a);a.documents.push({id:documentId,kind:'attachment',purpose:'attachment',title:attachmentTitle,currentVersionId:null,versions:[]});}
       appendArchiveVersion(a,documentId,file,{fileId,uploadedBy:u.id,uploadedAt:now(),reason,sourceVersionId:b.sourceVersionId||null});
       if(receipt)(a.uploadReceipts||=[]).push(receipt);audit(u.id,'upload','archive_file',fileId,a.number);await persist();return send(res,201,archivePayload(a));
     }

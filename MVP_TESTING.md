@@ -91,3 +91,9 @@ Bukti lokal: keamanan 187 pemeriksaan JSON/PostgreSQL, database 8, browser retry
 Pada dummy, buka Arsip → Berkas & versi (atau Detail → Berkas & riwayat versi). Unggah v1, Ganti berkas dengan alasan menjadi v2, unduh v1 dan cocokkan isi/nama. Pastikan pengunggah/waktu/alasan tampil. Gunakan v1 sebagai versi baru: hasil v3 baru dengan riwayat v1/v2 utuh. Data legacy yang tidak mencatat aktor/waktu harus tertulis Tidak diketahui, file hilang tertulis belum tersedia.
 
 Simulasikan respons sukses upload terputus lalu retry; jumlah versi tetap satu untuk tindakan itu. Perubahan dari tab lain menghasilkan konflik dan mempertahankan draft sampai Muat ulang dipilih. Pegawai satu subbagian dapat melihat/unduh histori tanpa kontrol ganti; pegawai asing dan anonim ditolak server. Uji HP/keyboard. `npm run test:versions` menjalankan suite JSON serta PostgreSQL bila PG_TEST_URL lokal tersedia; browser: tests/browser/file-versions.cjs. Pelaksanaan UAT kantor belum diklaim oleh tersedianya skenario ini.
+
+### Lampiran — 02.3
+
+Tambahkan Lampiran A dan B, lalu ganti A. Pastikan B dan dokumen utama tetap aktif pada file sebelumnya, sementara A1 masih bisa diunduh. Coba restore A1 sebagai A3; main/B tidak berubah. Respons pembuatan lampiran yang terputus harus aman diulang tanpa menambah lampiran kedua. Lampiran boleh dibuat sebelum primary; setelah primary diisi, lampiran awal tetap ada. Judul kosong/file invalid ditolak. Pembaca hanya memiliki unduh sesuai scope.
+
+Bukti pengembangan 02.3: model 12, API versi/lampiran JSON/PostgreSQL 52 dan browser versi/lampiran 11 skenario; CI tetap menjalankan regresi lama. Ini bukti aplikasi dengan dummy, bukan bukti digitalisasi/QC/pilot kantor.

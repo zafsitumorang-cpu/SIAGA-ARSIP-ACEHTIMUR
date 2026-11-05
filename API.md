@@ -116,3 +116,9 @@ Payload documents memuat versi dengan `available`, `uploadedByName` serta proven
 Setiap upload menambah versi immutable, pengunggah/waktu, checksum dan cermin primary flat. `GET /api/files/{fileId}` kini melayani versi terdahulu juga, dengan nama/tipe versi itu dan scope arsip yang sama; anonim 401, rekaman di luar scope 404. Tidak ada URL berkas publik.
 
 Untuk memakai versi lama sebagai revisi baru, POST endpoint files dengan `sourceVersionId`, `documentId`, `expectedVersionId` dan `reason`. Binary sumber harus menjadi versi dalam dokumen itu; hasil memakai ID baru dan sourceVersionId untuk lineage, tanpa menulis ulang riwayat. Admin/uploader yang berwenang dapat mengganti/memulihkan; role pembaca hanya melihat/unduh. Receipt replay diperiksa sebelum konflik expectedVersionId sehingga respons sukses terputus aman diulang.
+
+### Lampiran independen — TODO 02.3
+
+POST files dengan `kind: "attachment"`, `documentTitle` (1–200 karakter), fileName/mimeType/data dan optional Idempotency-Key membuat dokumen lampiran baru dengan ID sendiri. UI mengirim expectedVersionId null untuk pembuatan. Mengganti/memulihkan lampiran yang sudah ada memakai documentId lampiran dan kontrak versi yang sama. Nama boleh sama; identitas ditentukan ID, bukan nama atau posisi tabel.
+
+Menambah/mengganti lampiran tidak mengubah fileId primary atau riwayat lampiran lain. Lampiran boleh dicatat sebelum primary; fileAvailable flat tetap false sampai primary tersedia. Download setiap versi tetap memakai scope arsip. Retry pembuatan lampiran memakai operasi terpisah agar tidak membuat dokumen tambahan; kunci penggantian juga terikat documentId.

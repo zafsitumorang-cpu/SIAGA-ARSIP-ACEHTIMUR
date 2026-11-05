@@ -2,6 +2,8 @@
 
 Tanggal: **5 November 2026, WIB**. Baseline kode dan 28 Markdown: `75a19c6dbddf8006701ba379d4cd3755ce4cbaa3`, sama dengan main saat audit. Pelaksana: kajian dokumen, inspeksi kode, uji lokal terisolasi, dan pemeriksaan publik read-only. Rencana pelaksanaan: [TODO_MASTER.md](TODO_MASTER.md).
 
+**Prioritas pemilik kini fitur/kelengkapan:** 01.2, 01.3, 06.x dan paket 11 **ditunda: keamanan**, dengan cek izin dasar tetap berlaku untuk fitur. Status perbaikan setelah baseline, commit, tes dan bukti demo dikelola di [FEATURE_PROGRESS.md](FEATURE_PROGRESS.md). A-03/A-07 bagian histori berkas sudah ditangani pada 02.2; kebutuhan UI lain tetap mengikuti checklist. Tidak ada pengesahan SOP, pelatihan, inventaris fisik, penetapan PIC atau pilot kantor yang dianggap selesai oleh tersedianya fitur.
+
 **Pembaruan implementasi 01.1:** A-01 kini ditutup pada kode dan pengujian lokal: retry create/upload memakai receipt persisten dan formulir mempertahankan arsip yang sudah tercatat. Keamanan JSON/PostgreSQL 187, database 8 dan browser retry 10 lulus. Batas retry/kunci, prosedur UAT dummy dan bukti deployment ada di API.md, MVP_TESTING.md dan deploy/STATUS.md. Temuan lain, termasuk A-02, tetap terbuka. Tabel di bawah adalah catatan baseline sebelum perbaikan ini; tidak ada persetujuan peluncuran arsip nyata dari pembaruan tersebut.
 
 ## Kesimpulan

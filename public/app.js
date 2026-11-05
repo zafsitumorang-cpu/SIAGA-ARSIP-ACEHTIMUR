@@ -159,7 +159,7 @@ function renderArchives(){
 }
 async function openArchiveFiles(id){
   const page=state.page;
-  try{await openFileHistory({id,api,app,esc,canUpload:canUpload(),closeModal,onSaved:async()=>{await refresh();renderPage();},toast,isCurrent:()=>state.page===page});}catch(failure){toast(failure.message,'error');}
+  try{await openFileHistory({id,api,app,esc,readFile,canUpload:canUpload(),closeModal,onSaved:async()=>{await refresh();renderPage();},toast,isCurrent:()=>state.page===page});}catch(failure){toast(failure.message,'error');}
 }
 function renderDispositions() { const items = state.archives.flatMap(a => a.dispositions.map(d => ({ a, d }))); $('#content').innerHTML = `<div class="title-row"><div><div class="eyebrow">Tindak lanjut</div><h1>Disposisi</h1></div></div><div class="panel">${items.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Surat</th><th>Instruksi</th><th>Penerima</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${items.map(({a,d}) => `<tr><td><b>${esc(a.number)}</b><br><span class="muted">${esc(a.subject)}</span></td><td>${esc(d.instruction || '—')}</td><td>${esc(d.assignedUserName || d.assignedSubsection || '—')}</td><td><span class="badge ${d.status === 'Selesai' ? 'badge-done' : d.status === 'Sedang diproses' ? 'badge-progress' : 'badge-pending'}">${esc(d.status)}</span></td><td>${canUpdate(d) ? `<select class="status-change" data-id="${d.id}"><option>Belum ditindaklanjuti</option><option ${d.status === 'Sedang diproses' ? 'selected' : ''}>Sedang diproses</option><option ${d.status === 'Selesai' ? 'selected' : ''}>Selesai</option></select>` : '—'}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Belum ada disposisi.</div>'}</div>`; document.querySelectorAll('.status-change').forEach(el => el.onchange = async () => { try { await api(`/api/dispositions/${el.dataset.id}/status`, { method: 'PATCH', body: JSON.stringify({ status: el.value }) }); await refresh(); renderDispositions(); toast('Status disposisi diperbarui.'); } catch (e) { toast(e.message, 'error'); } }); }
 function canUpdate(d) { return state.user.role === 'admin' || state.user.role === 'leader' || d.assignedUserId === state.user.id || d.assignedSubsection === state.user.subsection; }
@@ -201,7 +201,7 @@ function openModal(kind){
   const type=$('#create-type');const toggle=()=>{document.querySelectorAll('.incoming-only').forEach(el=>el.classList.toggle('hidden',type.value!=='incoming'));document.querySelectorAll('.outgoing-only').forEach(el=>el.classList.toggle('hidden',type.value!=='outgoing'));};type.onchange=toggle;toggle();
   bindArchiveCreate({form:$('#archiveForm'),api,readFile,onClose:()=>closeModal(true),onSaved:async()=>{await refresh();renderPage();},toast});
 }
-function readFile(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
+function readFile(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = () => reject(Error('Berkas belum dapat dibaca.')); reader.readAsDataURL(file); }); }
 function closeModal(force=false) {
   const back=$('#modalBack');if(!back)return;
   const createForm=back.querySelector('#archiveForm');if(createForm?.dataset.submitting)return;if(!force&&createForm?._closeArchive)return createForm._closeArchive();
