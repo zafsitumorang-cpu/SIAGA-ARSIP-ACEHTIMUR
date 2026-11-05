@@ -63,7 +63,7 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 
 ## 03 — Lengkapi alur disposisi dan notifikasi
 
-- [ ] **03.1 — Penerima tepat (A-04).** Pilihan orang aktif/tim sesuai keputusan 00.2; tegaskan prioritas assignedUserId terhadap kelompok. **Selesai:** orang yang tidak ditugasi tidak memperbarui tugas individual kecuali hak supervisi/tim memang disahkan; pemberian akses lintas bagian tidak implisit.
+- [x] **03.1 — Penerima tepat (A-04).** **Bukti:** 24 tes API JSON/PG dan 6 browser; default sementara FEATURE_ASSUMPTIONS.md, pengesahan 00 tetap belum diklaim. Pilihan orang aktif/tim sesuai keputusan 00.2; tegaskan prioritas assignedUserId terhadap kelompok. **Selesai:** orang yang tidak ditugasi tidak memperbarui tugas individual kecuali hak supervisi/tim memang disahkan; pemberian akses lintas bagian tidak implisit.
 - [ ] **03.2 — Kronologi dan tindak lanjut.** Detail menampilkan instruksi, pengirim/penerima, status, catatan serta aktor/waktu setiap pembaruan. Validasi note dan aturan transisi/reopen. **Selesai:** perubahan lama dapat ditelusuri, bukan hanya status terakhir; catatan privat tetap mengikuti scope.
 - [ ] **03.3 — Perubahan aman.** Cegah disposisi/status ganda akibat retry, konflik dua tab dan respons lambat setelah navigasi; pulihkan dropdown jika gagal. **Selesai:** satu tindakan menghasilkan satu event; perubahan baru tidak tertimpa diam-diam dan halaman baru tidak diganti respons lama.
 - [ ] **03.4 — Daftar kerja.** Tambah filter tugas saya/tim/selesai, pencarian dan pagination; detail surat dapat dibuka langsung. **Selesai:** daftar, ringkasan tugas dan ekspor status konsisten untuk tiap role.

@@ -19,3 +19,5 @@ SIAGA_PLAYWRIGHT_MODULE=/tmp/siaga-browser-tools/node_modules/playwright node te
 `file-versions.cjs` memakai loopback 3508 dengan fixture sementara: 8 skenario upload/provenance, ganti dan unduh versi lama, restore sebagai revisi baru, respons terputus/retry, konflik tab dengan draft, HP/keyboard, pembaca tanpa kontrol tulis dan error JavaScript. Gunakan variabel Playwright yang sama. `npm run test:versions` menguji endpoint/binary/izin/restart pada JSON dan PostgreSQL lokal; tidak mengakses atau memutasi domain publik.
 
 Pembaruan 02.3 memperluas file-versions menjadi 11 skenario browser termasuk lampiran A/B, pembuatan terputus/retry dan penggantian independen. Suite API menjadi 52 pemeriksaan JSON/PostgreSQL, termasuk lampiran-sebelum-primary, restore independen dan isolasi idempotensi per dokumen. Model mendapat regresi provenance rollback (total 12).
+
+`dispositions.cjs` memakai loopback 3509, 6 skenario pilihan penerima orang/tim aktif/scoped, save, gagal muat/retry, HP/keyboard, rekan bukan penerima tanpa editor dan error JavaScript. Fixture dan akun hanya lokal/sementara. Konfigurasi Playwright sama dengan contoh di atas.

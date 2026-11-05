@@ -101,3 +101,7 @@ Bukti pengembangan 02.3: model 12, API versi/lampiran JSON/PostgreSQL 52 dan bro
 ### Regresi 02.4 — konsistensi binary/metadata
 
 Jalankan `PG_TEST_URL=<PostgreSQL lokal fixture> npm run test:file-io`: 17 pemeriksaan JSON/PG, termasuk trigger DB yang sengaja menolak save dan COMMIT/rename yang berhasil tetapi responsnya hilang. Binary lama tetap utuh, binary transaksi yang pasti batal dibersihkan, binary ambigu tetap ada. Dry-run memisahkan yatim lama, staging, baru, missing dan symlink tanpa menghapus. Tambahkan `test:versions` (52), `test:security` (187), `test:database` (8) serta browser `file-versions.cjs` (11). Semua mutasi pada fixture sementara; UAT kantor dan restore/offsite bukan klaim pengujian ini.
+
+### 03.1 — penerima individu/tim
+
+`PG_TEST_URL=<fixture lokal> npm run test:dispositions` menjalankan 24 pemeriksaan JSON/PostgreSQL: daftar penerima minimal/aktif/scoped, individu vs tim, rekan tak ditugasi ditolak, supervisi, penerima nonaktif/asing ditolak, notifikasi dan restart. Browser `tests/browser/dispositions.cjs` menguji pilihan orang/tim, penyimpanan nama, muat gagal/retry, HP/keyboard dan editor status yang tidak ditampilkan ke non-penerima. Asumsi penerima ada di FEATURE_ASSUMPTIONS.md; persetujuan kantor tetap belum dicentang.

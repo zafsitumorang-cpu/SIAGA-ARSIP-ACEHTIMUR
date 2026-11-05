@@ -1,0 +1,12 @@
+import fs from 'node:fs/promises';import os from 'node:os';import path from 'node:path';import {spawn,execFileSync} from 'node:child_process';import pg from 'pg';
+export async function withApiFixtures(label,callback,port=3520){
+ async function suite(databaseUrl,index){
+  const dir=await fs.mkdtemp(path.join(os.tmpdir(),`siaga-${label}-`));let child;
+  const stop=async()=>{if(child?.exitCode===null)await new Promise(resolve=>{child.once('exit',resolve);child.kill();});};
+  async function start(){child=spawn(process.execPath,['app.mjs'],{env:{...process.env,PORT:String(port+index),HOST:'127.0.0.1',DATA_DIR:dir,DATABASE_URL:databaseUrl||'',NODE_ENV:'test',DEMO_MODE:'true'},stdio:['ignore','pipe','pipe']});await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Fixture startup timeout')),12000);child.stdout.on('data',data=>{if(String(data).includes('SIAGA ARSIP berjalan')){clearTimeout(timer);resolve();}});child.once('exit',code=>{clearTimeout(timer);reject(Error('Fixture exited '+code));});});}
+  async function request(route,cookie,method='GET',data,key){const response=await fetch(`http://127.0.0.1:${port+index}`+route,{method,headers:{'X-SIAGA-Request':'1','Content-Type':'application/json',...(cookie?{Cookie:cookie}:{}),...(key?{'Idempotency-Key':key}:{})},...(data!==undefined?{body:JSON.stringify(data)}:{})});const bytes=Buffer.from(await response.arrayBuffer());let body;try{body=JSON.parse(bytes.toString());}catch{}return {status:response.status,body,bytes,headers:response.headers,cookie:response.headers.get('set-cookie')?.split(';')[0]};}
+  try{await start();console.log('Storage: '+(databaseUrl?'PostgreSQL':'JSON'));await callback({request,dir,databaseUrl,restart:async()=>{await stop();await start();}});}finally{await stop();await fs.rm(dir,{recursive:true,force:true});}
+ }
+ await suite('',0);
+ if(process.env.PG_TEST_URL){const url=new URL(process.env.PG_TEST_URL);if(!['127.0.0.1','localhost'].includes(url.hostname))throw Error('Local PostgreSQL required.');const pool=new pg.Pool({connectionString:url.href}),name='siaga_'+label.replace(/[^a-z]/g,'')+'_'+Date.now();await pool.query(`CREATE DATABASE ${name}`);url.pathname='/'+name;try{execFileSync(process.execPath,['scripts/database.mjs','migrate'],{env:{...process.env,DATABASE_URL:url.href},stdio:'pipe'});await suite(url.href,1);}finally{await pool.query(`DROP DATABASE ${name} WITH (FORCE)`);await pool.end();}}
+}

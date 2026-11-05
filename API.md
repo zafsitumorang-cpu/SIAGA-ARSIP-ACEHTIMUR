@@ -126,3 +126,7 @@ Menambah/mengganti lampiran tidak mengubah fileId primary atau riwayat lampiran 
 ### Konsistensi upload (02.4)
 
 Binary dipublikasikan lengkap tanpa overwrite sebelum commit metadata; respons sukses ditahan sampai commit selesai. Kegagalan sebelum publikasi metadata membersihkan binary baru milik transaksi, tidak versi lama. Hasil commit yang ambigu mempertahankan binary untuk rekonsiliasi; retry tetap menggunakan Idempotency-Key yang sama. Perintah lokal `npm run files:check` menghasilkan laporan read-only dan tidak tersedia sebagai endpoint publik.
+
+### Penerima disposisi (03.1)
+
+`GET /api/archives/:id/disposition-recipients` khusus admin/pimpinan mengembalikan `{items:[{id,name,subsection}]}` staf aktif pada subbagian arsip. POST disposisi menerima `assignedUserId` kosong untuk tim, atau ID dari daftar aktif tersebut. Penugasan individu memprioritaskan ID orang: rekan satu subbagian tidak dapat memperbarui statusnya. Admin/pimpinan tetap mengawasi; tugas tim dapat diperbarui staf subbagian sesuai scope baca. Notifikasi tugas individu memakai aturan yang sama. Tidak ada pemberian akses lintas subbagian secara implisit.
