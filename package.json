@@ -19,7 +19,9 @@
     "test:query": "node scripts/query-tests.mjs",
     "test:export": "node scripts/export-tests.mjs",
     "test:files": "node scripts/file-model-tests.mjs",
-    "test:versions": "node scripts/file-version-tests.mjs"
+    "test:versions": "node scripts/file-version-tests.mjs",
+    "test:file-io": "node scripts/file-io-tests.mjs",
+    "files:check": "node scripts/reconcile-files.mjs"
   },
   "engines": {
     "node": ">=22"

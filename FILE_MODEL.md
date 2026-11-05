@@ -29,3 +29,13 @@ Fitur tidak membuktikan scan telah benar, surat sudah sah, SOP disahkan, operato
 ## Bukti
 
 `npm run test:files` menguji 11 skenario: metadata tanpa file, legacy/histori, ID/nomor stabil, provenance unknown, nonmutasi sumber, scan/final, deduplikasi referensi, provenance tercatat, lampiran independen, enumerasi referensi campuran, rollback writer, serta referensi invalid untuk integrity check. Tes regresi dasar dan pemeriksaan JSON/PostgreSQL tetap dijalankan di Application checks sebelum demo diperbarui.
+
+## 02.4 — publikasi binary dan kegagalan transaksi
+
+Upload menulis berkas staging mode 0600 pada direktori yang sama, melakukan fsync, lalu hard-link ke ID final dengan jaminan tidak menimpa ID lain. Direktori disinkronkan sebelum metadata dipublikasikan. Transaksi yang pasti gagal sebelum publikasi metadata membersihkan hanya inode binary baru miliknya; versi lama tidak disentuh. Snapshot/backup yang sudah ada mengabaikan nama staging internal. Tidak ada layanan backup/offsite baru.
+
+Jika respons COMMIT PostgreSQL atau rename JSON hilang, hasil transaksi dapat ambigu. Binary dipertahankan: menghapusnya dapat merusak metadata yang ternyata telah committed. Retry menggunakan receipt 01.1; kegagalan tidak mengembalikan respons sukses sebelum transaksi selesai. Proses mati dapat menyisakan staging/binary tak direferensikan, bukan versi aktif yang dipalsukan.
+
+`DATA_DIR=... DATABASE_URL=... npm run files:check` adalah laporan read-only di bawah lock transaksi: referensi hilang/tidak valid, kandidat yatim/staging berumur minimal 24 jam, binary baru dan entri tak lazim. Symlink tidak diikuti. Umur hanya kandidat peninjauan, bukan bukti aman dihapus. Tidak ada opsi delete, timer cleanup, atau perubahan data demo/produksi. Rekonsiliasi operasional memerlukan pemeriksaan snapshot/aktivitas oleh PIC; jangan menjalankan penghapusan berdasarkan laporan ini saja.
+
+Bukti: `npm run test:file-io` menguji gagal tulis, collision, callback/save failure JSON/PG, respons publikasi hilang setelah commit nyata, konkurensi, dan laporan tanpa mutasi.

@@ -12,6 +12,7 @@ import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs
 import {archiveCsv,archiveXlsx} from './lib/archive-export.mjs';
 import {requestReceipt,matchesReceipt} from './lib/request-receipt.mjs';
 import {archiveDocuments,archiveFileIds,appendArchiveVersion,validFileId} from './lib/archive-files.mjs';
+import {stageArchiveFile} from './lib/file-io.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -200,7 +201,7 @@ async function route(req, res) {
       const receipt=requestReceipt(req,u.id,newAttachment?'archive:attachment:'+a.id:'archive:upload:'+a.id+(documentId==='document_primary'?'':':'+documentId),fingerprint);
       if(receipt&&(a.uploadReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
       if(Object.hasOwn(b,'expectedVersionId')&&b.expectedVersionId!==(document?.currentVersionId||null))fail(409,'Versi aktif sudah berubah. Muat ulang riwayat sebelum mengganti berkas.');
-      const fileId=id('file');await fs.writeFile(path.join(FILE_DIR,fileId),file.raw,{mode:0o600,flag:'wx'});
+      const fileId=id('file');await stageArchiveFile(FILE_DIR,fileId,file.raw,req.fileTransaction);
       if(newAttachment){documentId=id('document');a.documents=archiveDocuments(a);a.documents.push({id:documentId,kind:'attachment',purpose:'attachment',title:attachmentTitle,currentVersionId:null,versions:[]});}
       appendArchiveVersion(a,documentId,file,{fileId,uploadedBy:u.id,uploadedAt:now(),reason,sourceVersionId:b.sourceVersionId||null});
       if(receipt)(a.uploadReceipts||=[]).push(receipt);audit(u.id,'upload','archive_file',fileId,a.number);await persist();return send(res,201,archivePayload(a));
@@ -235,7 +236,7 @@ async function staticFile(file, res) { try { const data = await fs.readFile(file
 const server=http.createServer(async(req,res)=>{
   res.setHeader('X-SIAGA-Revision',revision);
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; font-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(SECURE_COOKIE)res.setHeader('Strict-Transport-Security','max-age=31536000');
-  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}res._defer=true;await storage.transaction(async(data,dirty)=>{db=data;markDirty=dirty;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
+  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}res._defer=true;await storage.transaction(async(data,dirty,_replace,transaction)=>{db=data;markDirty=dirty;req.fileTransaction=transaction;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
   catch(error){res._defer=false;if(!res.headersSent)send(res,error.status||500,{error:error.status?error.message:'Terjadi kesalahan server.'});else res.end();if(!error.status)console.error('Request gagal:',error.code||error.name);}
 });
 server.requestTimeout=30000;server.headersTimeout=10000;

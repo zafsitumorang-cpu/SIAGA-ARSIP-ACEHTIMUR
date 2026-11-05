@@ -122,3 +122,7 @@ Untuk memakai versi lama sebagai revisi baru, POST endpoint files dengan `source
 POST files dengan `kind: "attachment"`, `documentTitle` (1–200 karakter), fileName/mimeType/data dan optional Idempotency-Key membuat dokumen lampiran baru dengan ID sendiri. UI mengirim expectedVersionId null untuk pembuatan. Mengganti/memulihkan lampiran yang sudah ada memakai documentId lampiran dan kontrak versi yang sama. Nama boleh sama; identitas ditentukan ID, bukan nama atau posisi tabel.
 
 Menambah/mengganti lampiran tidak mengubah fileId primary atau riwayat lampiran lain. Lampiran boleh dicatat sebelum primary; fileAvailable flat tetap false sampai primary tersedia. Download setiap versi tetap memakai scope arsip. Retry pembuatan lampiran memakai operasi terpisah agar tidak membuat dokumen tambahan; kunci penggantian juga terikat documentId.
+
+### Konsistensi upload (02.4)
+
+Binary dipublikasikan lengkap tanpa overwrite sebelum commit metadata; respons sukses ditahan sampai commit selesai. Kegagalan sebelum publikasi metadata membersihkan binary baru milik transaksi, tidak versi lama. Hasil commit yang ambigu mempertahankan binary untuk rekonsiliasi; retry tetap menggunakan Idempotency-Key yang sama. Perintah lokal `npm run files:check` menghasilkan laporan read-only dan tidak tersedia sebagai endpoint publik.

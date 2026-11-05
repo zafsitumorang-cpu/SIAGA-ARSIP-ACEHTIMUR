@@ -97,3 +97,7 @@ Simulasikan respons sukses upload terputus lalu retry; jumlah versi tetap satu u
 Tambahkan Lampiran A dan B, lalu ganti A. Pastikan B dan dokumen utama tetap aktif pada file sebelumnya, sementara A1 masih bisa diunduh. Coba restore A1 sebagai A3; main/B tidak berubah. Respons pembuatan lampiran yang terputus harus aman diulang tanpa menambah lampiran kedua. Lampiran boleh dibuat sebelum primary; setelah primary diisi, lampiran awal tetap ada. Judul kosong/file invalid ditolak. Pembaca hanya memiliki unduh sesuai scope.
 
 Bukti pengembangan 02.3: model 12, API versi/lampiran JSON/PostgreSQL 52 dan browser versi/lampiran 11 skenario; CI tetap menjalankan regresi lama. Ini bukti aplikasi dengan dummy, bukan bukti digitalisasi/QC/pilot kantor.
+
+### Regresi 02.4 — konsistensi binary/metadata
+
+Jalankan `PG_TEST_URL=<PostgreSQL lokal fixture> npm run test:file-io`: 17 pemeriksaan JSON/PG, termasuk trigger DB yang sengaja menolak save dan COMMIT/rename yang berhasil tetapi responsnya hilang. Binary lama tetap utuh, binary transaksi yang pasti batal dibersihkan, binary ambigu tetap ada. Dry-run memisahkan yatim lama, staging, baru, missing dan symlink tanpa menghapus. Tambahkan `test:versions` (52), `test:security` (187), `test:database` (8) serta browser `file-versions.cjs` (11). Semua mutasi pada fixture sementara; UAT kantor dan restore/offsite bukan klaim pengujian ini.
