@@ -33,3 +33,5 @@ sudo systemctl disable --now siaga-auto-deploy.timer
 ```
 
 GitHub API publik mempunyai rate limit. Saat dibatasi, update menunggu pemeriksaan berikutnya; aplikasi lama dipertahankan. Pemasangan dan pengujian awal pada VPS diperlukan untuk mengonfirmasi konektivitas/izin systemd sebenarnya.
+
+Pengujian reproduktif dijelaskan di [tests/vps/README.md](../tests/vps/README.md). API CI, Git remote, HTTPS edge dan systemd dimodelkan, sedangkan import PostgreSQL, proses Node, backup serta pergantian kode berjalan nyata dalam container terisolasi. Uji browser juga memeriksa tanggal formulir pada batas hari UTC/WIB, navigasi, notifikasi dan sesi admin. Ini bukan klaim bahwa timer VPS sudah aktif sebelum output pemasang diterima.

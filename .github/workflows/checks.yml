@@ -20,6 +20,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - name: Check deployment script syntax
+        run: |
+          for script in scripts/auto-deploy.sh scripts/install-auto-deploy.sh scripts/install-backup-timer.sh; do
+            bash -n "$script"
+          done
+          node --check public/app.js
       - run: npm run uat
       - run: npm run test:migration
       - run: npm run test:security

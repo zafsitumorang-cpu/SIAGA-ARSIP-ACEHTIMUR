@@ -32,3 +32,16 @@ docker run --rm --network none \
 ```
 
 Tes memeriksa backup PostgreSQL/manifest nyata, validasi unit dan kalender Asia/Jakarta, pemasangan yang tidak mengganti PID aplikasi, cleanup saat backup awal gagal, penolakan overwrite unit dan tidak tercetaknya credential. Pengelola systemd/timer tetap dimodelkan; tes kalender bukan bukti timer server nyata sudah dipasang atau telah berjalan pada jam terjadwal.
+
+## Deployment otomatis
+
+Build image dari commit yang memuat controller dan pemasang, lalu:
+
+```bash
+docker run --rm --network none \
+  --mount "type=bind,src=$(pwd)/scripts/install-backup-timer.sh,dst=/fixture/install-backup-timer.sh,readonly" \
+  --mount "type=bind,src=$(pwd)/tests/vps/auto-test.py,dst=/fixture/auto-test.py,readonly" \
+  --entrypoint python3 siaga-upgrade-integration /fixture/auto-test.py
+```
+
+Tes menggunakan PostgreSQL dan proses Node nyata, dengan Git remote/API CI/HTTPS/systemd dimodelkan di container. Meliputi pendaftaran timer, CI gagal, CI success dari repo asing, penolakan perubahan schema, rollback kode yang diverifikasi sehat, update kode berhasil, pembaruan rujukan backup, cleanup kandidat dan no-op untuk commit yang sama. Tidak membuktikan jadwal/ACL/jaringan/namespace systemd pada server nyata; operator tetap perlu menjalankan pemasang sekali.
