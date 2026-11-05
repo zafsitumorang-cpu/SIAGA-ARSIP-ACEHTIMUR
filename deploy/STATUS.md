@@ -39,6 +39,16 @@ Pemeriksaan ini mendukung hasil migrasi yang dilaporkan, tetapi bukan inspeksi S
 
 Operator kemudian menyatakan penggantian password dan pemasangan backup harian telah selesai. Output timer tidak diterima, sehingga ini dicatat sebagai laporan operator, bukan inspeksi unit independen. Controller deployment otomatis yang memeriksa CI tersedia melalui [AUTO_DEPLOY.md](AUTO_DEPLOY.md); timer deployment belum dinyatakan aktif sebelum hasil pemasang diterima. Pemasang deployment memeriksa bahwa aplikasi serta timer backup benar-benar aktif sebelum melanjutkan.
 
+### Otomatisasi terpasang — pembaruan berikutnya pada 5 November
+
+Operator menjalankan pemasang commit `2949fcab4b99ec6c689fbf33dbbb41eaf5a866a5` dan mengirim keluaran sukses: symlink timer dibuat, `Deployment otomatis aktif`, dan siaga-auto-deploy.timer terdaftar. Pemasang memverifikasi siaga.service dan timer backup aktif sebelum melanjutkan, menjalankan job awal serta mengaktifkan jadwal deployment sekitar setiap lima menit. Ini memperbarui catatan sebelumnya yang masih menunggu pemasangan.
+
+Pemeriksaan eksternal setelah pemasangan mengonfirmasi health 200/ok, config demoMode=false, statistik tetap 20 arsip, anonymous archives 401 dan checksum JavaScript cocok dengan kode terbaru. Helper tanggal WIB terlihat dan tanggal tetap lama tidak lagi ada pada aset. Dengan laporan pemasang, ini mendukung bahwa update aplikasi baru berhasil tersaji. Agent tetap tidak membaca unit/journal melalui SSH dan tidak memasukkan credential admin ke browser.
+
+Peringatan PIDFile pada tat_agent.service berasal dari unit agen Tencent yang ikut diperiksa systemd; pemasang tetap mencapai keluaran sukses. Nilai NEXT `-` dapat muncul ketika job timer sedang aktif: interval OnUnitInactiveSec dihitung setelah job selesai. Kolom waktu CST mengikuti timezone host; kalender backup tetap eksplisit Asia/Jakarta dan interval deployment tidak bergantung pada timezone tersebut.
+
+Update dokumentasi/installer saja tidak perlu mengubah release web; marker commit yang sudah diperiksa dapat berbeda dari commit aktif aplikasi. Pengembangan aplikasi biasa berikutnya dapat dilakukan melalui GitHub dan CI, dengan backup/kandidat/verifikasi otomatis. Offsite/enkripsi/retensi/alert, migrasi schema dan gate penerimaan belum selesai secara otomatis.
+
 1. Pemilik server mengambil credential admin secara privat, login, mengganti password awal dan memetakan akun riil/peran/subbagian.
 2. Jadwalkan backup, salin terenkripsi ke lokasi terpisah, tetapkan retensi dan alarm, lalu uji restore database beserta binary ke lingkungan bersih. Backup yang dilaporkan masih lokal.
 3. UAT pengguna: catat surat uji, unggah/unduh berizin, disposisi, pembatasan peran/subbagian dan pergantian sesi. Data 20 arsip lama bukan bukti dokumen asli telah tersedia.

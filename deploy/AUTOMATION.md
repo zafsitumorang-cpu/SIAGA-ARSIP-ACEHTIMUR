@@ -1,5 +1,7 @@
 # Otomatisasi operasional
 
+Status operator terbaru dan pemeriksaan publik setelah pemasangan tersedia di [STATUS.md](STATUS.md). Operator telah mengirim keluaran sukses pemasangan timer deployment; frontend terbaru juga terverifikasi dari luar.
+
 ## Backup lokal harian
 
 `scripts/install-backup-timer.sh` dipasang sekali oleh operator melalui Run commands/root pada VPS hasil migrasi. Skrip membaca path unit `siaga.service` yang aktif, tidak membaca/menampilkan password, memvalidasi format path khusus migrasi, membuat unit backup dan menjalankan satu backup awal sebelum mengaktifkan timer. Unit yang sudah ada tidak ditimpa. Aplikasi tidak direstart. Jika pemasangan gagal, hanya unit baru yang dibuat skrip dibersihkan; salinan backup dan layanan aplikasi dipertahankan.
