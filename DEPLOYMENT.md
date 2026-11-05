@@ -20,7 +20,7 @@ Gunakan volume persisten untuk `data/`. Jangan menjalankan pilot dengan data pro
 
 ## Produksi
 
-Ikuti [runbook VPS](deploy/README.md) untuk PostgreSQL, bootstrap admin, environment produksi, systemd dan contoh Nginx. Set DEMO_MODE=false secara eksplisit; Dockerfile default masih menyalakan demo Railway. Produksi menolak startup tanpa DATABASE_URL dan APP_ORIGIN HTTPS. Simpan berkas privat di direktori data persisten; port aplikasi/database hanya lokal. Konfigurasikan HTTPS, backup terenkripsi di lokasi terpisah, monitoring dan akses admin sebelum arsip nyata. Contoh konfigurasi belum dipasang di VPS pengguna.
+Ikuti [runbook VPS](deploy/README.md) untuk PostgreSQL, bootstrap admin, environment produksi, systemd dan Caddy. Domain pengguna: `siaga-arsipbawasluacehtimur.web.id`; pengguna melaporkan Caddy sudah berjalan di VPS, sehingga gunakan proxy tersebut. [Contoh blok Caddy](deploy/Caddyfile.example) adalah referensi untuk digabungkan secara hati-hati dengan konfigurasi aktif, bukan instruksi menimpa seluruh Caddyfile. Contoh Nginx tetap tersedia sebagai alternatif instalasi. Set DEMO_MODE=false secara eksplisit; Dockerfile default masih menyalakan demo Railway. Produksi menolak startup tanpa DATABASE_URL dan APP_ORIGIN HTTPS. Simpan berkas privat di direktori data persisten; port aplikasi/database hanya lokal. Konfigurasikan HTTPS, backup terenkripsi di lokasi terpisah, monitoring dan akses admin sebelum arsip nyata. Contoh konfigurasi belum dipasang di VPS pengguna oleh agent.
 
 ## Health check
 

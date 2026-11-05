@@ -1,0 +1,7 @@
+# Reference site block for the user's existing Caddy installation.
+# Merge only if this hostname has no site block yet; preserve other sites/settings.
+# Validate the complete installed Caddyfile before reloading.
+siaga-arsipbawasluacehtimur.web.id {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:3000
+}
