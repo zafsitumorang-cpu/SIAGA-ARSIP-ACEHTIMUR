@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
 import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
+import {archiveFilters,matchesArchive,archivePage} from './lib/archive-query.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -65,9 +66,9 @@ function canSee(user, archive) { return isWide(user) || (user && user.subsection
 function send(res,status,body,type='application/json',extra={}) { const reply={status,body:type==='application/json'?JSON.stringify(body):body,headers:{'Content-Type':type,'Cache-Control':'no-store',...extra}};if(res._defer){res._reply=reply;return;}res.writeHead(status,reply.headers);res.end(reply.body); }
 async function body(req){if(req._parsedBody)return req._parsedBody;const max=req.url.split('?')[0].endsWith('/files')?24*1024*1024:128*1024;if(Number(req.headers['content-length'])>max)fail(413,'Request terlalu besar.');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)fail(413,'Request terlalu besar.');chunks.push(chunk);}try{const result=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!result||Array.isArray(result)||typeof result!=='object')fail(422,'Body harus berupa objek JSON.');req._parsedBody=result;return result;}catch(error){if(error.status)throw error;fail(400,'JSON tidak valid.');}}
 function requireAuth(req, res) { const user = getUser(req); if (!user) { send(res, 401, { error: 'Silakan login terlebih dahulu.' }); return null; } return user; }
-function visibleArchives(user, url) {
-  const q = (url.searchParams.get('q') || '').toLowerCase(); const type = url.searchParams.get('type'); const year = url.searchParams.get('year'); const status = url.searchParams.get('status');
-  return db.archives.filter(a => canSee(user, a) && (!type || a.type === type) && (!year || a.letterDate.startsWith(year)) && (!status || a.dispositions.some(d => d.status === status)) && (!q || [a.number, a.origin, a.destination, a.subject, a.classification, a.subsection].some(v => String(v || '').toLowerCase().includes(q))));
+function visibleArchives(user,url){
+  const filters=archiveFilters(url.searchParams,db,subsections);
+  return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
 }
 function archivePayload(a) { return { ...a, metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
 
@@ -98,7 +99,12 @@ async function route(req, res) {
   if (pathname.startsWith('/api/')) {
     const u = requireAuth(req, res); if (!u) return;
     if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai').length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
-    if (pathname === '/api/archives' && req.method === 'GET') {audit(u.id,'view_list','archive','list');await persist();return send(res,200,{items:visibleArchives(u,url).map(archivePayload),classifications:db.classifications,subsections});}
+    if(pathname==='/api/archives'&&req.method==='GET'){
+      const result=archivePage(visibleArchives(u,url),url.searchParams);
+      const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
+      audit(u.id,'view_list','archive','list');await persist();
+      return send(res,200,{...result,items:result.items.map(archivePayload),classifications:db.classifications,subsections,years});
+    }
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='GET'){const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a))return send(res,404,{error:'Arsip tidak ditemukan.'});audit(u.id,'view','archive',a.id);await persist();return send(res,200,archivePayload(a));}
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='PATCH'){
       if(u.role!=='admin')return send(res,403,{error:'Perbaikan metadata hanya tersedia untuk admin.'});

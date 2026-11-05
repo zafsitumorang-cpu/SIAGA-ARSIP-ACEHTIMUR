@@ -4,7 +4,26 @@ Kontrak konseptual REST/JSON dan catatan implementasi Node.js. Tidak ada migrasi
 
 ## Kontrak aktual tahap fondasi — 5 November 2026
 
-Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` dengan q/type/year/status mengikuti scope pencarian; XLSX belum ada. Filter classification/page, DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
+Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` mengikuti seluruh filter dan scope pencarian; XLSX belum ada. DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
+
+### Pencarian dan pagination aktual
+
+`GET /api/archives` menerima kriteria opsional berikut, digabungkan dengan AND setelah pembatasan akses pengguna:
+
+| Parameter | Nilai |
+|---|---|
+| q | Substring literal, tanpa membedakan kapital, maksimal 200 karakter; nomor, asal, tujuan, perihal, klasifikasi atau subbagian |
+| type | incoming / outgoing |
+| year | Empat digit berdasarkan tanggal surat |
+| classification | Nama klasifikasi terdaftar |
+| subsection | Administrasi / Hukum / Pengawasan / PPPS; tidak memperluas izin pengguna |
+| from, to | YYYY-MM-DD, tanggal surat inklusif; awal tidak boleh melewati akhir |
+| status | Belum ditindaklanjuti / Sedang diproses / Selesai pada salah satu disposisi |
+| page, page_size | Halaman positif; ukuran 10/25/50/100, default 25 |
+
+Adanya `page` atau `page_size` mengaktifkan respons `{items,page,page_size,total,pages,classifications,subsections,years}`. Urutan berdasarkan createdAt terbaru lalu id menaik; halaman berlebih diarahkan ke halaman terakhir. Hasil kosong memiliki total 0, page 1 dan pages 1. Parameter tidak valid ditolak 422. `years` hanya berasal dari arsip yang boleh dilihat pengguna, sebelum filter pencarian.
+
+Tanpa kedua parameter pagination, kontrak daftar tanpa halaman tetap dipertahankan untuk dashboard/disposisi. Store saat ini masih memuat dataset lengkap ke memori: ini pembatasan respons daftar, belum pagination/query SQL. `GET /api/export.csv` menerima delapan kriteria yang sama dan mengekspor seluruh hasil berizin, mengabaikan parameter halaman.
 
 ## Publik
 
@@ -19,7 +38,7 @@ Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bil
 
 ## Arsip
 
-- `GET /api/archives?type=&q=&year=&classification=&status=&page=`
+- `GET /api/archives?type=&q=&year=&classification=&subsection=&from=&to=&status=&page=1&page_size=25`
 - `POST /api/archives` — pencatat berwenang membuat metadata.
 - `GET /api/archives/{id}` — pemeriksaan akses terjadi sebelum mengembalikan metadata.
 - `PATCH /api/archives/{id}` — hanya peran pengelola yang berwenang; perubahan tercatat.

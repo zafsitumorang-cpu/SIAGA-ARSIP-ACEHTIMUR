@@ -11,3 +11,5 @@ SIAGA_PLAYWRIGHT_MODULE=/tmp/siaga-browser-tools/node_modules/playwright node te
 ```
 
 `SIAGA_CHROMIUM_PATH` opsional untuk executable browser yang sudah terpasang. `SIAGA_SCREENSHOT` opsional untuk output screenshot mobile. Gunakan proxy dan CA lingkungan sesuai kebijakan runtime bila pemasangan browser memerlukan jaringan; jangan menonaktifkan TLS. Tes menggunakan data dummy dan HTTP loopback, bukan probe/mutasi produksi.
+
+`archive-search.cjs` memakai konfigurasi Playwright yang sama dan server sementara pada loopback 3506. Jalankan dengan mengganti nama skrip pada contoh di atas. Tes meliputi pagination, kombinasi filter dan CSV tanpa pemotongan halaman, metadata di hasil filter, dashboard tetap utuh, tanggal tidak valid, hasil kosong, retry, navigasi saat request lambat, mobile dan scope pegawai. `npm run test:query` menguji batas/urutan halaman pada 1.300 rekaman sintetis; ini bukan uji beban VPS atau bukti kinerja SQL.

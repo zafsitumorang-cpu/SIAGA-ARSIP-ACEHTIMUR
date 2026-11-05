@@ -27,8 +27,10 @@ jobs:
           done
           node --check public/app.js
           node --check public/archive-editor.js
+          node --check public/archive-search.js
       - run: npm run uat
       - run: npm run test:migration
+      - run: npm run test:query
       - run: npm run test:security
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres

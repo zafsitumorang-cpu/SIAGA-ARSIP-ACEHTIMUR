@@ -55,8 +55,12 @@ Commit `be4037a7b439c3fdfa7d9a943a5ab7ea55c34679` menambahkan edit metadata khus
 
 Deployment dipantau melalui HTTPS tanpa menjalankan command baru pada VPS. Sekitar 250 detik setelah probe awal, checksum app.js, archive-editor.js dan workspace.css cocok dengan commit fitur; health/config produksi 200, archives anonymous 401 dan statistik tetap 20 arsip. Ini mendukung bahwa deployment otomatis berhasil menyajikan fitur. Agen tidak mengedit arsip atau memasukkan credential produksi; penerimaan pengguna tetap dilakukan melalui akun admin pada arsip uji.
 
+### Pencarian dan halaman arsip — 5 November
+
+Pengguna melaporkan UAT metadata pada OUT/AT/010/2026 lulus: perihal wajib, perubahan/audit dan konflik dua tab; perihal dikembalikan semula. Paket berikutnya menambahkan filter lengkap, pagination respons daftar dan CSV seluruh hasil sesuai scope. Schema SQL tetap sama. Pemeriksaan lokal: keamanan 133 (JSON/PostgreSQL), database 8, query sintetis 1.300 rekaman 8, migrasi 6, UAT 15, browser pencarian 11 dan regresi browser metadata/interaksi. npm audit melaporkan nol kerentanan. Pengujian dilakukan pada data sementara, bukan mutasi produksi. Ketersediaan rilis di domain dicatat setelah deployment terverifikasi; performa query SQL dan beban VPS belum dibuktikan karena store/cache internal masih membaca dataset penuh.
+
 1. Pemilik server mengambil credential admin secara privat, login, mengganti password awal dan memetakan akun riil/peran/subbagian.
 2. Jadwalkan backup, salin terenkripsi ke lokasi terpisah, tetapkan retensi dan alarm, lalu uji restore database beserta binary ke lingkungan bersih. Backup yang dilaporkan masih lokal.
 3. UAT pengguna: catat surat uji, unggah/unduh berizin, disposisi, pembatasan peran/subbagian dan pergantian sesi. Data 20 arsip lama bukan bukti dokumen asli telah tersedia.
-4. Verifikasi restart/redeploy dan beban representatif. Selesaikan atau sepakati ruang lingkup fitur wajib yang masih terbuka (edit metadata, XLSX, pagination/filter, histori versi).
+4. Verifikasi restart/redeploy dan beban representatif. Selesaikan atau sepakati ruang lingkup fitur wajib yang masih terbuka (izin edit recorder, XLSX, histori versi); lakukan penerimaan pengguna untuk filter/pagination baru.
 5. Tutup gate keamanan/operasional dan penerimaan LAUNCH_READINESS.md sebelum memakai arsip nyata. Mode produksi aktif tidak berarti seluruh kebutuhan peluncuran telah selesai.

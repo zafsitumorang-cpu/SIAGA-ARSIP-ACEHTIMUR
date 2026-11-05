@@ -15,7 +15,8 @@
     "db:export": "node scripts/database.mjs export",
     "test:security": "node scripts/security-tests.mjs",
     "test:database": "node scripts/database-tests.mjs",
-    "test:migration": "node scripts/migration-tests.mjs"
+    "test:migration": "node scripts/migration-tests.mjs",
+    "test:query": "node scripts/query-tests.mjs"
   },
   "engines": {
     "node": ">=22"
