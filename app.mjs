@@ -3,7 +3,6 @@ import fs from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import {execFileSync} from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
@@ -15,7 +14,8 @@ import {archiveDocuments} from './lib/archive-files.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
-let revision='unknown';try{revision=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();}catch{}
+let revision='unknown';
+try{const gitDir=path.join(ROOT,'.git'),head=(await fs.readFile(path.join(gitDir,'HEAD'),'utf8')).trim();const value=head.startsWith('ref: ')?(await fs.readFile(path.join(gitDir,head.slice(5)),'utf8')).trim():head;if(/^[a-f0-9]{40}$/.test(value))revision=value;}catch{}
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(ROOT, 'data');
 const FILE_DIR = path.join(DATA_DIR, 'files');
 const DATA_FILE = path.join(DATA_DIR, 'data.json');
