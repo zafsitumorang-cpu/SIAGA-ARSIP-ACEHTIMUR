@@ -26,6 +26,8 @@ Pencatatan dan pemeliharaan surat masuk/keluar; berkas privat; disposisi; akses 
 
 ## Tahap 3 — lengkapi pekerjaan pengguna
 
+Paket edit metadata admin tersedia pada kode terbaru, termasuk validasi, konflik versi dan audit nama field; PostgreSQL schema tetap v1. Pembaruan tidak memberikan izin edit recorder, penghapusan, histori nilai, XLSX atau pagination secara otomatis. Gunakan UAT perbaikan metadata di MVP_TESTING.md untuk penerimaan pengguna.
+
 - Edit metadata dengan izin admin/pencatat sesuai aturan dan audit per perubahan.
 - Detail arsip beserta kronologi disposisi/berkas; unggah dan kegagalan unggah tidak menghasilkan tautan rusak.
 - Filter tahun/tanggal, jenis, klasifikasi, subbagian sesuai role, status dan pagination.

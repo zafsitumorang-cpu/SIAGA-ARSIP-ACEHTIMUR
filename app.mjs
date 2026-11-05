@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { createStore, emptyData } from './lib/store.mjs';
 import { fail, passwordHash, verifyPassword, tokenHash, text, validateArchive, validateUpload } from './lib/security.mjs';
+import {prepareArchiveEdit,metadataLabels} from './lib/archive-edit.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -68,7 +69,7 @@ function visibleArchives(user, url) {
   const q = (url.searchParams.get('q') || '').toLowerCase(); const type = url.searchParams.get('type'); const year = url.searchParams.get('year'); const status = url.searchParams.get('status');
   return db.archives.filter(a => canSee(user, a) && (!type || a.type === type) && (!year || a.letterDate.startsWith(year)) && (!status || a.dispositions.some(d => d.status === status)) && (!q || [a.number, a.origin, a.destination, a.subject, a.classification, a.subsection].some(v => String(v || '').toLowerCase().includes(q))));
 }
-function archivePayload(a) { return { ...a, fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
+function archivePayload(a) { return { ...a, metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && /^file_[a-zA-Z0-9_-]+$/.test(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -99,6 +100,18 @@ async function route(req, res) {
     if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai').length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
     if (pathname === '/api/archives' && req.method === 'GET') {audit(u.id,'view_list','archive','list');await persist();return send(res,200,{items:visibleArchives(u,url).map(archivePayload),classifications:db.classifications,subsections});}
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='GET'){const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a))return send(res,404,{error:'Arsip tidak ditemukan.'});audit(u.id,'view','archive',a.id);await persist();return send(res,200,archivePayload(a));}
+    if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='PATCH'){
+      if(u.role!=='admin')return send(res,403,{error:'Perbaikan metadata hanya tersedia untuk admin.'});
+      const archive=db.archives.find(item=>item.id===pathname.split('/')[3]);
+      if(!archive||!canSee(u,archive))return send(res,404,{error:'Arsip tidak ditemukan.'});
+      const {values,fields}=prepareArchiveEdit(archive,await body(req),u,db,subsections);
+      if(fields.length){
+        Object.assign(archive,values,{metadataVersion:(archive.metadataVersion||0)+1,updatedAt:now(),updatedBy:u.id});
+        audit(u.id,'update_metadata','archive',archive.id,'Field diperbarui: '+fields.map(key=>metadataLabels[key]).join(', '));
+        await persist();
+      }
+      return send(res,200,archivePayload(archive));
+    }
     if (pathname === '/api/users' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.users.filter(x => x.active).map(safeUser) }); }
     if (pathname === '/api/admin/users' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: db.users.map(safeUser) }); }
     if (pathname === '/api/admin/roles' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: Object.values(roles) }); }

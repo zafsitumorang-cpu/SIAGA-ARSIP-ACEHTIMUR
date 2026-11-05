@@ -4,7 +4,7 @@ Kontrak konseptual REST/JSON dan catatan implementasi Node.js. Tidak ada migrasi
 
 ## Kontrak aktual tahap fondasi — 5 November 2026
 
-Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` dengan q/type/year/status mengikuti scope pencarian; XLSX belum ada. Filter classification/page, PATCH/DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
+Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bila endpoint internal. Origin browser harus sama dengan APP_ORIGIN produksi; cross-site ditolak. Body umum maksimal 128 KiB, upload JSON maksimal 24 MiB untuk binary maksimal 15 MiB. `/api/health` dan `/api/config` publik hanya memuat status kesehatan/mode demo. Detail `GET /api/archives/{id}` tersedia dan diaudit. Ekspor aktual masih `GET /api/export.csv` dengan q/type/year/status mengikuti scope pencarian; XLSX belum ada. Filter classification/page, DELETE metadata, history khusus, dan endpoint konseptual lain di bawah belum seluruhnya diterapkan. Lihat LAUNCH_READINESS.md untuk celah fitur.
 
 ## Publik
 
@@ -60,3 +60,12 @@ OCR dijalankan melalui pekerjaan latar belakang setelah berkas lolos pemeriksaan
 
 ### GET /api/notifications
 Memerlukan sesi. Mengembalikan maksimal 20 disposisi terbaru, diurutkan berdasarkan createdAt. Admin/pimpinan melihat cakupan lintas subbagian. Pengguna lain hanya menerima disposisi untuk user/subbagiannya dari arsip yang diizinkan canSee. Setiap item: id (ID disposisi), text, subject, status, createdAt. Panel UI mengambil daftar ini ketika dibuka. Endpoint ini tidak menandai dibaca dan bukan layanan push real-time.
+
+
+### PATCH metadata yang sudah diterapkan
+
+`PATCH /api/archives/{id}` memerlukan role admin. Pegawai, recorder, uploader dan leader ditolak 403; anonymous 401. Baca versi terbaru dari GET detail (`metadataVersion`, default 0 untuk data lama), lalu sertakan `expectedVersion` integer pada PATCH. Versi usang menghasilkan 409; field tidak valid/di luar allowlist menghasilkan 422. Field yang dapat diubah: type, number, letterDate, receivedDate, origin, destination, subject, signatory, classification, subsection. PATCH sebagian didukung; field lain memakai nilai saat ini.
+
+File/pencatat/waktu pencatatan/disposisi tidak dapat dimasukkan melalui PATCH. Validasi surat masuk/keluar dan klasifikasi tetap berlaku. Jenis atau subbagian tidak boleh berubah jika arsip mempunyai disposisi, termasuk yang telah selesai, karena belum ada alur penugasan ulang. Tanpa disposisi admin boleh mengoreksi keduanya; scope baca/unduh mengikuti subbagian baru. Konversi ke surat keluar mengosongkan asal/tanggal diterima; konversi masuk mengosongkan penandatangan. Koreksi tanpa konversi mempertahankan field opsional lama. File tetap dipertahankan.
+
+Perubahan nyata menaikkan metadataVersion dan mengisi updatedAt UTC/updatedBy; payload menyertakan updatedByName. No-op tidak menaikkan versi atau membuat audit palsu. Audit update_metadata mencatat aktor/waktu/arsip dan nama field, tanpa nilai lama/baru atau isi perihal. Histori nilai metadata belum tersedia. Data tambahan disimpan pada payload JSONB yang ada; schema SQL tidak berubah.

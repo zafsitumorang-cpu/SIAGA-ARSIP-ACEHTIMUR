@@ -26,6 +26,7 @@ jobs:
             bash -n "$script"
           done
           node --check public/app.js
+          node --check public/archive-editor.js
       - run: npm run uat
       - run: npm run test:migration
       - run: npm run test:security

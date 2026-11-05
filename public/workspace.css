@@ -94,3 +94,8 @@
 @keyframes ws-notification-in { from { opacity: .5; transform: translateY(-5px) scale(.98); } to { opacity: 1; transform: none; } }
 @media(max-width:620px){.ws-notification-panel { right: 16px; top: 70px; }.ws-toast-stack { right: 16px; bottom: 16px; }.ws-skeleton-grid { grid-template-columns: repeat(2,1fr); gap: 12px; }}
 @media(prefers-reduced-motion:reduce){.workspace *, .ws-toast { animation: none !important; transition: color 100ms,background-color 100ms !important; }.workspace.network-busy .top::after { transform: scaleX(1); opacity: 1; animation: none !important; }.ws-spinner { animation: none !important; border-style: dotted; }.workspace .btn:active, .workspace .ws-icon-button:active, .workspace .ws-welcome-button:active, .workspace .nav button:hover .icon { transform: none; }}
+.archive-edit-intro{font-size:13px;line-height:1.6;margin-bottom:18px}
+.archive-edit-error{padding:12px 14px;border:1px solid #f1bcb8;border-radius:8px;background:#fff3f1;color:#90231e;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.archive-edit-error[hidden]{display:none}
+#editArchiveForm [hidden]{display:none!important}
+#editArchiveForm .actions{flex-wrap:wrap}

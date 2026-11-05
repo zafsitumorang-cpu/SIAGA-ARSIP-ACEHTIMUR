@@ -37,3 +37,17 @@ Buka `http://localhost:3000`.
 ## Batasan pilot
 
 Data otomatis disimpan ke `data/data.json`, sedangkan berkas unggahan masuk ke `data/files/`. Folder data tidak di-commit. File dummy awal hanya metadata dan nama file; endpoint unggah menerima PDF, JPG/PNG, XLSX, dan DOCX hingga 15 MB. Sebelum arsip nyata dipakai, ganti kredensial demo, gunakan database/object storage privat, aktifkan TLS, backup, dan tinjau kontrol akses.
+
+
+## Uji perbaikan metadata
+
+Gunakan data uji dan akun yang disediakan operator, bukan credential demo pada produksi.
+
+1. Sebagai admin, buka Arsip surat → Ubah metadata. Perbaiki nomor/perihal/tanggal/klasifikasi dan simpan. Pastikan nilai baru terlihat di daftar/detail serta waktu/aktor perubahan tampil.
+2. Periksa Audit aktivitas: update_metadata mencatat nama field tanpa menyalin perihal/isi dokumen. File, pencatat, waktu pencatatan dan disposisi tetap dipertahankan.
+3. Buka surat yang sama di dua tab sebelum menyimpan. Simpan tab pertama, lalu tab kedua: konflik harus menahan draft dan menawarkan muat ulang. Tidak boleh menimpa perubahan pertama secara diam-diam.
+4. Pastikan pencatat, pengunggah, pimpinan dan pegawai tidak mendapat tombol edit; API juga menolak PATCH mereka. Pegawai tetap dapat membuka detail surat yang sesuai scope.
+5. Pada surat dengan disposisi, jenis/subbagian dikunci. Pada surat tanpa disposisi, perpindahan oleh admin harus memperbarui scope baca/unduh. Pergantian jenis harus memenuhi field wajib tipe baru.
+6. Simulasikan koneksi gagal di lingkungan uji: draft tetap ada dan tombol simpan dapat digunakan lagi. Periksa dialog/fokus/keyboard di desktop dan HP.
+
+Regresi API ada dalam npm run test:security (JSON dan PostgreSQL ketika PG_TEST_URL lokal diisi). Uji perubahan produksi yang dilakukan manusia bukan bagian probe eksternal read-only oleh agen.

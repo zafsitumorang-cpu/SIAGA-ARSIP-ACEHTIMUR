@@ -10,6 +10,8 @@ Operator melaporkan upgrade commit 82a9327 mencapai tahap 7/7 dengan snapshot su
 
 ## Pembaruan implementasi — 5 November 2026
 
+Paket lanjutan perbaikan metadata kini menyediakan PATCH khusus admin dan formulir dari daftar/detail arsip. Pemeriksaan versi mencegah lost update; field dilindungi dari mass assignment, validasi surat tetap berlaku, berkas/disposisi/identitas pencatatan dipertahankan, serta audit hanya mencatat nama field. Surat dengan disposisi tidak dapat dipindahkan jenis/subbagian hingga alur penugasan ulang tersedia. FR-04 belum dianggap penuh karena izin edit recorder belum diperluas, dan histori nilai lama/baru belum tersedia. Schema SQL tidak berubah; XLSX, pagination/filter lengkap, soft delete serta gate backup offsite/penerimaan tetap terbuka. Bukti pengujian kode terbaru: regresi keamanan 93 pemeriksaan pada JSON/PostgreSQL, regresi database 8 pemeriksaan, serta browser meliputi konflik dua tab, kegagalan simpan, pembatasan peran, escape teks dan mobile.
+
 Bagian audit awal di bawah adalah rekaman temuan pada a12e258, bukan hasil pengujian kode terbaru. Paket fondasi telah diuji pada direktori sementara dan PostgreSQL lokal:
 
 - UAT 15/15, regresi keamanan 49/49 (JSON dan PostgreSQL), regresi database 8/8; uji browser 13 pemeriksaan termasuk login, navigasi, loading dan notifikasi lulus. Build dan smoke test Docker (health/login/aset) lulus. npm audit melaporkan nol kerentanan dependensi saat pengujian.

@@ -47,3 +47,8 @@
 28. PDF Drive disalin ke penyimpanan privat sistem; surat kertas dipindai menjadi PDF dan metadatanya dicatat.
 29. Metadata migrasi belum tersedia. Dummy 10 masuk dan 10 keluar hanya untuk demonstrasi; bukan pengganti data nyata.
 30. Migrasi produksi harus merekonsiliasi jumlah file dan metadata, serta merekam kesalahan/duplikasi untuk ditinjau manusia.
+
+
+## Implementasi perbaikan metadata tahap ini
+
+Admin memperbaiki metadata melalui Arsip surat → Ubah metadata atau Detail → Ubah metadata. Recorder masih mencatat metadata; kewenangan perbaikan recorder pada FR-04 belum diperluas dalam paket ini. Admin tidak dapat mengganti jenis/subbagian bila surat memiliki disposisi hingga alur penugasan ulang tersedia. Konflik dua pengguna harus dimuat ulang, bukan menimpa data yang lebih baru. Audit mencatat nama field, aktor dan waktu; nilai metadata sensitif tidak disalin ke log umum.
