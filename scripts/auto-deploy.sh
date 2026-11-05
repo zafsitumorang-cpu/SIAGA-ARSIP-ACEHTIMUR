@@ -40,6 +40,7 @@ backup="/var/backups/siaga-deploy/$run_id"
 new_dir="/opt/siaga-arsip-releases/auto-$sha"
 install -d -m 700 "$backup"
 log_file="$backup/operations.log"
+trap 'status=$?;rm -f "$ci_file";if [[ "$status" != 0 ]];then echo "Update belum selesai; log privat: $backup";fi;exit "$status"' EXIT
 run(){ "$@" >>"$log_file" 2>&1; }
 echo "[1/5] CI lulus; menyiapkan commit $sha."
 if [[ ! -e "$new_dir" ]]; then
@@ -47,7 +48,7 @@ if [[ ! -e "$new_dir" ]]; then
   run git -C "$new_dir" init -q
   run git -C "$new_dir" remote add origin "$repo"
 fi
-[[ ! -L "$new_dir" && "$(git -C "$new_dir" remote get-url origin)" = "$repo" ]]
+[[ ! -L "$new_dir" && "$(git -C "$new_dir" config --get remote.origin.url)" = "$repo" ]]
 run git -C "$new_dir" fetch --depth 1 origin "$sha" "$old_sha"
 run git -C "$new_dir" checkout --detach "$sha"
 [[ "$(git -C "$new_dir" rev-parse HEAD)" = "$sha" ]]
