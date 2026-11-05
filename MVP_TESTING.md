@@ -105,3 +105,7 @@ Jalankan `PG_TEST_URL=<PostgreSQL lokal fixture> npm run test:file-io`: 17 pemer
 ### 03.1 — penerima individu/tim
 
 `PG_TEST_URL=<fixture lokal> npm run test:dispositions` menjalankan 24 pemeriksaan JSON/PostgreSQL: daftar penerima minimal/aktif/scoped, individu vs tim, rekan tak ditugasi ditolak, supervisi, penerima nonaktif/asing ditolak, notifikasi dan restart. Browser `tests/browser/dispositions.cjs` menguji pilihan orang/tim, penyimpanan nama, muat gagal/retry, HP/keyboard dan editor status yang tidak ditampilkan ke non-penerima. Asumsi penerima ada di FEATURE_ASSUMPTIONS.md; persetujuan kantor tetap belum dicentang.
+
+### 03.2 — kronologi dan tindak lanjut
+
+Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti meliputi provenance dan histori immutable, catatan teks/limit, no-op, aturan reopen/reset, scope serta restart. Browser `dispositions.cjs` menjadi 10 skenario: catatan HTML di-escape, validasi alasan tanpa kehilangan draft, reopen mempertahankan bukti selesai, serta kronologi di detail arsip. UAT kantor belum dilakukan; default transisi di FEATURE_ASSUMPTIONS.md memerlukan tinjauan pemilik proses.

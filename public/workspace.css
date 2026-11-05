@@ -132,3 +132,6 @@
 #archiveSearchForm .field{min-width:0}
 #archiveFilterError[hidden]{display:none}
 @media(max-width:720px){.archive-basic-grid,.archive-filter-grid{grid-template-columns:1fr}.archive-filter-actions>span{width:100%}#archiveAdvanced summary span{display:block;margin:6px 0 0}.archive-pagination{align-items:flex-start}.archive-pagination>div{width:100%;justify-content:space-between}}
+
+/* Disposition chronology: text remains readable without color or motion. */
+.disp-chronology{margin:24px 0}.disp-chronology article{border-top:1px solid var(--ws-border,#e5e7eb);padding:16px 0}.disp-chronology h5{font-size:14px;margin:0 0 8px}.disp-timeline{padding-left:22px;margin:20px 0}.disp-timeline li{padding:0 0 18px 8px;line-height:1.6}.disp-timeline p{margin:4px 0;font-size:13px}.disp-timeline small{display:block;color:#536174}.disp-note{white-space:pre-wrap;overflow-wrap:anywhere}.disp-history{margin-top:6px}

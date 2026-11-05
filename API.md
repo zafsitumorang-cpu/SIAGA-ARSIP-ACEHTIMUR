@@ -130,3 +130,7 @@ Binary dipublikasikan lengkap tanpa overwrite sebelum commit metadata; respons s
 ### Penerima disposisi (03.1)
 
 `GET /api/archives/:id/disposition-recipients` khusus admin/pimpinan mengembalikan `{items:[{id,name,subsection}]}` staf aktif pada subbagian arsip. POST disposisi menerima `assignedUserId` kosong untuk tim, atau ID dari daftar aktif tersebut. Penugasan individu memprioritaskan ID orang: rekan satu subbagian tidak dapat memperbarui statusnya. Admin/pimpinan tetap mengawasi; tugas tim dapat diperbarui staf subbagian sesuai scope baca. Notifikasi tugas individu memakai aturan yang sama. Tidak ada pemberian akses lintas subbagian secara implisit.
+
+### Kronologi disposisi (03.2)
+
+Payload arsip menyertakan `createdByName` dan `updates[].byName` sebagai label akun saat dibaca; identitas sumber tetap `createdBy`/`by`. Update status menerima `note` opsional berupa teks maksimal 2.000 karakter. Event baru menyimpan `previousStatus`, `status`, `note`, `by`, `at` dan `kind` (status/note/reopen); event lama tidak ditulis ulang. Kembali dari sedang diproses ke belum ditindaklanjuti membutuhkan alasan. Membuka tugas selesai hanya admin/pimpinan, ke sedang diproses dengan alasan (403/422 jika melanggar). Catatan pada status sama membuat event note; status sama tanpa catatan no-op. Seluruh detail tetap melalui scope arsip. Urutan disposisi PostgreSQL stabil menurut createdAt dan ID, bukan posisi fisik baris setelah UPDATE.

@@ -21,3 +21,5 @@ SIAGA_PLAYWRIGHT_MODULE=/tmp/siaga-browser-tools/node_modules/playwright node te
 Pembaruan 02.3 memperluas file-versions menjadi 11 skenario browser termasuk lampiran A/B, pembuatan terputus/retry dan penggantian independen. Suite API menjadi 52 pemeriksaan JSON/PostgreSQL, termasuk lampiran-sebelum-primary, restore independen dan isolasi idempotensi per dokumen. Model mendapat regresi provenance rollback (total 12).
 
 `dispositions.cjs` memakai loopback 3509, 6 skenario pilihan penerima orang/tim aktif/scoped, save, gagal muat/retry, HP/keyboard, rekan bukan penerima tanpa editor dan error JavaScript. Fixture dan akun hanya lokal/sementara. Konfigurasi Playwright sama dengan contoh di atas.
+
+03.2 memperluas dispositions menjadi 10 skenario, termasuk kronologi/catatan aman, alasan reopen, histori selesai yang dipertahankan dan detail arsip. API `test:dispositions` kini 38 pemeriksaan JSON/PostgreSQL. Perubahan status cepat yang maju tetap tersedia; reset/reopen memakai form catatan kronologi.

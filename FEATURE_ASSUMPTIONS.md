@@ -9,3 +9,7 @@ Ini default implementasi yang dapat diubah; bukan bukti keputusan paket 00 telah
 - `assignedUserId` yang terisi mengalahkan kelompok: hanya orang tersebut dan admin/pimpinan dapat memperbarui tugas. Jika ID kosong, staf pada subbagian tujuan dapat memperbarui tugas tim.
 - Akses baca arsip tetap menurut scope lama; penugasan tidak memperluas akses lintas bagian. Pemilik proses perlu meninjau apakah instruksi individual membutuhkan kebijakan baca yang lebih sempit di masa depan.
 - Pengguna nonaktif atau pindah subbagian tidak memperoleh akses dari penugasan lama. Pengalihan tugas membutuhkan tindakan supervisor pada fitur yang disahkan; tidak ada fallback diam-diam dari individu menjadi tugas tim.
+
+## 03.2 — kronologi dan transisi
+
+Tindak lanjut dapat berjalan dari belum ditindaklanjuti ke sedang diproses atau langsung selesai (kompatibel alur surat sederhana). Kembali dari sedang diproses ke belum ditindaklanjuti memerlukan alasan. Tugas selesai hanya dibuka kembali oleh admin/pimpinan, menuju sedang diproses dengan alasan wajib. Penerima tetap dapat menambah catatan perkembangan pada status yang sama; catatan kosong tanpa perubahan tidak membuat event. Catatan maksimal 2.000 karakter; instruksi maksimal 4.000. Riwayat lama yang belum menyimpan previousStatus/kind tetap ditampilkan berdasarkan informasi yang tersedia, tanpa merekayasa data.
