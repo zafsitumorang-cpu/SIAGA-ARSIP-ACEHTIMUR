@@ -5,8 +5,8 @@ set -Eeuo pipefail
 umask 077
 sha="${1:-}"
 [[ "$(id -u)" = 0 && "$sha" =~ ^[a-f0-9]{40}$ ]]
-systemctl is-active --quiet siaga.service
-systemctl is-active --quiet siaga-backup.timer
+systemctl is-active --quiet siaga.service || { echo 'Layanan aplikasi belum aktif; pemasangan dihentikan.';exit 1; }
+systemctl is-active --quiet siaga-backup.timer || { echo 'Jadwal backup belum aktif; selesaikan pemasangan backup dahulu.';exit 1; }
 for unit in siaga-auto-deploy.service siaga-auto-deploy.timer;do
   if systemctl cat "$unit" >/dev/null 2>&1;then echo "Unit $unit sudah ada; tidak ditimpa.";exit 1;fi
 done

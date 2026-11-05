@@ -37,6 +37,8 @@ Pemeriksaan ini mendukung hasil migrasi yang dilaporkan, tetapi bukan inspeksi S
 
 ## Pekerjaan berikutnya
 
+Operator kemudian menyatakan penggantian password dan pemasangan backup harian telah selesai. Output timer tidak diterima, sehingga ini dicatat sebagai laporan operator, bukan inspeksi unit independen. Controller deployment otomatis yang memeriksa CI tersedia melalui [AUTO_DEPLOY.md](AUTO_DEPLOY.md); timer deployment belum dinyatakan aktif sebelum hasil pemasang diterima. Pemasang deployment memeriksa bahwa aplikasi serta timer backup benar-benar aktif sebelum melanjutkan.
+
 1. Pemilik server mengambil credential admin secara privat, login, mengganti password awal dan memetakan akun riil/peran/subbagian.
 2. Jadwalkan backup, salin terenkripsi ke lokasi terpisah, tetapkan retensi dan alarm, lalu uji restore database beserta binary ke lingkungan bersih. Backup yang dilaporkan masih lokal.
 3. UAT pengguna: catat surat uji, unggah/unduh berizin, disposisi, pembatasan peran/subbagian dan pergantian sesi. Data 20 arsip lama bukan bukti dokumen asli telah tersedia.
