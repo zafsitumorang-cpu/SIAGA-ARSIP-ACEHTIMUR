@@ -26,7 +26,8 @@
     "test:notifications": "node scripts/notification-tests.mjs",
     "test:quality": "node scripts/quality-tests.mjs",
     "test:index": "node scripts/index-tests.mjs",
-    "test:inspection": "node scripts/inspection-tests.mjs"
+    "test:inspection": "node scripts/inspection-tests.mjs",
+    "test:metadata-history": "node scripts/metadata-history-tests.mjs"
   },
   "engines": {
     "node": ">=22"

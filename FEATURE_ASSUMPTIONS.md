@@ -37,3 +37,7 @@ Indeks sistem = ID arsip immutable; tahun/unit/kode/nomor merupakan konteks terp
 ## 04.3 — QC manusia dan duplikat sah
 
 Checklist metadata/kelengkapan halaman/keterbacaan/orientasi adalah pernyataan petugas, bukan analisis otomatis scan. Jumlah halaman opsional dan dicatat dari pengamatan. Checksum baru untuk legacy adalah baseline, bukan bukti file tidak pernah berubah sebelum hash dicatat. Pemeriksaan dilakukan saat dibuka/on-demand dan diulang ketika approval, bukan daemon pemantau. Nomor/agenda serupa dan hash sama merupakan kandidat; operator dapat menyatakan duplikat sah dengan alasan. Tidak ada deduplikasi/penghapusan otomatis atau pemaksaan nomor unik global. Deteksi hash bergantung checksum tercatat dan baseline QC; belum semua file legacy dapat dibandingkan sebelum diperiksa. Sumber/kewenangan reviewer tetap perlu pengesahan kantor; pelaksanaan QC kantor belum diklaim.
+
+## 04.4 — batas koreksi dan histori
+
+Sesuai instruksi pemilik, 00.2 tetap belum disahkan dan edit metadata hanya admin. Jenis/subbagian tidak dapat berubah bila ada disposisi apa pun, termasuk selesai; tidak ada pengalihan tugas implisit. Pemindahan tanpa disposisi membawa seluruh arsip/file/histori ke scope unit baru dan mencabut akses unit lama. Histori umum hanya mencatat kolom, versi, pelaku dan waktu; nilai sebelum/sesudah tidak disalin. Ini sengaja bukan riwayat isi atau fitur undo metadata. Histori sebelum fitur tersedia tidak direkonstruksi. Pelaksanaan SOP/pengesahan kantor tidak ikut dianggap selesai.

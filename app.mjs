@@ -85,7 +85,15 @@ function visibleArchives(user,url){
 }
 function fileAvailable(fileId){if(!validFileId(fileId))return false;try{const stat=lstatSync(path.join(FILE_DIR,fileId));return stat.isFile()&&!stat.isSymbolicLink();}catch{return false;}}
 function dispositionPayload(d){const {statusReceipts,notificationReads,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
-function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
+function metadataHistoryPayload(archive){
+  return (archive.metadataHistory||[]).map(event=>{
+    const fields=(Array.isArray(event.fields)?event.fields:[]).filter(field=>typeof field==='string'&&Object.hasOwn(metadataLabels,field));
+    const author=db.users.find(user=>user.id===event.by);
+    // Only the allowed summary crosses the API boundary, including for imported legacy entries.
+    return {id:event.id,version:event.version,fields,fieldLabels:fields.map(field=>metadataLabels[field]),by:author?.id||null,byName:author?.name||'Pengguna tidak tersedia',at:event.at};
+  });
+}
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, metadataHistory:metadataHistoryPayload(a), ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -127,7 +135,9 @@ async function route(req, res) {
       if(!archive||!canSee(u,archive))return send(res,404,{error:'Arsip tidak ditemukan.'});
       const {values,fields}=prepareArchiveEdit(archive,await body(req),u,db,subsections);
       if(fields.length){
-        Object.assign(archive,values,{metadataVersion:(archive.metadataVersion||0)+1,updatedAt:now(),updatedBy:u.id});
+        const version=(archive.metadataVersion||0)+1,at=now();
+        (archive.metadataHistory||=[]).push({id:id('metadata_change'),version,fields:[...fields],by:u.id,at});
+        Object.assign(archive,values,{metadataVersion:version,updatedAt:at,updatedBy:u.id});
         audit(u.id,'update_metadata','archive',archive.id,'Field diperbarui: '+fields.map(key=>metadataLabels[key]).join(', '));
         await persist();
       }

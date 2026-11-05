@@ -10,6 +10,8 @@ Urutan aktif: 02.1 → 02.2 → 02.3 → 02.4 → 03 → 04 → 05 → 07 → 08
 
 SOP/Juknis, pelatihan, pilot kantor, evaluasi/KPI, inventaris fisik dan penetapan tim/PIC adalah pekerjaan kantor. Pengembangan hanya menyiapkan template/alat bantu; pelaksanaannya tidak dicentang tanpa bukti kantor. Bila keputusan 00 belum ada, gunakan asumsi konservatif yang terdokumentasi dan dapat diubah, tanpa mengklaim persetujuan kantor.
 
+**Batas instruksi pemilik terbaru:** sesi ini hanya menuntaskan 04.4, lalu berhenti. 04.5 dan TODO berikutnya menunggu permintaan baru. Penundaan keamanan/offsite dan batas demo dummy tetap berlaku.
+
 ## Cara mengerjakan satu per satu
 
 - Pilih satu ID tugas, misalnya `01.1`; implementasikan dalam paket kecil yang bisa diuji dan ditinjau. Catat commit, hasil tes, bukti deployment dan hasil UAT secara terpisah.
@@ -74,7 +76,7 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 - [x] **04.1 — Status kelengkapan/QC.** **Bukti:** kualitas 37 model/JSON/PG, browser QC 8 dan regresi browser 82. Approval admin terikat metadata/versi seluruh berkas; perubahan perlu review ulang. QC rinci tetap 04.3. Bedakan metadata tercatat, berkas belum ada, perlu verifikasi dan lengkap sesuai kebijakan; tampilkan antrean pengunggah/reviewer dan filter berkas belum lengkap. **Selesai:** file fisik ada belum otomatis dianggap scan benar/lengkap.
 - [x] **04.2 — Standar metadata dan indeks.** **Bukti:** indeks 28 model/JSON/PG dan browser 8; indeks immutable, agenda/kode opsional, sumber tervalidasi, ekspor dan nama terstruktur teruji. Aturan resmi kantor tetap asumsi, tidak direkayasa. Tentukan kode klasifikasi, tahun, unit, nomor agenda/indeks, penamaan tampilan/unduhan dan lokasi sumber fisik/Drive yang diperlukan. **Selesai:** indeks bisa diekspor, keterkaitan sumber jelas; object key internal tetap privat dan aman, tidak dipaksa menyerupai folder manual.
 - [x] **04.3 — QC dan duplikasi.** **Bukti:** inspeksi 26 JSON/PG, browser baru 6; checklist/hash/restart, baseline legacy, scope, duplikat sah dengan alasan dan tidak ada penghapusan teruji. Tandai kecocokan metadata, halaman/keterbacaan, orientasi scan dan checksum; beri peringatan nomor/file yang berpotensi sama. **Selesai:** operator memutuskan duplikat sah; tidak menghapus otomatis atau memaksakan nomor unik global tanpa aturan kantor.
-- [ ] **04.4 — Koreksi metadata sesuai keputusan.** Terapkan izin yang disahkan 00.2, histori perubahan yang diizinkan dan aturan pemindahan arsip dengan disposisi. **Selesai:** konflik versi tetap terlindungi; nilai sensitif tidak dipindahkan ke audit umum; penugasan ikut konsisten setelah koreksi pemilik.
+- [x] **04.4 — Koreksi metadata sesuai keputusan.** **Bukti:** 28 tes JSON/PG dan 9 browser; admin-only saat 00.2 belum disahkan, CAS, pembatasan semua disposisi, konsistensi assign-vs-move, histori ringkas tanpa nilai sensitif dan restart teruji. Gunakan aturan sementara admin-only sampai 00.2 disahkan, histori perubahan yang diizinkan dan aturan pemindahan arsip dengan disposisi. **Selesai:** konflik versi tetap terlindungi; nilai sensitif tidak dipindahkan ke audit umum; penugasan ikut konsisten setelah koreksi pemilik.
 - [ ] **04.5 — Soft-delete dan pemulihan bila masuk pilot.** Khusus pengelola, alasan wajib, konfirmasi, audit dan restore terkontrol. **Selesai:** arsip terhapus hilang dari daftar/publik/ekspor/unduh biasa dan versi/lampiran ikut scoped; tidak ada hard-delete/pemusnahan otomatis. Jika dikeluarkan dari pilot, catat persetujuan 00.3.
 
 ## 05 — Master klasifikasi dan kategori
@@ -147,6 +149,6 @@ Bagian ini hanya rencana. Pengguna sudah meminta melewatinya untuk sementara; ja
 - [ ] **13.3 — Kategori/unit lanjut.** Pelanggaran, sengketa, hukum, kepegawaian, pengadaan dan lainnya hanya setelah proses, skema, klasifikasi keamanan, pemilik serta retensi disahkan; jangan menjadikan aplikasi surat sebagai sistem perkara tanpa kajian.
 - [ ] **13.4 — Integrasi/tanda tangan/retensi otomatis.** Kebutuhan, kewenangan, keamanan dan dampak biaya dibuat sebagai proyek lanjutan; tidak ada pemusnahan otomatis sebelum kebijakan resmi.
 
-## Pekerjaan pertama yang direkomendasikan
+## Titik lanjut setelah 04.4
 
-**01.1 sudah selesai.** Urutan aktif dimulai dari **02.1 model versi/lampiran**, kemudian 02.2, 02.3, 02.4 dan paket fitur sesuai dependensi. 01.2, 01.3, 06.x dan paket 11 ditunda: keamanan. Dokumen/alat bantu kantor tidak membuktikan kegiatan kantor sudah terlaksana. Demonstrasi publik tetap dummy sampai gerbang keamanan/operasional ditutup.
+Status sampai 04.4 beserta tes/CI/demo ada pada checklist dan FEATURE_PROGRESS.md. **04.5 belum dimulai dan menunggu permintaan pemilik.** 01.2, 01.3, 06.x dan paket 11 tetap ditunda: keamanan. Dokumen/alat bantu kantor tidak membuktikan kegiatan kantor terlaksana. Demo publik tetap dummy sampai gerbang keamanan/operasional dipenuhi.

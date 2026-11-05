@@ -133,3 +133,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 04.3 — checklist, checksum dan duplikat
 
 `test:inspection`: 26 JSON/PostgreSQL menguji checksum byte nyata, role/scope, mandatory checklist/page count, byte berubah ditolak, nomor ternormalisasi/nama file beda/duplikat checksum, scope kandidat dan redaksi history, penerimaan duplikat sah tanpa penghapusan, baseline legacy tanpa rekayasa provenance, replay receipt pre-checklist, restart. Browser archive-inspection.cjs 6 skenario checklist/hints, konfirmasi duplikat, evidence tersimpan, corruption/approval diblokir/koreksi, 360px/keyboard dan arsip tetap utuh/error JS. Fixture file sengaja diubah hanya dalam DATA_DIR sementara. Bukan bukti QC nyata atau pemantauan malware/integritas kontinu.
+
+### 04.4 — koreksi metadata dan histori scoped
+
+`test:metadata-history` memuat 28 pemeriksaan JSON/PostgreSQL: admin-only semua peran, anonim/scope, event atomik/identitas file, privasi nilai pada audit/histori dan DTO impor, no-op/invalid/forged/stale, konflik dua tab, pemindahan tanpa tugas serta pencabutan akses lama, pembatasan jenis/unit untuk semua status disposisi, assignment tidak berubah, balapan assign-vs-move dan restart. `metadata-history.cjs` memuat 9 skenario tampilan ringkas/no-op, pembaca berizin, dua tab/draft, field terkunci, mobile/keyboard, gap histori legacy serta respons terlambat setelah logout. Semua mutasi ada di fixture dummy; domain demo hanya diperiksa health/config/SHA tanpa login atau perubahan akun/data.
