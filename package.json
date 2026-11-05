@@ -24,7 +24,8 @@
     "files:check": "node scripts/reconcile-files.mjs",
     "test:dispositions": "node scripts/disposition-tests.mjs",
     "test:notifications": "node scripts/notification-tests.mjs",
-    "test:quality": "node scripts/quality-tests.mjs"
+    "test:quality": "node scripts/quality-tests.mjs",
+    "test:index": "node scripts/index-tests.mjs"
   },
   "engines": {
     "node": ">=22"

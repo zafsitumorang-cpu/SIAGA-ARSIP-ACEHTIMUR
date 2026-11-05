@@ -125,3 +125,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 04.1 — kelengkapan, antrean dan review
 
 `test:quality`: 37 model/JSON/PostgreSQL, mencakup metadata-only, file tersedia belum complete, scope/role, validasi/token/revision, retry/dua reviewer, primary/lampiran hilang, filter/ekspor/dashboard dan restart. Browser archive-quality.cjs: 8 skenario antrean, konfirmasi, approval/provenance, respons putus/retry, konflik/draft/reload, koreksi dan uploader 360px/keyboard. Regresi browser lama 82 tetap lulus. Semua fixture dummy; bukan bukti scan kantor sudah diperiksa atau reviewer telah disahkan. QC rinci/duplikasi 04.3 masih terbuka.
+
+### 04.2 — indeks dan sumber arsip
+
+`test:index`: 28 model/JSON/PostgreSQL mencakup legacy/unknown tanpa mutasi, fingerprint lama secara byte-compatible, edit/validasi/scope, indeks tetap, pencarian, CSV/XLSX melalui reader independen, structured download asli/bytes/scope, konflik dan QC invalidation, restart. Browser archive-index.cjs: 8 skenario sumber wajib sesuai pilihan, tambah/edit, escaped detail, tidak ada fetch Drive, ekspor, unduh terstruktur, mobile/keyboard dan error JS. Kolom ekspor sumber hanya pada scope berizin; bukan inventaris nyata atau persetujuan kode/agenda kantor.

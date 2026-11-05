@@ -29,3 +29,7 @@ Penugasan/status/catatan/reopen oleh orang lain menghasilkan notifikasi masuk un
 ## 04.1 — kelengkapan dan reviewer
 
 Admin menjadi reviewer sementara sampai kantor menetapkan peran QC. Lampiran opsional untuk ditambahkan, tetapi semua lampiran terdaftar harus tersedia agar lengkap. Lengkap adalah keputusan eksplisit reviewer pada metadata/versi tertentu, bukan keberadaan file atau selesainya disposisi. Perubahan metadata/utama/lampiran perlu verifikasi ulang. UI meminta konfirmasi manual; checklist rinci, keterbacaan/halaman/orientasi dan checksum mengikuti 04.3. Binary ber-ID immutable diasumsikan tidak ditimpa manual di filesystem; keberadaan bukan jaminan integritas kontinu/bebas malware. Data nyata tetap dilarang sebelum penguatan keamanan. Pengesahan reviewer/SOP dan QC kantor belum dianggap terlaksana.
+
+## 04.2 — indeks, penamaan dan sumber
+
+Indeks sistem = ID arsip immutable; tahun/unit/kode/nomor merupakan konteks terpisah agar koreksi metadata tidak mengganti identitas. Agenda/kode resmi diisi operator dari aturan kantor, tidak dibuat otomatis atau dipaksa unik global. Sumber yang belum diketahui tetap unknown. Memilih sumber tertentu membutuhkan locator yang dapat ditelusuri, tetapi aplikasi tidak mengambil isi sumber/URL atau memberikan izin Drive. Nama unduhan default tetap asli; nama terstruktur opsional dan tidak mengubah object key internal. Sumber/kode belum menjadi pengesahan inventaris, klasifikasi atau nomenklatur kantor. Master kode/klasifikasi penuh mengikuti paket 05.

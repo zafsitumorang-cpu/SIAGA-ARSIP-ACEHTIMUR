@@ -43,3 +43,7 @@ Bukti: `npm run test:file-io` menguji gagal tulis, collision, callback/save fail
 ## 04.1 — verifikasi dan versi berkas
 
 `qualityReviews[]` menyimpan keputusan append-only, token snapshot, metadataVersion dan pasangan documentId/fileId yang diperiksa. Token berubah saat versi metadata atau currentVersionId dokumen berubah, termasuk lampiran baru. Review version mencegah dua reviewer saling menimpa. Data legacy tanpa review tidak mendapat persetujuan buatan. Approval lama tidak mengalahkan file fisik yang hilang. Tidak ada pemindahan/penulisan ulang binary atau perluasan format. Hash snapshot bukan pemeriksaan isi binary berkelanjutan; QC/checksum rinci tetap 04.3.
+
+## 04.2 — nama file dan indeks metadata
+
+ID arsip menjadi systemIndex stabil. Lokasi fisik/Drive dan agenda disimpan pada metadata terpisah dari fileId/dokumen/versi. Koreksi sumber tidak memindahkan binary atau mengubah index, tetapi mengubah metadataVersion sehingga memerlukan QC ulang. Nama asli tiap versi dipertahankan. Unduhan structured menyusun nama dari metadata saat ini dan nomor versi yang diunduh, bukan nama historis saat versi dibuat; pilih unduh default untuk nama asli. Tidak ada perubahan isi/storage key atau pengambilan URL sumber.

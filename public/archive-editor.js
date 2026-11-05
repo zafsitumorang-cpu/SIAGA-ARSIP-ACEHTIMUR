@@ -1,3 +1,4 @@
+import {archiveSourceFields,bindArchiveSourceFields} from './archive-source-fields.js';
 let generation=0;
 
 export async function openArchiveEditor(options){
@@ -24,10 +25,11 @@ export async function openArchiveEditor(options){
       ${input('origin','Asal surat')}${input('destination','Tujuan surat')}
       <div class="field full"><label for="edit-subject">Perihal</label><textarea id="edit-subject" name="subject" maxlength="2000" rows="3" required>${esc(archive.subject)}</textarea></div>
       ${input('signatory','Penandatangan','text',300)}
-    </div><p id="editArchiveError" class="archive-edit-error" role="alert" tabindex="-1" hidden></p>
+    </div>${archiveSourceFields(archive,esc,'edit')}<p id="editArchiveError" class="archive-edit-error" role="alert" tabindex="-1" hidden></p>
     <div class="actions"><button type="button" class="btn btn-soft" id="reloadEditArchive" hidden>Muat ulang data terbaru</button><button type="button" class="btn btn-soft" id="cancelEditArchive">Batal</button><button type="submit" class="btn btn-primary" id="saveEditArchive">Simpan perubahan</button></div></form>
   </section></div>`);
   const back=document.querySelector('#modalBack'),dialog=back.querySelector('.modal'),form=back.querySelector('form');
+  bindArchiveSourceFields(form);
   const select=back.querySelector('#edit-type'),error=back.querySelector('#editArchiveError'),reload=back.querySelector('#reloadEditArchive');
   back._restoreFocus=restore;
   const close=()=>{if(!form.dataset.saving)closeModal();};
