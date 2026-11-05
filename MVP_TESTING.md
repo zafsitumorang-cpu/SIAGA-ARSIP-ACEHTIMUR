@@ -117,3 +117,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 03.4 — daftar kerja, ringkasan dan ekspor status
 
 `test:dispositions` kini 76 pemeriksaan JSON/PostgreSQL: scope default/saya/tim/semua baca, status dan pencarian/tahun gabungan, ringkasan vs dashboard, validasi, pagination 16 tugas dan ekspor seluruh halaman/header kosong tanpa catatan privat. Browser `disposition-worklist.cjs` 10 skenario daftar/filter/page-size/CSV/detail/empty/retry/360px/role dan error JS. Browser disposisi/retry lama tetap 17; regresi arsip, edit, versi/lampiran dan create tetap dijalankan. Ini bukan benchmark SQL/VPS, pelatihan kantor, atau penerimaan pilot.
+
+### 03.5 — event notifikasi dan read/unread persisten
+
+`test:notifications`: 29 pemeriksaan (3 legacy/model + 26 JSON/PostgreSQL), termasuk IDs stabil, scope/penerima, aktor sendiri, catatan tidak disalin, baca per pengguna, idempotensi/audit, read-all semua halaman, restart serta pencabutan scope. Browser notifications.cjs 11 skenario: counter unread vs tugas aktif, baca/unread, reload, klik kronologi, event status, gagal baca/retry, gagal daftar/retry, 360px/Escape dan pagination/read-all. Semua mutasi memakai fixture sementara. Tidak menguji email/push atau pengiriman real-time; penerimaan dan tindak lanjut kantor tetap terpisah.

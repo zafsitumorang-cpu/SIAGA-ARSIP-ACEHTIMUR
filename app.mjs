@@ -15,6 +15,7 @@ import {archiveDocuments,archiveFileIds,appendArchiveVersion,validFileId} from '
 import {stageArchiveFile} from './lib/file-io.mjs';
 import {canUpdateDisposition,dispositionRecipients,dispositionUpdate} from './lib/dispositions.mjs';
 import {dispositionWorklist} from './lib/disposition-query.mjs';
+import {notificationPage,markNotifications} from './lib/notifications.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -79,7 +80,7 @@ function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
   return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
 }
-function dispositionPayload(d){const {statusReceipts,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
+function dispositionPayload(d){const {statusReceipts,notificationReads,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
 function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:validFileId(version.fileId)&&existsSync(path.join(FILE_DIR,version.fileId))}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && validFileId(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
@@ -244,7 +245,6 @@ async function route(req, res) {
       if(values.assignedUserId&&!dispositionRecipients(db.users,a).some(user=>user.id===values.assignedUserId))fail(422,'Penerima tidak valid.');
       const d={id:id('disp'),...values,status:'Belum ditindaklanjuti',version:0,createdBy:u.id,createdAt:now(),updates:[]};
       a.dispositions.push(d);if(receipt)(a.dispositionReceipts||=[]).push(receipt);
-      db.notifications.push({id:id('notif'),userId:d.assignedUserId,text:`Disposisi baru untuk ${a.number}`,read:false,createdAt:now()});
       audit(u.id,'create_disposition','archive',a.id,'Disposisi dibuat');await persist();return send(res,201,archivePayload(a));
     }
     if(pathname.startsWith('/api/dispositions/')&&pathname.endsWith('/status')&&req.method==='PATCH'){
@@ -260,9 +260,12 @@ async function route(req, res) {
       if(receipt)(d.statusReceipts||=[]).push(receipt);
       if(update||receipt)await persist();return send(res,200,archivePayload(a));
     }
-    if (pathname === '/api/notifications' && req.method === 'GET') {
-      const items = db.archives.filter(a => canSee(u, a)).flatMap(a => a.dispositions.filter(d => canUpdateDisposition(u,d)).map(d => ({ id: d.id, text: `Disposisi untuk ${a.number}`, subject: a.subject, status: d.status, createdAt: d.createdAt })));
-      return send(res, 200, { items: items.sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,20) });
+    if(pathname==='/api/notifications'&&req.method==='GET')return send(res,200,notificationPage(db,u,url.searchParams));
+    if((pathname==='/api/notifications/read-all'&&req.method==='POST')||(pathname.startsWith('/api/notifications/')&&pathname.endsWith('/read')&&req.method==='PATCH')){
+      const all=pathname.endsWith('/read-all'),b=await body(req);if(!all&&typeof b.read!=='boolean')fail(422,'Status baca harus true atau false.');
+      const changed=markNotifications(db,u,all?null:[pathname.split('/')[3]],all?true:b.read,now());
+      if(changed){audit(u.id,'read_notification','disposition',all?'all':pathname.split('/')[3],`${changed} notifikasi`);await persist();}
+      return send(res,200,notificationPage(db,u,url.searchParams));
     }
     if(['/api/export.csv','/api/export.xlsx'].includes(pathname)&&req.method==='GET'){
       const rows=visibleArchives(u,url),xlsx=pathname.endsWith('.xlsx');

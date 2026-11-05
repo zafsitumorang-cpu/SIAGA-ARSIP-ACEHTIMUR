@@ -76,3 +76,7 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 - Checksum membantu mendeteksi salinan file identik; tidak otomatis menghapus file.
 - Foreign key dan transaksi menjaga metadata-file tidak menjadi yatim; proses unggah yang gagal harus dapat dipulihkan.
 - OCR text disimpan sebagai turunan yang dapat dibangun ulang, terkait file dan versi; tidak menggantikan dokumen asli.
+
+## Implementasi event/read state 03.5
+
+Event notifikasi in-app diturunkan dari createdAt/createdBy dan updates riwayat disposisi persisten. Read receipt `notificationReads[userId][eventId] = readAt` berada dalam payload siaga_dispositions (JSONB), sehingga tidak memerlukan DDL/migrasi massal; legacy updates tanpa ID memakai ID kombinasi yang stabil. GET tidak menulis; tanda baca/unread eksplisit menggunakan transaksi/advisory lock yang sama. DTO arsip/daftar kerja menyembunyikan map baca serta receipt retry. Array notifications lama bukan sumber inbox dan tidak menjadi antrean pengiriman. Tabel notifications konseptual di atas tetap opsi normalisasi/kanal eksternal, bukan tabel yang sudah dipasang. Pemisahan/constraint/index/migrasi lanjutan tetap paket 08.

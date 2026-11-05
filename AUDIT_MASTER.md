@@ -6,6 +6,8 @@ Tanggal: **5 November 2026, WIB**. Baseline kode dan 28 Markdown: `75a19c6dbddf8
 
 **Pembaruan implementasi 01.1:** A-01 kini ditutup pada kode dan pengujian lokal: retry create/upload memakai receipt persisten dan formulir mempertahankan arsip yang sudah tercatat. Keamanan JSON/PostgreSQL 187, database 8 dan browser retry 10 lulus. Batas retry/kunci, prosedur UAT dummy dan bukti deployment ada di API.md, MVP_TESTING.md dan deploy/STATUS.md. Temuan lain, termasuk A-02, tetap terbuka. Tabel di bawah adalah catatan baseline sebelum perbaikan ini; tidak ada persetujuan peluncuran arsip nyata dari pembaruan tersebut.
 
+**Pembaruan fitur 03:** penerima individu/tim, kronologi/catatan/reopen, CAS/retry, daftar kerja dan unread persisten telah diimplementasikan serta diuji otomatis; lihat ledger untuk commit/CI/demo per TODO. Tabel di bawah tetap baseline historis. Audit operasional/keamanan, email/push dan penerimaan kantor tidak ikut dianggap selesai.
+
 ## Kesimpulan
 
 Aplikasi sudah mempunyai fondasi yang berjalan: login, peran/subbagian, pencatatan surat, unggah/unduh privat, koreksi metadata dengan konflik versi, disposisi dasar, pencarian/filter/pagination, CSV/XLSX, audit, PostgreSQL dan deployment otomatis. UAT pengguna sudah mendukung koreksi metadata serta filter/pagination/CSV. **Belum lengkap untuk operasional arsip nyata**: masih ada masalah integritas alur, histori berkas/disposisi, tata kelola arsip, penerimaan pengguna lintas peran dan bukti pemulihan/operasional.

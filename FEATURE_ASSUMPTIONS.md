@@ -21,3 +21,7 @@ PATCH status mewajibkan versi hasil baca agar semua penulis ikut pemeriksaan kon
 ## 03.4 — makna daftar kerja dan ringkasan
 
 Staf pertama-tama melihat tugas individu sendiri + tugas tim subbagian; admin/pimpinan melihat semua penugasan dalam pengawasan. Filter semua dalam cakupan baca boleh menampilkan tugas individu rekan sebagai baca-saja, sesuai akses baca arsip yang sudah berlaku. Ringkasan tugas aktif/selesai tidak mengikuti pencarian dan diberi label tanpa filter; active adalah yang dapat ditindaklanjuti/diawasi dan belum selesai. Tahun filter memakai tahun surat, bukan tahun disposisi dibuat. CSV status tidak menyertakan instruksi/catatan. Keputusan membaca instruksi individual yang lebih sempit tetap memerlukan kebijakan kantor; fitur ini tidak memperluas scope.
+
+## 03.5 — event dan baca per pengguna
+
+Penugasan/status/catatan/reopen oleh orang lain menghasilkan notifikasi masuk untuk penerima individu/tim dan admin/pimpinan dalam scope yang sudah ada. Tindakan sendiri menjadi feedback di layar, tidak menambah unread. Instruksi/catatan privat tidak disalin ke payload daftar notifikasi. Membaca tidak mengubah status tugas. Tim berbagi tugas tetapi status baca tetap per akun. Inbox di-refresh saat dibuka/Perbarui dan setelah tindakan terkait, bukan jaminan pengiriman real-time. Belum ada provider email/push. Default ini menunggu tinjauan pemilik proses dan tidak mengesahkan SOP/ketentuan akses baru.

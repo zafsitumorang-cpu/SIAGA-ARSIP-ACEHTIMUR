@@ -22,7 +22,8 @@
     "test:versions": "node scripts/file-version-tests.mjs",
     "test:file-io": "node scripts/file-io-tests.mjs",
     "files:check": "node scripts/reconcile-files.mjs",
-    "test:dispositions": "node scripts/disposition-tests.mjs"
+    "test:dispositions": "node scripts/disposition-tests.mjs",
+    "test:notifications": "node scripts/notification-tests.mjs"
   },
   "engines": {
     "node": ">=22"

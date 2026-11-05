@@ -88,7 +88,7 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 OCR dijalankan melalui pekerjaan latar belakang setelah berkas lolos pemeriksaan. Status: pending, processing, complete, failed. Email dikirim melalui adaptor provider dan kegagalannya dicatat tanpa menggagalkan pembuatan disposisi.
 
 ### GET /api/notifications
-Memerlukan sesi. Mengembalikan maksimal 20 disposisi terbaru, diurutkan berdasarkan createdAt. Admin/pimpinan melihat cakupan lintas subbagian. Pengguna lain hanya menerima disposisi untuk user/subbagiannya dari arsip yang diizinkan canSee. Setiap item: id (ID disposisi), text, subject, status, createdAt. Panel UI mengambil daftar ini ketika dibuka. Endpoint ini tidak menandai dibaca dan bukan layanan push real-time.
+Kontrak saat ini memakai event dan status baca per pengguna; lihat bagian 03.5 di bawah. Maksimal 20 event per halaman, terpisah dari hitungan tugas aktif. Tidak ada layanan push real-time.
 
 
 ### PATCH metadata yang sudah diterapkan
@@ -148,3 +148,11 @@ Update memakai key operasi scoped aktor/disposisi. Replay receipt diperiksa sebe
 Default assignment: all untuk admin/pimpinan, mine untuk staf. Mine adalah individu sendiri dan tugas tim subbagian; team hanya penugasan tanpa assignedUserId. All tetap dibatasi scope baca arsip dan menandai tugas individu orang lain baca-saja. Status menerima tiga status, active (belum selesai), atau kosong untuk semua. Q mencari nomor/perihal/instruksi/penerima/unit, tahun mengacu tanggal surat. Filter digabung AND. Summary menghitung tugas yang dapat ditindaklanjuti/diawasi tanpa filter: active/completed/total, sama dengan pending dashboard pada scope dasar; ini bukan jumlah belum dibaca.
 
 `GET /api/dispositions/export.csv` menerima filter sama dan mengekspor semua hasil, tidak terpotong halaman. Kolom nomor/perihal/unit/penerima/status/waktu tanpa instruksi/catatan; UTF-8 BOM dan proteksi formula sama dengan ekspor arsip. Ekspor diaudit. Akses anonim ditolak; scope kosong menghasilkan header saja. Implementasi query masih pada store dataset penuh; SQL terarah/performa tetap paket 08, belum diklaim selesai.
+
+### Notifikasi peristiwa dan status baca (03.5, aktual)
+
+`GET /api/notifications?page=1` memerlukan sesi, mengembalikan maksimal 20 event/halaman serta `{page,pages,total,unread,activeTasks}`. ID penugasan awal tetap ID disposisi; event pembaruan memakai ID event dan legacy tanpa ID memakai kombinasi ID disposisi/index riwayat yang stabil. Item memuat `archiveId`, `dispositionId`, kind created/status/note/reopen, text/subject, status saat event, taskStatus saat ini, createdAt, byName, read. Tidak memuat instruksi, catatan atau receipt pengguna lain. Urut waktu terbaru lalu ID. Halaman berlebih dijepit; halaman invalid 422.
+
+Event berasal dari riwayat disposisi persisten dan hanya ditampilkan jika scope arsip serta penerima/tim/supervisi saat ini mengizinkan. Tindakan sendiri tidak menjadi notifikasi masuk. GET tidak menandai baca. `PATCH /api/notifications/:id/read` dengan `{read:true|false}` mengubah status pengguna sesi sendiri; ID di luar cakupan 404. `POST /api/notifications/read-all` menandai seluruh event yang dapat diakses (semua halaman). Mutasi baca idempoten; audit hanya saat state berubah. Status baca disimpan pada JSONB disposisi, termasuk PostgreSQL dan restart, bukan antrean in-memory.
+
+Unread menghitung seluruh event belum dibaca; activeTasks menghitung tugas yang dapat ditindaklanjuti/diawasi dan belum selesai. Dibaca tidak menyelesaikan tugas. Panel mengambil data saat dibuka/Perbarui; klik event membuka kronologi scoped dan mencoba menandai baca. Tidak ada klaim push real-time/email, polling latar atau pelaksanaan tindak lanjut kantor; kanal eksternal tetap 13.2.
