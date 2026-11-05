@@ -49,6 +49,12 @@ Peringatan PIDFile pada tat_agent.service berasal dari unit agen Tencent yang ik
 
 Update dokumentasi/installer saja tidak perlu mengubah release web; marker commit yang sudah diperiksa dapat berbeda dari commit aktif aplikasi. Pengembangan aplikasi biasa berikutnya dapat dilakukan melalui GitHub dan CI, dengan backup/kandidat/verifikasi otomatis. Offsite/enkripsi/retensi/alert, migrasi schema dan gate penerimaan belum selesai secara otomatis.
 
+### Fitur perbaikan metadata — 5 November
+
+Commit `be4037a7b439c3fdfa7d9a943a5ab7ea55c34679` menambahkan edit metadata khusus admin, audit nama field dan pemeriksaan versi untuk konflik edit. Application checks run 41975053604 selesai success. Pengujian lokal meliputi 93 pemeriksaan keamanan JSON/PostgreSQL, 8 pemeriksaan database, 15 skenario UAT dan browser (termasuk konflik dua tab, kegagalan simpan, validasi, role dan mobile). Schema SQL tidak berubah. Recorder belum diberi hak edit dan arsip yang memiliki disposisi tetap mengunci jenis/subbagian.
+
+Deployment dipantau melalui HTTPS tanpa menjalankan command baru pada VPS. Sekitar 250 detik setelah probe awal, checksum app.js, archive-editor.js dan workspace.css cocok dengan commit fitur; health/config produksi 200, archives anonymous 401 dan statistik tetap 20 arsip. Ini mendukung bahwa deployment otomatis berhasil menyajikan fitur. Agen tidak mengedit arsip atau memasukkan credential produksi; penerimaan pengguna tetap dilakukan melalui akun admin pada arsip uji.
+
 1. Pemilik server mengambil credential admin secara privat, login, mengganti password awal dan memetakan akun riil/peran/subbagian.
 2. Jadwalkan backup, salin terenkripsi ke lokasi terpisah, tetapkan retensi dan alarm, lalu uji restore database beserta binary ke lingkungan bersih. Backup yang dilaporkan masih lokal.
 3. UAT pengguna: catat surat uji, unggah/unduh berizin, disposisi, pembatasan peran/subbagian dan pergantian sesi. Data 20 arsip lama bukan bukti dokumen asli telah tersedia.
