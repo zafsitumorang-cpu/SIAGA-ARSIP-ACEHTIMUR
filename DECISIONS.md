@@ -1,5 +1,13 @@
 # DECISIONS — SIAGA ARSIP
 
+## Pembaruan faktual dan keputusan yang masih diperlukan — 5 November 2026
+
+- Stack aktif: Node.js 22+ (24 LTS untuk pengembangan/CI), PostgreSQL, frontend JavaScript/CSS; Caddy dan systemd pada VPS sesuai laporan operator. D-23 di bawah merekam arah awal dan tidak menjadi instruksi migrasi Laravel/Livewire atau deskripsi dependensi rilis kini.
+- Pengguna meminta backup/offsite/restore dilewati untuk sementara. Dicatat sebagai **ditunda**, bukan selesai atau dihapus dari syarat sebelum data nyata.
+- Nama inovasi di RA adalah ARSIP TERPADU; hubungan dengan SIAGA ARSIP dan nomenklatur subbagian perlu validasi kantor. Belum ada keputusan mengganti nama aplikasi atau akses.
+- Izin edit recorder vs admin, semantik penerima individual/tim, lintas subbagian dan cakupan kategori FR-11 perlu keputusan tertulis. Tidak ada izin baru yang diberikan oleh audit.
+- Rencana kerja terkini: [TODO_MASTER.md](TODO_MASTER.md), paket 00; perbandingan sumber: [AUDIT_MASTER.md](AUDIT_MASTER.md). Keputusan organisasi di tabel awal tetap perlu dibedakan dari keberadaan fitur pada kode.
+
 ## Keputusan yang telah disepakati
 
 | ID | Keputusan | Status |

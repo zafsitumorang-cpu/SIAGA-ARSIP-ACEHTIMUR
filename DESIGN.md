@@ -1,5 +1,7 @@
 # DESIGN — SIAGA ARSIP
 
+**Panduan aktif:** merah Bawaslu/emas/arang pada navigasi, panel putih, Inter workspace dan Manrope publik/login, drawer mobile, feedback/reduced motion sebagaimana pembaruan terakhir file ini. Bagian hijau/sidebar terang/Figma terdahulu merupakan riwayat, bukan alasan merombak tampilan yang dipilih pengguna. Audit layar dan urutan perbaikan UI/UX: [AUDIT_MASTER.md](AUDIT_MASTER.md), [TODO_MASTER.md](TODO_MASTER.md) paket 07. Keselarasan pixel-level dengan Penpot/Figma belum diklaim terverifikasi.
+
 ## Prinsip desain
 
 1. **Temu kembali lebih cepat:** pencarian dan filter utama mudah ditemukan.

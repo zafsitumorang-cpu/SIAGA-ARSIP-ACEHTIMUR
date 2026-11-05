@@ -1,10 +1,12 @@
 # SIAGA ARSIP — Dokumen Kebutuhan Sistem
 
+**Mulai dari rencana terbaru:** [AUDIT_MASTER.md](AUDIT_MASTER.md) membandingkan dokumen asal 25 halaman, seluruh Markdown, kode dan bukti pengujian per 5 November 2026. [TODO_MASTER.md](TODO_MASTER.md) adalah daftar pekerjaan berurutan sampai pilot operasional; [TASKS.md](TASKS.md) menjadi indeks ringkas. Bagian rancangan awal di bawah dibaca bersama status terbaru tersebut.
+
 Kumpulan ini berisi rancangan awal sistem tata kelola arsip digital untuk Bawaslu Kabupaten Aceh Timur. Rancangan disusun dari laporan aksi perubahan dan hasil wawancara kebutuhan awal.
 
 ## Menjalankan MVP uji coba
 
-Implementasi tersedia di `app.mjs` dengan Node.js 22+ (disarankan 24 LTS), frontend JavaScript/CSS, serta dependensi `pg` dan `file-type`. Ini bukan aplikasi Laravel. Mode demo menyimpan data lokal di `data/data.json` dan membuat data dummy saat database belum ada; mode produksi memerlukan PostgreSQL dan tidak membuat akun demo.
+Implementasi tersedia di `app.mjs` dengan Node.js 22+ (disarankan 24 LTS), frontend JavaScript/CSS, serta dependensi produksi `pg`, `file-type` dan `write-excel-file`. Ini bukan aplikasi Laravel. Mode demo menyimpan data lokal di `data/data.json` dan membuat data dummy saat database belum ada; mode produksi memerlukan PostgreSQL dan tidak membuat akun demo.
 
 ```bash
 npm ci

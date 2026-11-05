@@ -1,5 +1,7 @@
 # Rencana pengembangan menuju produksi — SIAGA ARSIP
 
+**Pembaruan setelah audit dokumen asal:** gunakan [TODO_MASTER.md](TODO_MASTER.md) untuk urutan pelaksanaan terkini dan [AUDIT_MASTER.md](AUDIT_MASTER.md) untuk status/kesenjangan. Tahapan tematik di bawah tetap referensi; jangan membangun ulang fondasi yang sudah terpasang. Perbaikan retry unggah/admin terakhir mendahului histori berkas. Backup/offsite/restore ditunda sesuai arahan pengguna, tetap menjadi gerbang sebelum arsip nyata.
+
 Diperbarui 5 November 2026, Asia/Jakarta. Operator telah melaporkan inventaris Ubuntu 24.04, Node 22, RAM sekitar 2 GiB/disk 40 GiB dan migrasi PostgreSQL melalui skrip commit 82a9327. Domain siaga-arsipbawasluacehtimur.web.id mengarah ke 43.173.51.195; HTTPS, health/config produksi, statistik 20 arsip, aset baru dan pembatasan anonim sudah diperiksa dari luar. Bukti dan batas verifikasi ada di [deploy/STATUS.md](deploy/STATUS.md). Audit awal berbasis a12e258; hardening dan migrasi awal kini terpasang sesuai laporan operator, sedangkan backup offsite, pemulihan menyeluruh, fitur dan gate penerimaan tetap terbuka. Agen tidak memiliki koneksi SSH langsung.
 
 ## Sasaran rilis pertama

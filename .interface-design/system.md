@@ -1,5 +1,7 @@
 # Design System — SIAGA ARSIP
 
+Current source of truth: the later Bawaslu navigation and Able Pro composition updates below supersede the initial warm/green system. Retain charcoal sidebar, red header, gold selection, white content, Inter workspace and Manrope public/login. The 5 November 2026 audit and actionable UX plan are in [AUDIT_MASTER.md](../AUDIT_MASTER.md) and [TODO_MASTER.md](../TODO_MASTER.md), package 07. This document contains design history, not proof that every accessibility criterion has passed.
+
 ## Direction
 
 **Personality:** Ketelitian administratif yang tenang

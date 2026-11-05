@@ -1,5 +1,7 @@
 # Backup dan pemulihan MVP
 
+**Status terkini:** backup lokal harian dilaporkan terpasang oleh operator, dengan jadwal 02:00 WIB dan pembaruan rujukan release melalui auto-deploy; bukti dan batas verifikasi ada di [deploy/STATUS.md](deploy/STATUS.md). Kalimat lama tentang scheduler belum dipasang di bawah menggambarkan paket awal. Offsite/enkripsi/retensi/alert dan pemulihan menyeluruh belum selesai. Pengguna meminta pekerjaan tersebut ditunda; lihat [TODO_MASTER.md](TODO_MASTER.md) paket 11. Audit tidak melanjutkan pemasangan atau restore server.
+
 Demo JSON menyimpan metadata di `data/data.json`; produksi memakai PostgreSQL melalui DATABASE_URL. Berkas berada di DATA_DIR/files. Untuk membuat snapshot lokal (gunakan environment yang sama dengan aplikasi):
 
 ```bash

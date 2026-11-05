@@ -2,7 +2,7 @@
 
 ## Menjalankan
 
-Membutuhkan Node.js 20 atau lebih baru.
+Membutuhkan Node.js 22 atau lebih baru (disarankan 24 LTS). Akun dan data pada bagian demo hanya untuk lingkungan uji.
 
 ```bash
 npm start

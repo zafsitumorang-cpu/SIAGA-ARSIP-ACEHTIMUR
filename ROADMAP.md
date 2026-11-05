@@ -1,5 +1,7 @@
 # ROADMAP — SIAGA ARSIP
 
+**Arsip rencana awal.** Jadwal mingguan dan label selesai di bawah bukan status audit terkini atau komitmen waktu baru. Urutan yang berlaku setelah kajian dokumen asal pada 5 November 2026 ada di [TODO_MASTER.md](TODO_MASTER.md), dengan bukti pada [AUDIT_MASTER.md](AUDIT_MASTER.md).
+
 **Target uji coba:** sekitar satu bulan lagi dari 4 November 2026 (perkiraan awal: awal Desember 2026). Jadwal perlu dikunci setelah musyawarah tentang hosting, persetujuan, dan tim.
 
 ## Minggu 1 — Validasi dan keputusan dasar
