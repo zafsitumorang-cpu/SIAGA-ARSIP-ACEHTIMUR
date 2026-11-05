@@ -1,6 +1,6 @@
 import http from 'node:http';
 import fs from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { lstatSync } from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileTypeFromBuffer} from 'file-type';
@@ -16,6 +16,7 @@ import {stageArchiveFile} from './lib/file-io.mjs';
 import {canUpdateDisposition,dispositionRecipients,dispositionUpdate} from './lib/dispositions.mjs';
 import {dispositionWorklist} from './lib/disposition-query.mjs';
 import {notificationPage,markNotifications} from './lib/notifications.mjs';
+import {archiveQuality} from './lib/archive-quality.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -78,10 +79,11 @@ async function body(req){if(req._parsedBody)return req._parsedBody;const max=req
 function requireAuth(req, res) { const user = getUser(req); if (!user) { send(res, 401, { error: 'Silakan login terlebih dahulu.' }); return null; } return user; }
 function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
-  return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
+  return db.archives.filter(archive=>canSee(user,archive)).map(archive=>({...archive,quality:archiveQuality(archive,fileAvailable)})).filter(archive=>matchesArchive(archive,filters));
 }
+function fileAvailable(fileId){if(!validFileId(fileId))return false;try{const stat=lstatSync(path.join(FILE_DIR,fileId));return stat.isFile()&&!stat.isSymbolicLink();}catch{return false;}}
 function dispositionPayload(d){const {statusReceipts,notificationReads,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
-function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:validFileId(version.fileId)&&existsSync(path.join(FILE_DIR,version.fileId))}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && validFileId(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions:a.dispositions.map(dispositionPayload) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(review=>({...review,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -109,7 +111,7 @@ async function route(req, res) {
   if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !year || a.letterDate.startsWith(year)); return send(res, 200, { year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length }); }
   if (pathname.startsWith('/api/')) {
     const u = requireAuth(req, res); if (!u) return;
-    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined }); }
+    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined,qualityCounts:Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,list.filter(a=>a.quality.status===status).length])) }); }
     if(pathname==='/api/archives'&&req.method==='GET'){
       const result=archivePage(visibleArchives(u,url),url.searchParams);
       const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
@@ -228,6 +230,22 @@ async function route(req, res) {
       }
       const params=new URLSearchParams(url.searchParams);if(!params.has('page'))params.set('page','1');if(!params.has('page_size'))params.set('page_size','25');
       return send(res,200,{...archivePage(result.rows,params),summary:result.summary,filters:result.filters});
+    }
+    if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/quality')&&req.method==='POST'){
+      if(u.role!=='admin')fail(403,'Verifikasi hanya tersedia untuk admin.');
+      const a=db.archives.find(item=>item.id===pathname.split('/')[3]);if(!a||!canSee(u,a))fail(404,'Arsip tidak ditemukan.');
+      const b=await body(req),values={decision:b.decision,note:text(b.note??'','Catatan verifikasi',2000),expectedToken:b.expectedToken,expectedReviewVersion:b.expectedReviewVersion};
+      if(!['approved','needs_correction'].includes(values.decision))fail(422,'Keputusan verifikasi tidak valid.');
+      if(values.decision==='needs_correction'&&!values.note)fail(422,'Catatan koreksi wajib diisi.');
+      const receipt=requestReceipt(req,u.id,'archive:quality:'+a.id,values);
+      if(receipt&&(a.qualityReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
+      const quality=archiveQuality(a,fileAvailable);
+      if(!Number.isSafeInteger(values.expectedReviewVersion)||values.expectedReviewVersion<0||typeof values.expectedToken!=='string'||!/^[a-f0-9]{64}$/.test(values.expectedToken))fail(422,'Versi verifikasi wajib disertakan.');
+      if(values.expectedToken!==quality.token||values.expectedReviewVersion!==quality.reviewVersion)fail(409,'Arsip atau keputusan verifikasi sudah berubah. Muat ulang sebelum memutuskan.');
+      if(['metadata_only','missing_file','missing_attachment'].includes(quality.status))fail(422,'Lengkapi berkas utama dan seluruh lampiran terdaftar sebelum verifikasi.');
+      validateArchive(a,u,db,subsections);
+      (a.qualityReviews||=[]).push({id:id('review'),decision:values.decision,note:values.note,token:quality.token,metadataVersion:a.metadataVersion||0,fileVersions:archiveDocuments(a).map(document=>({documentId:document.id,fileId:document.currentVersionId})),by:u.id,at:now()});
+      if(receipt)(a.qualityReceipts||=[]).push(receipt);audit(u.id,'review_quality','archive',a.id,values.decision);await persist();return send(res,201,archivePayload(a));
     }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/disposition-recipients')&&req.method==='GET'){
       if(!isWide(u))fail(403,'Khusus admin/pimpinan.');

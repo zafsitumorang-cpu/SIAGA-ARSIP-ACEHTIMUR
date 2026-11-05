@@ -39,3 +39,7 @@ Jika respons COMMIT PostgreSQL atau rename JSON hilang, hasil transaksi dapat am
 `DATA_DIR=... DATABASE_URL=... npm run files:check` adalah laporan read-only di bawah lock transaksi: referensi hilang/tidak valid, kandidat yatim/staging berumur minimal 24 jam, binary baru dan entri tak lazim. Symlink tidak diikuti. Umur hanya kandidat peninjauan, bukan bukti aman dihapus. Tidak ada opsi delete, timer cleanup, atau perubahan data demo/produksi. Rekonsiliasi operasional memerlukan pemeriksaan snapshot/aktivitas oleh PIC; jangan menjalankan penghapusan berdasarkan laporan ini saja.
 
 Bukti: `npm run test:file-io` menguji gagal tulis, collision, callback/save failure JSON/PG, respons publikasi hilang setelah commit nyata, konkurensi, dan laporan tanpa mutasi.
+
+## 04.1 — verifikasi dan versi berkas
+
+`qualityReviews[]` menyimpan keputusan append-only, token snapshot, metadataVersion dan pasangan documentId/fileId yang diperiksa. Token berubah saat versi metadata atau currentVersionId dokumen berubah, termasuk lampiran baru. Review version mencegah dua reviewer saling menimpa. Data legacy tanpa review tidak mendapat persetujuan buatan. Approval lama tidak mengalahkan file fisik yang hilang. Tidak ada pemindahan/penulisan ulang binary atau perluasan format. Hash snapshot bukan pemeriksaan isi binary berkelanjutan; QC/checksum rinci tetap 04.3.

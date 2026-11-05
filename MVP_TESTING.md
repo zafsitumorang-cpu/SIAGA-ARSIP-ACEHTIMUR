@@ -121,3 +121,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 03.5 — event notifikasi dan read/unread persisten
 
 `test:notifications`: 29 pemeriksaan (3 legacy/model + 26 JSON/PostgreSQL), termasuk IDs stabil, scope/penerima, aktor sendiri, catatan tidak disalin, baca per pengguna, idempotensi/audit, read-all semua halaman, restart serta pencabutan scope. Browser notifications.cjs 11 skenario: counter unread vs tugas aktif, baca/unread, reload, klik kronologi, event status, gagal baca/retry, gagal daftar/retry, 360px/Escape dan pagination/read-all. Semua mutasi memakai fixture sementara. Tidak menguji email/push atau pengiriman real-time; penerimaan dan tindak lanjut kantor tetap terpisah.
+
+### 04.1 — kelengkapan, antrean dan review
+
+`test:quality`: 37 model/JSON/PostgreSQL, mencakup metadata-only, file tersedia belum complete, scope/role, validasi/token/revision, retry/dua reviewer, primary/lampiran hilang, filter/ekspor/dashboard dan restart. Browser archive-quality.cjs: 8 skenario antrean, konfirmasi, approval/provenance, respons putus/retry, konflik/draft/reload, koreksi dan uploader 360px/keyboard. Regresi browser lama 82 tetap lulus. Semua fixture dummy; bukan bukti scan kantor sudah diperiksa atau reviewer telah disahkan. QC rinci/duplikasi 04.3 masih terbuka.

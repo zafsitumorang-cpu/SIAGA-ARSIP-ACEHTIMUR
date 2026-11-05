@@ -25,3 +25,7 @@ Staf pertama-tama melihat tugas individu sendiri + tugas tim subbagian; admin/pi
 ## 03.5 — event dan baca per pengguna
 
 Penugasan/status/catatan/reopen oleh orang lain menghasilkan notifikasi masuk untuk penerima individu/tim dan admin/pimpinan dalam scope yang sudah ada. Tindakan sendiri menjadi feedback di layar, tidak menambah unread. Instruksi/catatan privat tidak disalin ke payload daftar notifikasi. Membaca tidak mengubah status tugas. Tim berbagi tugas tetapi status baca tetap per akun. Inbox di-refresh saat dibuka/Perbarui dan setelah tindakan terkait, bukan jaminan pengiriman real-time. Belum ada provider email/push. Default ini menunggu tinjauan pemilik proses dan tidak mengesahkan SOP/ketentuan akses baru.
+
+## 04.1 — kelengkapan dan reviewer
+
+Admin menjadi reviewer sementara sampai kantor menetapkan peran QC. Lampiran opsional untuk ditambahkan, tetapi semua lampiran terdaftar harus tersedia agar lengkap. Lengkap adalah keputusan eksplisit reviewer pada metadata/versi tertentu, bukan keberadaan file atau selesainya disposisi. Perubahan metadata/utama/lampiran perlu verifikasi ulang. UI meminta konfirmasi manual; checklist rinci, keterbacaan/halaman/orientasi dan checksum mengikuti 04.3. Binary ber-ID immutable diasumsikan tidak ditimpa manual di filesystem; keberadaan bukan jaminan integritas kontinu/bebas malware. Data nyata tetap dilarang sebelum penguatan keamanan. Pengesahan reviewer/SOP dan QC kantor belum dianggap terlaksana.
