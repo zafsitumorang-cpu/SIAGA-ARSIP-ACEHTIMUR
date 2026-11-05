@@ -1,5 +1,7 @@
 # Paket pemasangan VPS — belum dieksekusi pada VPS pengguna
 
+Untuk VPS yang sudah diinventarisasi dengan layanan `siaga-arsip.service` dan data JSON di `/var/lib/siaga-arsip`, lihat [prosedur upgrade khusus](UPGRADE_EXISTING_VPS.md). Skrip menyiapkan release/database terpisah, snapshot final, pengujian kandidat dan pemulihan bila pergantian gagal. Eksekusi pada server tetap dilakukan melalui akses operator; keberadaan skrip bukan bukti migrasi sudah dilakukan.
+
 Domain tidak diperlukan untuk mengerjakan atau menguji kode. Produksi baru dibuka setelah HTTPS, database, akses dan backup tervalidasi. Domain pengguna adalah `siaga-arsipbawasluacehtimur.web.id`, dengan IP VPS `43.173.51.195`. Tidak ada perubahan SSH, DNS, konfigurasi proxy atau data VPS yang dilakukan oleh paket panduan ini.
 
 Pengguna melaporkan Caddy sudah melayani port 80/443, SSH aktif di port 22 dan port aplikasi 3000 dibatasi dari luar. Gunakan Caddy yang sudah berjalan. Verifikasi domain secara publik tidak membuktikan versi Node/database, mode produksi, backup, atau versi backend yang terpasang.
