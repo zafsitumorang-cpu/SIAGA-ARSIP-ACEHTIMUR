@@ -7,7 +7,7 @@ Diperbarui **5 November 2026, WIB**, setelah kajian dokumen Rancangan Aksi Perub
 - [deploy/STATUS.md](deploy/STATUS.md) — bukti deployment dan laporan operator.
 - [MVP_TESTING.md](MVP_TESTING.md) — skenario serta hasil UAT yang dilaporkan.
 
-Urutan pertama: **01.1 retry unggah tanpa arsip ganda → 01.2 perlindungan admin terakhir → 01.3 default role aman → 02 versi/lampiran**. Keputusan paket 00 dicatat bertahap. Backup paket 11 tetap ditunda sesuai arahan pengguna. Audit hanya menghasilkan rencana; temuan belum diperbaiki.
+**01.1 retry unggah tanpa arsip ganda sudah selesai pada kode/tes.** Urutan berikutnya: **01.2 perlindungan admin terakhir → 01.3 default role aman → 02 versi/lampiran**, semuanya belum dimulai dalam paket 01.1. Keputusan paket 00 dicatat bertahap. Backup paket 11 tetap ditunda sesuai arahan pengguna; publik tetap demonstrasi dummy sampai keamanan/operasional diterima.
 
 Fondasi login/scope, PostgreSQL, HTTPS, metadata editor, filter/pagination, CSV/XLSX, disposisi dasar, audit dan tampilan Bawaslu sudah tersedia; tidak perlu dibangun ulang. UAT pengguna lulus untuk metadata serta filter/pagination/CSV yang dilaporkan. XLSX/status Selesai dan alur lengkap masih menunggu penerimaan kantor. Status rinci ada di audit.
 

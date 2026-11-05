@@ -2,6 +2,8 @@
 
 Tanggal: **5 November 2026, WIB**. Baseline kode dan 28 Markdown: `75a19c6dbddf8006701ba379d4cd3755ce4cbaa3`, sama dengan main saat audit. Pelaksana: kajian dokumen, inspeksi kode, uji lokal terisolasi, dan pemeriksaan publik read-only. Rencana pelaksanaan: [TODO_MASTER.md](TODO_MASTER.md).
 
+**Pembaruan implementasi 01.1:** A-01 kini ditutup pada kode dan pengujian lokal: retry create/upload memakai receipt persisten dan formulir mempertahankan arsip yang sudah tercatat. Keamanan JSON/PostgreSQL 187, database 8 dan browser retry 10 lulus. Batas retry/kunci, prosedur UAT dummy dan bukti deployment ada di API.md, MVP_TESTING.md dan deploy/STATUS.md. Temuan lain, termasuk A-02, tetap terbuka. Tabel di bawah adalah catatan baseline sebelum perbaikan ini; tidak ada persetujuan peluncuran arsip nyata dari pembaruan tersebut.
+
 ## Kesimpulan
 
 Aplikasi sudah mempunyai fondasi yang berjalan: login, peran/subbagian, pencatatan surat, unggah/unduh privat, koreksi metadata dengan konflik versi, disposisi dasar, pencarian/filter/pagination, CSV/XLSX, audit, PostgreSQL dan deployment otomatis. UAT pengguna sudah mendukung koreksi metadata serta filter/pagination/CSV. **Belum lengkap untuk operasional arsip nyata**: masih ada masalah integritas alur, histori berkas/disposisi, tata kelola arsip, penerimaan pengguna lintas peran dan bukti pemulihan/operasional.
@@ -84,7 +86,7 @@ Bagian kompetensi pribadi dan nilai asesmen RA hlm. 22–24 merupakan konteks pe
 | A-11 | Kesenjangan tertunda | Manifest mencakup checksum binary, belum checksum data.json; impor bukan restore kredensial identik | scripts/backup.mjs:13–18; scripts/database.mjs import mengganti kredensial | Verifikasi snapshot/restore terpisah + offsite, sesuai keputusan menunda; 11 |
 | A-12 | Kesenjangan keputusan | Istilah, izin edit dan scope kategori bertentangan antar sumber | RA vs aplikasi; FR-04 vs BR-21/D-18; FR-11 MUST vs kategori lanjutan LATER | Keputusan tercatat sebelum mengubah izin/skema; 00 |
 
-Probe baru dijalankan dengan Node lokal, DATA_DIR sementara dan browser Chromium, lalu proses/data fixture dibersihkan. Tidak ada username/password, perihal nyata atau isi dokumen yang masuk hasil audit. Temuan A-01/A-02 belum tercakup regresi lama: suite yang lulus tidak berarti keduanya sudah diperbaiki.
+Probe baru dijalankan dengan Node lokal, DATA_DIR sementara dan browser Chromium, lalu proses/data fixture dibersihkan. Tidak ada username/password, perihal nyata atau isi dokumen yang masuk hasil audit. Pada baseline, A-01/A-02 belum tercakup regresi lama. A-01 kemudian diperbaiki pada paket 01.1 sebagaimana pembaruan di atas; A-02 belum dikerjakan.
 
 ## Audit UI/UX per layar
 

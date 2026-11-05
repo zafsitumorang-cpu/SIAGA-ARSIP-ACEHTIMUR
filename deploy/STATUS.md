@@ -1,5 +1,11 @@
 # Status VPS — 5 November 2026, Asia/Jakarta
 
+## Paket TODO 01.1 — retry unggah
+
+Perbaikan ini melanjutkan working tree audit: metadata sukses tidak dibuat ulang saat upload gagal, dan header Idempotency-Key melindungi replay create/upload termasuk respons sukses terputus serta restart server. Receipt disimpan privat pada payload arsip, tidak memerlukan perubahan SQL dan tidak menambah izin role. Lokal lulus: keamanan JSON/PostgreSQL 187, database 8, browser retry 10, regresi metadata 9/interaksi 15 dan UAT dasar 15; syntax/diff serta npm audit produksi lulus (nol kerentanan). Rilis/CI/rollout dicatat setelah push terverifikasi.
+
+Paket ini hanya menutup 01.1; admin terakhir/default role/riwayat berkas belum dikerjakan. Backup offsite tetap ditunda. Website publik tetap demonstrasi dengan metadata dummy; tidak ada arsip nyata yang dimasukkan atau dimutasi oleh pengujian. DEMO_MODE=false tetap mempertahankan kontrol autentikasi produksi dan tidak berarti data dummy sudah disahkan sebagai arsip operasional. UAT manusia untuk retry memakai data dummy dan tidak membuka gerbang peluncuran nyata.
+
 ## Migrasi yang dilaporkan operator
 
 Operator menjalankan skrip upgrade dari commit `82a93274a2435da41763c764894a6cfad36b8758` melalui panel VPS. Output mencapai tahap 7/7, termasuk verifikasi kandidat, verifikasi setelah pergantian port, backup PostgreSQL dan pengecekan health/config HTTPS. Run ID `20261105040416_0344aa` menunjukkan pukul 11:04:16 WIB.

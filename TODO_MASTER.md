@@ -2,7 +2,7 @@
 
 Tanggal: **5 November 2026, WIB**. Dasar: [AUDIT_MASTER.md](AUDIT_MASTER.md), dokumen RA 25 halaman, kebutuhan FR-01–22 dan baseline `75a19c6`. Dokumen ini menggantikan urutan/checklist TASKS/ROADMAP lama sebagai daftar pelaksanaan terkini.
 
-Audit dan perencanaan sudah disusun; **semua pekerjaan fitur di bawah masih belum dicentang**. Bukti fitur yang sudah ada tercatat di audit, sehingga tidak perlu membangun ulang login, PostgreSQL, tampilan Bawaslu, filter, metadata editor atau ekspor yang telah berjalan.
+Audit dan perencanaan sudah disusun. **01.1 selesai pada kode dan pengujian lokal; tugas lainnya tetap terbuka.** Bukti fitur yang sudah ada tercatat di audit, sehingga tidak perlu membangun ulang login, PostgreSQL, tampilan Bawaslu, filter, metadata editor atau ekspor yang telah berjalan. Bukti pemasangan dan UAT manusia dicatat terpisah pada deploy/STATUS.md dan MVP_TESTING.md.
 
 ## Cara mengerjakan satu per satu
 
@@ -44,7 +44,7 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 
 ## 01 — Perbaiki integritas alur dan keselamatan akun
 
-- [ ] **01.1 — Retry unggah tanpa arsip ganda (A-01).** Pertahankan ID metadata yang sudah dibuat; tampilkan sukses parsial dan tombol ulangi unggah; gunakan idempotensi server untuk retry pencatatan. **Selesai:** metadata sukses + upload gagal + retry/double-click/koneksi putus tetap satu rekaman; draft dan feedback benar; role pencatat/pengunggah tetap terpisah.
+- [x] **01.1 — Retry unggah tanpa arsip ganda (A-01).** ID metadata dipakai kembali saat upload diulang; feedback sukses parsial, penguncian metadata dan retry berkunci operasi tersedia. Server menjaga replay create/upload, konflik payload, izin dan persistensi restart. **Bukti:** keamanan JSON/PostgreSQL 187, database 8, browser retry 10; regresi metadata/interaksi dan UAT dasar lulus. Batas: kunci/draft hanya selama dialog terbuka, bukan pemulihan lintas reload; file yatim akibat gagal commit DB tetap 02.4. UAT manusia pada dummy mengikuti MVP_TESTING.md; bukan izin memakai arsip nyata.
 - [ ] **01.2 — Lindungi admin terakhir (A-02).** Tolak nonaktif/penurunan role yang menghilangkan seluruh admin aktif; periksa pada transaksi termasuk dua perubahan bersamaan. **Selesai:** selalu tersisa admin aktif; perubahan admin lain yang sah tetap berjalan; UI menjelaskan penolakan; ada regresi JSON/PostgreSQL.
 - [ ] **01.3 — Default akun dengan hak minimal (A-06).** Pilih role dasar yang sesuai keputusan atau wajib memilih; gunakan nama role Indonesia dan konfirmasi akses admin. **Selesai:** membuat akun biasa tidak tanpa sengaja membuat admin; role/subbagian valid di server dan perubahan diaudit.
 
@@ -143,4 +143,4 @@ Bagian ini hanya rencana. Pengguna sudah meminta melewatinya untuk sementara; ja
 
 ## Pekerjaan pertama yang direkomendasikan
 
-Mulai **01.1 — Retry unggah tanpa arsip ganda**, lalu **01.2 — Perlindungan admin terakhir** dan **01.3 — Default role aman**. Setelah itu masuk **02 — Riwayat versi/lampiran**. Keputusan 00 dicatat bertahap; tugas yang tidak bergantung keputusan tidak perlu menunggu seluruh rapat selesai. Tidak ada fitur baru yang dibangun hanya karena TODO ini telah dibuat.
+**01.1 sudah selesai pada kode/tes.** Berikutnya yang direkomendasikan adalah **01.2 — Perlindungan admin terakhir**, lalu **01.3 — Default role aman**, kemudian **02 — Riwayat versi/lampiran**. Ketiganya belum dimulai dalam paket 01.1. Keputusan 00 dicatat bertahap; tugas yang tidak bergantung keputusan tidak perlu menunggu seluruh rapat selesai. Backup 11 tetap ditunda; demonstrasi publik tetap memakai dummy sampai gerbang keamanan/operasional ditutup.

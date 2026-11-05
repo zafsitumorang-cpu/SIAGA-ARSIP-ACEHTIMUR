@@ -73,3 +73,15 @@ Pengguna melaporkan PPPS=5 arsip, ditambah surat keluar=3, lalu rentang tanggal 
 2. Kedua format harus memuat Status disposisi. Arsip tanpa penugasan berisi Tanpa disposisi; beberapa status berbeda dirangkum dengan titik koma. Instruksi/catatan privat tidak ikut.
 3. Pada data dummy lingkungan uji, buat disposisi, tandai Selesai lalu terapkan filter Selesai. Cocokkan daftar, CSV dan XLSX; pastikan akun subbagian lain tetap tidak dapat mengekspor arsip itu. Uji ini tidak boleh dilakukan pada arsip nyata tanpa kebutuhan kerja.
 4. Pastikan audit mencatat format/jumlah data. Pengujian otomatis tersedia di `npm run test:export`, `npm run test:security` serta browser pencarian. Uji unduh lokal sudah mencakup XLSX terbaca dan filter Selesai; penerimaan pengguna pada produksi masih terpisah.
+
+## Uji retry pencatatan dan unggah — TODO 01.1
+
+Gunakan arsip dummy/staging. Jangan menguji dengan arsip nyata. Deployment publik tetap demonstrasi dengan data dummy sampai gate keamanan/operasional ditutup; mode autentikasi produksi tidak mengubah dummy menjadi arsip operasional.
+
+1. Pada Tambah arsip, isi metadata dan pilih file. Simulasikan upload gagal di lingkungan uji. Metadata tetap satu rekaman; dialog menjelaskan sukses parsial, mengunci metadata tersimpan, mempertahankan pilihan berkas dan menawarkan Ulangi unggah.
+2. Pulihkan koneksi, klik Ulangi unggah: file terpasang pada ID arsip yang sama. Audit create/upload masing-masing satu untuk perubahan itu. Respons sukses metadata maupun upload yang terputus juga harus aman diulang.
+3. Submit ganda/Escape saat simpan berlangsung tidak mengirim tindakan kedua atau menutup dialog. Validasi metadata gagal mengizinkan koreksi draft. File tidak valid bisa diganti tanpa membuat metadata lagi.
+4. Setelah upload gagal, Selesai tanpa berkas atau Escape menutup dialog sambil mempertahankan metadata dan memperbarui daftar. Gangguan refresh setelah sukses menyimpan dilaporkan sebagai gangguan daftar, bukan kegagalan pencatatan.
+5. Pencatat tetap hanya mencatat subbagian sendiri dan tidak mengunggah; pengunggah/admin sesuai izin yang sudah berlaku. Uji keyboard dan tampilan HP.
+
+Bukti lokal: keamanan 187 pemeriksaan JSON/PostgreSQL, database 8, browser retry 10, regresi browser metadata 9 dan interaksi 15; UAT dasar 15 lulus. Petunjuk browser ada di tests/browser/README.md. Perlindungan ini berlaku untuk retry dengan kunci operasi sama; draft/kunci belum dipulihkan setelah reload/menutup dialog dan memulai operasi baru.

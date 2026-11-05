@@ -118,6 +118,11 @@
 #archiveResults.is-loading{opacity:.6}
 #archiveExport[aria-disabled=true],#archiveExportXlsx[aria-disabled=true]{opacity:.5;cursor:default}
 .archive-sort-hint{font-size:12px;margin:-8px 0 18px}
+.archive-create-fields{border:0;margin:0;padding:0;min-width:0}
+.archive-create-legend{font-size:13px;font-weight:600;margin-bottom:14px}
+#archiveForm .actions{flex-wrap:wrap}
+#archiveForm [hidden]{display:none!important}
+#archiveForm fieldset:disabled{opacity:.7}
 #archiveSearchForm .field{min-width:0}
 #archiveFilterError[hidden]{display:none}
 @media(max-width:720px){.archive-basic-grid,.archive-filter-grid{grid-template-columns:1fr}.archive-filter-actions>span{width:100%}#archiveAdvanced summary span{display:block;margin:6px 0 0}.archive-pagination{align-items:flex-start}.archive-pagination>div{width:100%;justify-content:space-between}}
