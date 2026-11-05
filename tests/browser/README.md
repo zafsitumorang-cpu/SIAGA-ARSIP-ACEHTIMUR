@@ -23,3 +23,5 @@ Pembaruan 02.3 memperluas file-versions menjadi 11 skenario browser termasuk lam
 `dispositions.cjs` memakai loopback 3509, 6 skenario pilihan penerima orang/tim aktif/scoped, save, gagal muat/retry, HP/keyboard, rekan bukan penerima tanpa editor dan error JavaScript. Fixture dan akun hanya lokal/sementara. Konfigurasi Playwright sama dengan contoh di atas.
 
 03.2 memperluas dispositions menjadi 10 skenario, termasuk kronologi/catatan aman, alasan reopen, histori selesai yang dipertahankan dan detail arsip. API `test:dispositions` kini 38 pemeriksaan JSON/PostgreSQL. Perubahan status cepat yang maju tetap tersedia; reset/reopen memakai form catatan kronologi.
+
+`disposition-retry.cjs` memakai loopback 3510: 7 skenario double-submit, respons sukses create/update yang diputus, konflik dua tab, reload mempertahankan draft, dropdown pulih setelah 503, respons status terlambat setelah navigasi dan error JavaScript. Fault hanya disuntikkan ke server fixture sendiri. API disposisi menjadi 54 pemeriksaan JSON/PostgreSQL, termasuk versi wajib dan replay setelah restart. Kunci/draft tetap per dialog, bukan lintas reload.

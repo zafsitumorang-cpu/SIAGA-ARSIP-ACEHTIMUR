@@ -109,3 +109,7 @@ Jalankan `PG_TEST_URL=<PostgreSQL lokal fixture> npm run test:file-io`: 17 pemer
 ### 03.2 — kronologi dan tindak lanjut
 
 Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti meliputi provenance dan histori immutable, catatan teks/limit, no-op, aturan reopen/reset, scope serta restart. Browser `dispositions.cjs` menjadi 10 skenario: catatan HTML di-escape, validasi alasan tanpa kehilangan draft, reopen mempertahankan bukti selesai, serta kronologi di detail arsip. UAT kantor belum dilakukan; default transisi di FEATURE_ASSUMPTIONS.md memerlukan tinjauan pemilik proses.
+
+### 03.3 — retry, dua tab dan respons terlambat
+
+`test:dispositions`: 54 pemeriksaan JSON/PostgreSQL, termasuk create/update receipt, payload conflict, paralel, version CAS wajib, ID event, receipt privat dan persistensi replay setelah restart. Fixture regresi status lama kini menyertakan expectedVersion hasil baca. Browser `disposition-retry.cjs`: 7 skenario double-submit, respons create/update sengaja diputus setelah backend sukses, konflik dua tab dengan draft, reload tanpa menghapus catatan, dropdown gagal pulih dan respons setelah navigasi. Browser disposisi lama 10 tetap lulus; data/akun semua lokal sementara.

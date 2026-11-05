@@ -78,7 +78,8 @@ function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
   return db.archives.filter(archive=>canSee(user,archive)&&matchesArchive(archive,filters));
 }
-function archivePayload(a) { const {creationReceipt,uploadReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:validFileId(version.fileId)&&existsSync(path.join(FILE_DIR,version.fileId))}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && validFileId(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions: a.dispositions.map(d => ({ ...d, createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})), assignedUserName: db.users.find(u => u.id === d.assignedUserId)?.name || d.assignedSubsection })) }; }
+function dispositionPayload(d){const {statusReceipts,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,...visible}=a;return { ...visible, documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:validFileId(version.fileId)&&existsSync(path.join(FILE_DIR,version.fileId))}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName && validFileId(a.fileId) && existsSync(path.join(FILE_DIR,a.fileId))), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -220,8 +221,33 @@ async function route(req, res) {
       const archive=db.archives.find(item=>item.id===pathname.split('/')[3]);if(!archive||!canSee(u,archive))fail(404,'Arsip tidak ditemukan.');
       return send(res,200,{items:dispositionRecipients(db.users,archive)});
     }
-    if (pathname.startsWith('/api/archives/') && pathname.endsWith('/dispositions') && req.method === 'POST') { if (!isWide(u)) return send(res, 403, { error: 'Hanya pimpinan atau admin yang dapat membuat disposisi.' }); const aid = pathname.split('/')[3]; const a = db.archives.find(x => x.id === aid); if (!a || !canSee(u, a)) return send(res, 404, { error: 'Arsip tidak ditemukan.' }); const b = await body(req);if(a.type!=='incoming')fail(422,'Disposisi hanya untuk surat masuk.');if(b.assignedSubsection!==a.subsection)fail(422,'Tujuan disposisi harus sesuai subbagian arsip.');if(b.assignedUserId&&!dispositionRecipients(db.users,a).some(x=>x.id===b.assignedUserId))fail(422,'Penerima tidak valid.');const instruction=text(b.instruction,'Instruksi',4000,true);const d = { id: id('disp'), assignedUserId: b.assignedUserId || '', assignedSubsection: b.assignedSubsection || '', instruction, status: 'Belum ditindaklanjuti', createdBy: u.id, createdAt: now(), updates: [] }; a.dispositions.push(d); db.notifications.push({ id: id('notif'), userId: d.assignedUserId, text: `Disposisi baru untuk ${a.number}`, read: false, createdAt: now() }); audit(u.id, 'create_disposition', 'archive', a.id, 'Disposisi dibuat'); await persist(); return send(res, 201, archivePayload(a)); }
-    if (pathname.startsWith('/api/dispositions/') && pathname.endsWith('/status') && req.method === 'PATCH') { const did = pathname.split('/')[3]; const a = db.archives.find(x => x.dispositions.some(d => d.id === did)); const d = a?.dispositions.find(x => x.id === did); if (!a || !d || !canSee(u,a) || !canUpdateDisposition(u,d)) return send(res, 403, { error: 'Anda tidak berwenang memperbarui disposisi ini.' }); const b = await body(req),update=dispositionUpdate(d,b,u,now());if(!update)return send(res,200,archivePayload(a));d.status=update.status;(d.updates||=[]).push(update); audit(u.id, 'update_disposition', 'disposition', did, b.status); await persist(); return send(res, 200, archivePayload(a)); }
+    if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/dispositions')&&req.method==='POST'){
+      if(!isWide(u))fail(403,'Hanya pimpinan atau admin yang dapat membuat disposisi.');
+      const a=db.archives.find(item=>item.id===pathname.split('/')[3]);if(!a||!canSee(u,a))fail(404,'Arsip tidak ditemukan.');
+      const b=await body(req),values={assignedSubsection:text(b.assignedSubsection,'Subbagian penerima',40,true),assignedUserId:text(b.assignedUserId??'','Penerima',200),instruction:text(b.instruction,'Instruksi',4000,true)};
+      const receipt=requestReceipt(req,u.id,'disposition:create:'+a.id,values);
+      if(receipt&&(a.dispositionReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
+      if(a.type!=='incoming')fail(422,'Disposisi hanya untuk surat masuk.');
+      if(values.assignedSubsection!==a.subsection)fail(422,'Tujuan disposisi harus sesuai subbagian arsip.');
+      if(values.assignedUserId&&!dispositionRecipients(db.users,a).some(user=>user.id===values.assignedUserId))fail(422,'Penerima tidak valid.');
+      const d={id:id('disp'),...values,status:'Belum ditindaklanjuti',version:0,createdBy:u.id,createdAt:now(),updates:[]};
+      a.dispositions.push(d);if(receipt)(a.dispositionReceipts||=[]).push(receipt);
+      db.notifications.push({id:id('notif'),userId:d.assignedUserId,text:`Disposisi baru untuk ${a.number}`,read:false,createdAt:now()});
+      audit(u.id,'create_disposition','archive',a.id,'Disposisi dibuat');await persist();return send(res,201,archivePayload(a));
+    }
+    if(pathname.startsWith('/api/dispositions/')&&pathname.endsWith('/status')&&req.method==='PATCH'){
+      const did=pathname.split('/')[3],a=db.archives.find(item=>item.dispositions.some(d=>d.id===did)),d=a?.dispositions.find(item=>item.id===did);
+      if(!a||!d||!canSee(u,a)||!canUpdateDisposition(u,d))fail(403,'Anda tidak berwenang memperbarui disposisi ini.');
+      const b=await body(req),receipt=requestReceipt(req,u.id,'disposition:update:'+did,{status:b.status,note:b.note===undefined?'':b.note,expectedVersion:b.expectedVersion});
+      if(receipt&&(d.statusReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
+      if(!Number.isSafeInteger(b.expectedVersion)||b.expectedVersion<0)fail(422,'Versi disposisi wajib disertakan. Muat ulang kronologi.');
+      const currentVersion=d.version??(d.updates||[]).length;
+      if(b.expectedVersion!==currentVersion)fail(409,'Disposisi sudah berubah. Muat ulang kronologi sebelum menyimpan; catatan Anda tetap tersedia.');
+      const update=dispositionUpdate(d,b,u,now());
+      if(update){d.version=currentVersion+1;d.status=update.status;(d.updates||=[]).push({...update,id:id('event'),version:d.version});audit(u.id,'update_disposition','disposition',did,b.status);}
+      if(receipt)(d.statusReceipts||=[]).push(receipt);
+      if(update||receipt)await persist();return send(res,200,archivePayload(a));
+    }
     if (pathname === '/api/notifications' && req.method === 'GET') {
       const items = db.archives.filter(a => canSee(u, a)).flatMap(a => a.dispositions.filter(d => canUpdateDisposition(u,d)).map(d => ({ id: d.id, text: `Disposisi untuk ${a.number}`, subject: a.subject, status: d.status, createdAt: d.createdAt })));
       return send(res, 200, { items: items.sort((a,b) => String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,20) });
