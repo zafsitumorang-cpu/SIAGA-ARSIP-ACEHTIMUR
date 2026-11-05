@@ -25,7 +25,8 @@
     "test:dispositions": "node scripts/disposition-tests.mjs",
     "test:notifications": "node scripts/notification-tests.mjs",
     "test:quality": "node scripts/quality-tests.mjs",
-    "test:index": "node scripts/index-tests.mjs"
+    "test:index": "node scripts/index-tests.mjs",
+    "test:inspection": "node scripts/inspection-tests.mjs"
   },
   "engines": {
     "node": ">=22"

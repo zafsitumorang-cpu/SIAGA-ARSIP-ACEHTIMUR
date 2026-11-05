@@ -18,6 +18,7 @@ import {dispositionWorklist} from './lib/disposition-query.mjs';
 import {notificationPage,markNotifications} from './lib/notifications.mjs';
 import {archiveQuality} from './lib/archive-quality.mjs';
 import {archiveIndex,indexFields,indexLimits,validateIndexFields,structuredFileName} from './lib/archive-index.mjs';
+import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspection.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -84,7 +85,7 @@ function visibleArchives(user,url){
 }
 function fileAvailable(fileId){if(!validFileId(fileId))return false;try{const stat=lstatSync(path.join(FILE_DIR,fileId));return stat.isFile()&&!stat.isSymbolicLink();}catch{return false;}}
 function dispositionPayload(d){const {statusReceipts,notificationReads,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
-function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(review=>({...review,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -235,10 +236,17 @@ async function route(req, res) {
       const params=new URLSearchParams(url.searchParams);if(!params.has('page'))params.set('page','1');if(!params.has('page_size'))params.set('page_size','25');
       return send(res,200,{...archivePage(result.rows,params),summary:result.summary,filters:result.filters});
     }
+    if(pathname.startsWith('/api/archives/')&&['duplicates','integrity'].includes(pathname.split('/')[4])&&req.method==='GET'){
+      const a=db.archives.find(item=>item.id===pathname.split('/')[3]);if(!a||!canSee(u,a))fail(404,'Arsip tidak ditemukan.');
+      const candidates=db.archives.filter(item=>canSee(u,item));
+      if(pathname.endsWith('/duplicates'))return send(res,200,{items:archiveDuplicates(a,candidates)});
+      if(!['admin','uploader'].includes(u.role))fail(403,'Pemeriksaan integritas untuk pengelola/unggah.');
+      const integrity=await inspectArchiveIntegrity(a,FILE_DIR);return send(res,200,{...integrity,duplicates:archiveDuplicates(a,candidates,integrity.items.map(item=>item.checksum))});
+    }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/quality')&&req.method==='POST'){
       if(u.role!=='admin')fail(403,'Verifikasi hanya tersedia untuk admin.');
       const a=db.archives.find(item=>item.id===pathname.split('/')[3]);if(!a||!canSee(u,a))fail(404,'Arsip tidak ditemukan.');
-      const b=await body(req),values={decision:b.decision,note:text(b.note??'','Catatan verifikasi',2000),expectedToken:b.expectedToken,expectedReviewVersion:b.expectedReviewVersion};
+      const b=await body(req),values={decision:b.decision,note:text(b.note??'','Catatan verifikasi',2000),expectedToken:b.expectedToken,expectedReviewVersion:b.expectedReviewVersion,...(Object.hasOwn(b,'checks')?{checks:b.checks}:{}),...(Object.hasOwn(b,'pageCount')?{pageCount:b.pageCount}:{}),...(Object.hasOwn(b,'duplicatesAccepted')?{duplicatesAccepted:b.duplicatesAccepted}:{})};
       if(!['approved','needs_correction'].includes(values.decision))fail(422,'Keputusan verifikasi tidak valid.');
       if(values.decision==='needs_correction'&&!values.note)fail(422,'Catatan koreksi wajib diisi.');
       const receipt=requestReceipt(req,u.id,'archive:quality:'+a.id,values);
@@ -248,7 +256,15 @@ async function route(req, res) {
       if(values.expectedToken!==quality.token||values.expectedReviewVersion!==quality.reviewVersion)fail(409,'Arsip atau keputusan verifikasi sudah berubah. Muat ulang sebelum memutuskan.');
       if(['metadata_only','missing_file','missing_attachment'].includes(quality.status))fail(422,'Lengkapi berkas utama dan seluruh lampiran terdaftar sebelum verifikasi.');
       validateArchive(a,u,db,subsections);validateIndexFields(a);
-      (a.qualityReviews||=[]).push({id:id('review'),decision:values.decision,note:values.note,token:quality.token,metadataVersion:a.metadataVersion||0,fileVersions:archiveDocuments(a).map(document=>({documentId:document.id,fileId:document.currentVersionId})),by:u.id,at:now()});
+      if(values.pageCount!==undefined&&values.pageCount!==null&&(!Number.isSafeInteger(values.pageCount)||values.pageCount<1||values.pageCount>100000))fail(422,'Jumlah halaman harus bilangan positif maksimal 100000.');
+      let integrity=null,duplicates=[];
+      if(values.decision==='approved'){
+        if(!values.checks||['metadata','pages','legibility','orientation'].some(key=>values.checks[key]!==true))fail(422,'Konfirmasi seluruh checklist QC sebelum menyatakan lengkap.');
+        integrity=await inspectArchiveIntegrity(a,FILE_DIR);if(!integrity.ok)fail(422,'Pemeriksaan integritas gagal. Periksa/koreksi berkas sebelum approval.');
+        duplicates=archiveDuplicates(a,db.archives.filter(item=>canSee(u,item)),integrity.items.map(item=>item.checksum));
+        if(duplicates.length&&(values.duplicatesAccepted!==true||!values.note))fail(422,'Potensi duplikat perlu ditinjau: muat ulang, konfirmasi duplikat sah dan isi alasan.');
+      }
+      (a.qualityReviews||=[]).push({id:id('review'),decision:values.decision,note:values.note,token:quality.token,metadataVersion:a.metadataVersion||0,fileVersions:archiveDocuments(a).map(document=>({documentId:document.id,fileId:document.currentVersionId})),checks:values.checks&&typeof values.checks==='object'?Object.fromEntries(['metadata','pages','legibility','orientation'].map(key=>[key,values.checks[key]===true])):null,pageCount:values.pageCount??null,integrity,duplicates,duplicatesAccepted:duplicates.length>0&&values.duplicatesAccepted===true,by:u.id,at:now()});
       if(receipt)(a.qualityReceipts||=[]).push(receipt);audit(u.id,'review_quality','archive',a.id,values.decision);await persist();return send(res,201,archivePayload(a));
     }
     if(pathname.startsWith('/api/archives/')&&pathname.endsWith('/disposition-recipients')&&req.method==='GET'){

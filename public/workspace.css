@@ -142,3 +142,4 @@
 
 .quality-queue .actions{flex-wrap:wrap}
 .archive-source-fields{border:1px solid #e1e6ed;border-radius:8px;margin:18px 0;padding:16px;min-width:0}.archive-source-fields legend{font-weight:600;font-size:13px;padding:0 6px}.archive-source-fields code{overflow-wrap:anywhere}.archive-source-fields p{font-size:12px;line-height:1.7}
+.quality-checklist{border:1px solid #e1e6ed;padding:14px;margin:14px 0;min-width:0}.quality-checklist legend{font-size:13px;font-weight:600}.quality-checklist label{display:block;margin:9px 0;font-size:13px}.quality-checklist input[type=checkbox],.quality-content input[name=duplicatesAccepted]{width:18px;height:18px;vertical-align:middle}.quality-checklist input[type=number]{max-width:150px}

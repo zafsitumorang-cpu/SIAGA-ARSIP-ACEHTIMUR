@@ -47,3 +47,7 @@ Bukti: `npm run test:file-io` menguji gagal tulis, collision, callback/save fail
 ## 04.2 — nama file dan indeks metadata
 
 ID arsip menjadi systemIndex stabil. Lokasi fisik/Drive dan agenda disimpan pada metadata terpisah dari fileId/dokumen/versi. Koreksi sumber tidak memindahkan binary atau mengubah index, tetapi mengubah metadataVersion sehingga memerlukan QC ulang. Nama asli tiap versi dipertahankan. Unduhan structured menyusun nama dari metadata saat ini dan nomor versi yang diunduh, bukan nama historis saat versi dibuat; pilih unduh default untuk nama asli. Tidak ada perubahan isi/storage key atau pengambilan URL sumber.
+
+## 04.3 — bukti checksum dan checklist
+
+Review approved baru menyimpan empat konfirmasi manual, jumlah halaman opsional serta hasil inspeksi SHA-256 byte aktif. Mismatch/gagal baca menghalangi approval; legacy tanpa hash menyimpan baseline dalam review dan tidak menulis ulang checksum/provenance versi lama. Kandidat duplikat berasal dari nomor/agenda sejenis/tahun/unit dan checksum seluruh versi/bukti QC. Rincian snapshot kandidat berada pada record review privat; DTO hanya menampilkan count dan keputusan tanpa menyalin metadata arsip asing. Bukan pemindaian malware atau jaminan integritas filesystem terus menerus. Tidak ada perubahan format upload, pemusnahan atau offsite.

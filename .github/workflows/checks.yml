@@ -44,6 +44,9 @@ jobs:
       - run: npm run test:versions
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
+      - run: npm run test:inspection
+        env:
+          PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
       - run: npm run test:index
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres

@@ -166,7 +166,7 @@ function renderArchives(){
   const root=$('#content');
   renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd:()=>openModal('archive'),rowsHtml:archiveRows,bindActions:bindArchiveActions,loading:loadingSkeleton,isCurrent:()=>state.page==='archives'&&$('#content')===root});
 }
-async function openQuality(id){const page=state.page,epoch=state.navigationEpoch;try{await openArchiveQuality({id,api,app,esc,closeModal,canReview:state.user?.role==='admin',toast,isCurrent:()=>state.page===page&&state.navigationEpoch===epoch,onSaved:async()=>{await refresh();if(state.page===page&&state.navigationEpoch===epoch)renderPage();}});}catch(failure){toast(failure.message,'error');}}
+async function openQuality(id){const page=state.page,epoch=state.navigationEpoch;try{await openArchiveQuality({id,api,app,esc,closeModal,canReview:state.user?.role==='admin',canInspect:canUpload(),toast,isCurrent:()=>state.page===page&&state.navigationEpoch===epoch,onSaved:async()=>{await refresh();if(state.page===page&&state.navigationEpoch===epoch)renderPage();}});}catch(failure){toast(failure.message,'error');}}
 async function openArchiveFiles(id){
   const page=state.page;
   try{await openFileHistory({id,api,app,esc,readFile,canUpload:canUpload(),closeModal,onSaved:async()=>{await refresh();renderPage();},toast,isCurrent:()=>state.page===page});}catch(failure){toast(failure.message,'error');}

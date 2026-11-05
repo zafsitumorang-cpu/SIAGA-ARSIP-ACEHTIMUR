@@ -129,3 +129,7 @@ Suite `test:dispositions` diperluas menjadi 38 pemeriksaan JSON/PG. Bukti melipu
 ### 04.2 — indeks dan sumber arsip
 
 `test:index`: 28 model/JSON/PostgreSQL mencakup legacy/unknown tanpa mutasi, fingerprint lama secara byte-compatible, edit/validasi/scope, indeks tetap, pencarian, CSV/XLSX melalui reader independen, structured download asli/bytes/scope, konflik dan QC invalidation, restart. Browser archive-index.cjs: 8 skenario sumber wajib sesuai pilihan, tambah/edit, escaped detail, tidak ada fetch Drive, ekspor, unduh terstruktur, mobile/keyboard dan error JS. Kolom ekspor sumber hanya pada scope berizin; bukan inventaris nyata atau persetujuan kode/agenda kantor.
+
+### 04.3 — checklist, checksum dan duplikat
+
+`test:inspection`: 26 JSON/PostgreSQL menguji checksum byte nyata, role/scope, mandatory checklist/page count, byte berubah ditolak, nomor ternormalisasi/nama file beda/duplikat checksum, scope kandidat dan redaksi history, penerimaan duplikat sah tanpa penghapusan, baseline legacy tanpa rekayasa provenance, replay receipt pre-checklist, restart. Browser archive-inspection.cjs 6 skenario checklist/hints, konfirmasi duplikat, evidence tersimpan, corruption/approval diblokir/koreksi, 360px/keyboard dan arsip tetap utuh/error JS. Fixture file sengaja diubah hanya dalam DATA_DIR sementara. Bukan bukti QC nyata atau pemantauan malware/integritas kontinu.

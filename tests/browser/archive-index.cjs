@@ -2,8 +2,8 @@ const {chromium}=require(process.env.SIAGA_PLAYWRIGHT_MODULE||'playwright');
 const {spawn}=require('node:child_process');const fs=require('node:fs/promises');const os=require('node:os');const path=require('node:path');const assert=require('node:assert/strict');
 const pass=message=>console.log('PASS',message);
 (async()=>{
- const dir=await fs.mkdtemp(path.join(os.tmpdir(),'siaga-index-ui-')),base='http://127.0.0.1:3514';
- const child=spawn(process.execPath,['app.mjs'],{cwd:path.resolve(__dirname,'../..'),env:{...process.env,PORT:'3514',HOST:'127.0.0.1',DATA_DIR:dir,DATABASE_URL:'',NODE_ENV:'test',DEMO_MODE:'true',APP_ORIGIN:'',COOKIE_SECURE:'false'},stdio:['ignore','pipe','pipe']});let browser;
+ const dir=await fs.mkdtemp(path.join(os.tmpdir(),'siaga-index-ui-')),base='http://127.0.0.1:3534';
+ const child=spawn(process.execPath,['app.mjs'],{cwd:path.resolve(__dirname,'../..'),env:{...process.env,PORT:'3534',HOST:'127.0.0.1',DATA_DIR:dir,DATABASE_URL:'',NODE_ENV:'test',DEMO_MODE:'true',APP_ORIGIN:'',COOKIE_SECURE:'false'},stdio:['ignore','pipe','pipe']});let browser;
  try{
   await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Startup timeout')),12000);child.stdout.on('data',data=>{if(String(data).includes('SIAGA ARSIP berjalan')){clearTimeout(timer);resolve();}});child.once('exit',code=>{clearTimeout(timer);reject(Error('Startup failed '+code));});});
   browser=await chromium.launch({headless:true,...(process.env.SIAGA_CHROMIUM_PATH?{executablePath:process.env.SIAGA_CHROMIUM_PATH}:{}),args:['--no-sandbox']});
