@@ -19,6 +19,7 @@
     "test:query": "node scripts/query-tests.mjs",
     "test:subsections": "node scripts/subsection-tests.mjs",
     "test:categories": "node scripts/archive-category-tests.mjs",
+    "test:classifications": "node scripts/classification-tests.mjs",
     "test:export": "node scripts/export-tests.mjs",
     "test:files": "node scripts/file-model-tests.mjs",
     "test:versions": "node scripts/file-version-tests.mjs",

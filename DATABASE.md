@@ -34,7 +34,7 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 
 ### `classifications`
 - `id`, `code` (opsional sampai standar resmi tersedia), `label`, `description`, `is_active`, `created_by`, `created_at`.
-- Admin mengelola daftar; klasifikasi keamanan/akses arsip perlu model terpisah jika disahkan.
+- Runtime JSON/JSONB menerima string legacy dan record master terstruktur (`id`, `code`, `label`, `description`, `active`, `aliases`, cap waktu). Reader menormalisasi keduanya sehingga arsip lama tetap valid. Admin dapat menambah, mengubah metadata atau menonaktifkan klasifikasi; klasifikasi nonaktif diblokir untuk arsip baru, sementara referensi lama tetap terbaca dan terindeks. Perubahan nama dengan kode stabil menyimpan nama lama sebagai alias. Klasifikasi legacy tanpa kode harus diberi kode sebelum penggantian nama. Aturan kode saat ini: 1–50 karakter, diawali huruf/angka, lalu huruf, angka, `.`, `_`, `/`, atau `-`. Klasifikasi keamanan/akses arsip perlu model terpisah jika disahkan.
 
 ### `archives`
 - `id`, `category_id`, `subsection_id`, `record_number`, `letter_date`, `received_date` (surat masuk), `origin` (masuk), `destination` (keluar), `subject`, `signatory` (keluar), `classification_id`, `recorded_by`, `recorded_at`, `updated_by`, `updated_at`, `record_status`, `deleted_at`, `deleted_by`.

@@ -71,12 +71,14 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 
 ## Konfigurasi dan audit
 
-- `GET/POST/PATCH /api/admin/classifications`
+- `GET /api/admin/classifications` — admin membaca katalog master (`id`, `code`, `label`, `description`, `active`, `aliases`).
+- `POST /api/admin/classifications` — admin menambah klasifikasi dengan `label` wajib, `code` opsional (`A-Z`, angka, `.`, `_`, `/`, `-`), deskripsi opsional dan status aktif default.
+- `PATCH /api/admin/classifications/{id-or-code-or-label}` — admin mengubah deskripsi/kode/status; nama baru menyimpan nama lama sebagai alias bila kode stabil. Klasifikasi legacy tanpa kode harus diberi kode sebelum ganti nama.
 - `GET/POST/PATCH /api/admin/archive-categories`
 - `GET /api/admin/audit-events?actor=&action=&from=&to=`
 - `GET /api/users` — daftar pengguna aktif untuk admin/pimpinan, tanpa password hash.
 - `GET /api/admin/users` — daftar semua akun (termasuk nonaktif) untuk admin, tanpa password hash.
-- `POST /api/admin/classifications` — admin menambah pilihan klasifikasi.
+- Klasifikasi nonaktif tidak dapat dipilih untuk arsip baru, tetapi referensi pada arsip lama tetap dapat dibaca, dicari, difilter dan diekspor. Perubahan master dicatat sebagai audit tanpa menyalin isi metadata arsip.
 - `POST /api/admin/categories` — admin menambah kategori arsip untuk perluasan bertahap.
 - Endpoint konfigurasi tidak boleh mengubah hak akses secara implisit.
 

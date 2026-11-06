@@ -315,6 +315,21 @@ const pass=message=>console.log('PASS',message);
     await page.unroute('**/api/admin/users');
     pass('admin user create form: labels, dynamic subsection cues, status element, and draft preservation on 401');
 
+    // Classification master form: code/name/description and active toggle
+    for(const cid of ['newClassificationCode','newClassification','newClassificationDescription']){
+      assert.ok(await page.locator(`label[for="${cid}"]`).count()>=1,`Missing label for ${cid}`);
+    }
+    await page.fill('#newClassificationCode','UI-05-1');
+    await page.fill('#newClassification','Klasifikasi UI dummy');
+    await page.fill('#newClassificationDescription','Master UI dummy');
+    await page.click('#classificationForm button');
+    await page.waitForFunction(()=>document.querySelector('#content')?.textContent.includes('Klasifikasi UI dummy'));
+    const classificationRow=page.locator('tr').filter({hasText:'Klasifikasi UI dummy'});
+    assert.equal(await classificationRow.count(),1);
+    await classificationRow.locator('.classification-toggle').click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll('tr')).some(row=>row.textContent.includes('Klasifikasi UI dummy')&&row.textContent.includes('Aktifkan')));
+    pass('classification master: fields render, a new coded entry is saved, and inactive state is visible');
+
     // User Edit Form modal
     await page.locator('.user-edit').first().click();
     await page.waitForSelector('#editUserForm');
