@@ -3,8 +3,14 @@ CREATE TABLE IF NOT EXISTS siaga_meta (id text PRIMARY KEY, payload jsonb NOT NU
 CREATE TABLE IF NOT EXISTS siaga_users (id text PRIMARY KEY, username text NOT NULL UNIQUE, payload jsonb NOT NULL);
 CREATE TABLE IF NOT EXISTS siaga_archives (id text PRIMARY KEY, subsection text NOT NULL, recorded_by text NOT NULL REFERENCES siaga_users(id), payload jsonb NOT NULL);
 CREATE INDEX IF NOT EXISTS siaga_archives_scope ON siaga_archives(subsection);
+CREATE INDEX IF NOT EXISTS siaga_archives_created ON siaga_archives ((payload->>'createdAt') DESC, id);
+CREATE INDEX IF NOT EXISTS siaga_archives_type_date ON siaga_archives ((payload->>'type'), (payload->>'letterDate'));
+CREATE INDEX IF NOT EXISTS siaga_archives_classification ON siaga_archives ((payload->>'classification'));
+CREATE INDEX IF NOT EXISTS siaga_archives_category ON siaga_archives ((payload->>'category'));
+CREATE INDEX IF NOT EXISTS siaga_archives_active ON siaga_archives ((payload->>'deletedAt')) WHERE (payload->>'deletedAt' IS NULL OR payload->>'deletedAt'='');
 CREATE TABLE IF NOT EXISTS siaga_dispositions (id text PRIMARY KEY, archive_id text NOT NULL REFERENCES siaga_archives(id), payload jsonb NOT NULL);
 CREATE INDEX IF NOT EXISTS siaga_dispositions_archive ON siaga_dispositions(archive_id);
+CREATE INDEX IF NOT EXISTS siaga_dispositions_status ON siaga_dispositions(archive_id, (payload->>'status'));
 CREATE TABLE IF NOT EXISTS siaga_audit (id text PRIMARY KEY, occurred_at timestamptz NOT NULL, payload jsonb NOT NULL);
 CREATE INDEX IF NOT EXISTS siaga_audit_time ON siaga_audit(occurred_at DESC);
 CREATE TABLE IF NOT EXISTS siaga_sessions (id text PRIMARY KEY, user_id text NOT NULL REFERENCES siaga_users(id), expires_at timestamptz NOT NULL, payload jsonb NOT NULL);

@@ -39,6 +39,7 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 ### `archives`
 - `id`, `category_id`, `subsection_id`, `record_number`, `letter_date`, `received_date` (surat masuk), `origin` (masuk), `destination` (keluar), `subject`, `signatory` (keluar), `classification_id`, `recorded_by`, `recorded_at`, `updated_by`, `updated_at`, `record_status`, `deleted_at`, `deleted_by`.
 - Pertimbangkan field spesifik surat masuk/keluar sebagai kolom nullable atau tabel detail per tipe.
+- Tahap awal A-08 menambahkan query daftar arsip PostgreSQL terparameterisasi (`lib/archive-sql.mjs`) beserta indeks scope, tanggal/jenis, klasifikasi, kategori, arsip aktif dan status disposisi. Jalur ini hanya dipakai ketika `DATABASE_URL` aktif dan tidak memakai filter kelengkapan yang masih membutuhkan pemeriksaan binary. Dashboard, worklist disposisi, ekspor, agregat kualitas dan uji beban tetap pekerjaan lanjutan 08.1; jalur JSON/demo masih memakai kontrak lama.
 - Belum ditetapkan constraint nomor unik sebelum aturan penomoran dikonfirmasi.
 
 ### `archive_files`

@@ -22,6 +22,7 @@ import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspectio
 import {officialSubsections,isSubsection,sameSubsection,subsectionLabel} from './lib/subsection-taxonomy.mjs';
 import {administrativeArchiveCategories,defaultArchiveCategory,categoryLabels,categoryRecords,findArchiveCategory,validateCategoryInput} from './lib/archive-taxonomy.mjs';
 import {classificationLabels,classificationPayload,findClassification,classificationRecords,validateClassificationInput} from './lib/classification-taxonomy.mjs';
+import {buildArchiveListQuery,archiveSqlPage} from './lib/archive-sql.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -90,6 +91,28 @@ function visibleArchives(user,url){
   return db.archives.filter(archive=>canSee(user,archive)).map(archive=>({...archive,quality:archiveQuality(archive,fileAvailable)})).filter(archive=>matchesArchive(archive,filters));
 }
 function fileAvailable(fileId){if(!validFileId(fileId))return false;try{const stat=lstatSync(path.join(FILE_DIR,fileId));return stat.isFile()&&!stat.isSymbolicLink();}catch{return false;}}
+async function optimizedArchiveList(req,res,url,user){
+  if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/archives'||url.searchParams.get('completeness'))return false;
+  const filters=archiveFilters(url.searchParams,db,subsections);
+  const rawPage=url.searchParams.get('page')||'1',rawSize=url.searchParams.get('page_size')||'25';
+  if(!/^\d+$/.test(rawPage)||!['10','25','50','100'].includes(rawSize))return false;
+  const requestedPage=Math.max(1,Number(rawPage)),pageSize=Number(rawSize);
+  const classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]);
+  const query=buildArchiveListQuery({user,filters,page:requestedPage,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues});
+  const result=await storage.read(async({client})=>{
+    const totalResult=await client.query(query.count),total=Number(totalResult.rows[0]?.total||0),meta=archiveSqlPage(total,requestedPage,pageSize);
+    const rowsQuery=buildArchiveListQuery({user,filters,page:meta.page,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues}).rows;
+    const rowsResult=await client.query(rowsQuery);
+    const rows=rowsResult.rows.map(row=>row.payload);
+    const auditRecord={id:id('audit'),actorId:user.id,action:'view_list',entity:'archive',entityId:'list',at:now(),detail:'PostgreSQL query'};
+    await client.query('INSERT INTO siaga_audit(id,occurred_at,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[auditRecord.id,auditRecord.at,JSON.stringify(auditRecord)]);
+    return {meta,rows};
+  });
+  const years=[...new Set((db.archives||[]).filter(item=>canSee(user,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
+  const response={...result.meta,items:result.rows.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
+  if(user.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
+  send(res,200,response);return true;
+}
 function dispositionPayload(d){const {statusReceipts,notificationReads,...visible}=d;return {...visible,version:d.version??(d.updates||[]).length,createdByName:db.users.find(user=>user.id===d.createdBy)?.name||'',updates:(d.updates||[]).map(update=>({...update,byName:db.users.find(user=>user.id===update.by)?.name||''})),assignedUserName:db.users.find(user=>user.id===d.assignedUserId)?.name||d.assignedSubsection};}
 function metadataHistoryPayload(archive){
   return (archive.metadataHistory||[]).map(event=>{
@@ -402,7 +425,7 @@ async function staticFile(file, res) { try { const data = await fs.readFile(file
 const server=http.createServer(async(req,res)=>{
   res.setHeader('X-SIAGA-Revision',revision);
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; font-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(SECURE_COOKIE)res.setHeader('Strict-Transport-Security','max-age=31536000');
-  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}res._defer=true;await storage.transaction(async(data,dirty,_replace,transaction)=>{db=data;markDirty=dirty;req.fileTransaction=transaction;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
+  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}const requestUrl=new URL(req.url,`http://${req.headers.host||'localhost'}`);if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/archives'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedArchiveList(req,res,requestUrl,user);if(optimized)return;}res._defer=true;await storage.transaction(async(data,dirty,_replace,transaction)=>{db=data;markDirty=dirty;req.fileTransaction=transaction;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
   catch(error){res._defer=false;if(!res.headersSent)send(res,error.status||500,{error:error.status?error.message:'Terjadi kesalahan server.'});else res.end();if(!error.status)console.error('Request gagal:',error.code||error.name);}
 });
 server.requestTimeout=30000;server.headersTimeout=10000;
