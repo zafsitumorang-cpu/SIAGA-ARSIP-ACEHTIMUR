@@ -24,6 +24,7 @@ import {administrativeArchiveCategories,defaultArchiveCategory,categoryLabels,ca
 import {classificationLabels,classificationPayload,findClassification,classificationRecords,validateClassificationInput} from './lib/classification-taxonomy.mjs';
 import {buildArchiveListQuery,archiveSqlPage} from './lib/archive-sql.mjs';
 import {buildDispositionListQuery,dispositionSqlFilters,dispositionSqlPage} from './lib/disposition-sql.mjs';
+import {buildDashboardArchiveQuery} from './lib/dashboard-sql.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -95,14 +96,15 @@ function fileAvailable(fileId){if(!validFileId(fileId))return false;try{const st
 async function optimizedArchiveList(req,res,url,user){
   if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/archives'||url.searchParams.get('completeness'))return false;
   const filters=archiveFilters(url.searchParams,db,subsections);
+  const paged=url.searchParams.has('page')||url.searchParams.has('page_size');
   const rawPage=url.searchParams.get('page')||'1',rawSize=url.searchParams.get('page_size')||'25';
-  if(!/^[1-9]\d*$/.test(rawPage)||!Number.isSafeInteger(Number(rawPage))||!['10','25','50','100'].includes(rawSize))return false;
+  if(paged&&(!/^[1-9]\d*$/.test(rawPage)||!Number.isSafeInteger(Number(rawPage))||!['10','25','50','100'].includes(rawSize)))return false;
   const requestedPage=Math.max(1,Number(rawPage)),pageSize=Number(rawSize);
   const classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]);
-  const query=buildArchiveListQuery({user,filters,page:requestedPage,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues});
+  const query=buildArchiveListQuery({user,filters,page:requestedPage,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues,paginate:paged});
   const result=await storage.read(async({client})=>{
-    const totalResult=await client.query(query.count),total=Number(totalResult.rows[0]?.total||0),meta=archiveSqlPage(total,requestedPage,pageSize);
-    const rowsQuery=buildArchiveListQuery({user,filters,page:meta.page,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues}).rows;
+    const totalResult=paged?await client.query(query.count):null,total=Number(totalResult?.rows[0]?.total||0),meta=paged?archiveSqlPage(total,requestedPage,pageSize):null;
+    const rowsQuery=paged?buildArchiveListQuery({user,filters,page:meta.page,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues}).rows:query.rows;
     const rowsResult=await client.query(rowsQuery);
     const rows=rowsResult.rows.map(row=>row.payload);
     const auditRecord={id:id('audit'),actorId:user.id,action:'view_list',entity:'archive',entityId:'list',at:now(),detail:'PostgreSQL query'};
@@ -110,9 +112,32 @@ async function optimizedArchiveList(req,res,url,user){
     return {meta,rows};
   });
   const years=[...new Set((db.archives||[]).filter(item=>canSee(user,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
-  const response={...result.meta,items:result.rows.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
+  const response={...(result.meta||{}),items:result.rows.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
   if(user.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
   send(res,200,response);return true;
+}
+async function optimizedArchiveExport(req,res,url,user){
+  if(!process.env.DATABASE_URL||req.method!=='GET'||!['/api/export.csv','/api/export.xlsx'].includes(url.pathname)||url.searchParams.get('completeness'))return false;
+  const filters=archiveFilters(url.searchParams,db,subsections),classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]);
+  const query=buildArchiveListQuery({user,filters,classificationValues:classifications,categoryValues:categories,scopeValues,paginate:false});
+  const rows=await storage.read(async({client})=>{
+    const result=await client.query(query.rows),auditRecord={id:id('audit'),actorId:user.id,action:'export',entity:'archive',entityId:'search',at:now(),detail:'PostgreSQL query'};
+    await client.query('INSERT INTO siaga_audit(id,occurred_at,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[auditRecord.id,auditRecord.at,JSON.stringify(auditRecord)]);
+    return result.rows.map(row=>archivePayload(row.payload));
+  });
+  const xlsx=url.pathname.endsWith('.xlsx'),data=xlsx?await archiveXlsx(rows):archiveCsv(rows);
+  send(res,200,data,xlsx?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'text/csv; charset=utf-8',{'Content-Disposition':`attachment; filename="siaga-arsip-export.${xlsx?'xlsx':'csv'}"`});return true;
+}
+async function optimizedDashboard(req,res,url,user){
+  if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/dashboard')return false;
+  const scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]),archiveQuery=buildDashboardArchiveQuery({user,scopeValues}),taskFilters={q:'',assignment:isWide(user)?'all':'mine',status:'',year:'',scopeValues},taskQuery=buildDispositionListQuery({user,filters:taskFilters,summary:true}).summary;
+  const result=await storage.read(async({client})=>{
+    const archiveAggregate=(await client.query(archiveQuery.aggregate)).rows[0]||{total:0,incoming:0,outgoing:0},archiveRows=(await client.query(archiveQuery.rows)).rows.map(row=>row.payload),taskSummary=(await client.query(taskQuery)).rows[0]||{active:0},users=isWide(user)?Number((await client.query("SELECT count(*)::int AS total FROM siaga_users WHERE COALESCE((payload->>'active')::boolean,false)")).rows[0]?.total||0):undefined;
+    const auditRecord={id:id('audit'),actorId:user.id,action:'view_dashboard',entity:'dashboard',entityId:'dashboard',at:now(),detail:'PostgreSQL aggregate'};await client.query('INSERT INTO siaga_audit(id,occurred_at,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[auditRecord.id,auditRecord.at,JSON.stringify(auditRecord)]);
+    const qualityCounts=Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,0]));for(const archive of archiveRows){const status=archiveQuality(archive,fileAvailable).status;if(Object.hasOwn(qualityCounts,status))qualityCounts[status]++;}
+    return {incoming:Number(archiveAggregate.incoming||0),outgoing:Number(archiveAggregate.outgoing||0),total:Number(archiveAggregate.total||0),pending:Number(taskSummary.active||0),users,qualityCounts};
+  });
+  send(res,200,result);return true;
 }
 async function optimizedDispositionList(req,res,url,user){
   if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/dispositions')return false;
@@ -437,7 +462,7 @@ async function staticFile(file, res) { try { const data = await fs.readFile(file
 const server=http.createServer(async(req,res)=>{
   res.setHeader('X-SIAGA-Revision',revision);
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','same-origin');res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');res.setHeader('Content-Security-Policy',"default-src 'self'; img-src 'self' data:; font-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");if(SECURE_COOKIE)res.setHeader('Strict-Transport-Security','max-age=31536000');
-  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}const requestUrl=new URL(req.url,`http://${req.headers.host||'localhost'}`);if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/archives'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedArchiveList(req,res,requestUrl,user);if(optimized)return;}if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/dispositions'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedDispositionList(req,res,requestUrl,user);if(optimized)return;}res._defer=true;await storage.transaction(async(data,dirty,_replace,transaction)=>{db=data;markDirty=dirty;req.fileTransaction=transaction;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
+  try{if(req.url.startsWith('/api/')){if(!['GET','HEAD','OPTIONS'].includes(req.method)){if(req.headers['x-siaga-request']!=='1')fail(403,'Header permintaan tidak valid.');await body(req);}const requestUrl=new URL(req.url,`http://${req.headers.host||'localhost'}`);if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/dashboard'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedDashboard(req,res,requestUrl,user);if(optimized)return;}if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/archives'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedArchiveList(req,res,requestUrl,user);if(optimized)return;}if(process.env.DATABASE_URL&&['/api/export.csv','/api/export.xlsx'].includes(requestUrl.pathname)&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedArchiveExport(req,res,requestUrl,user);if(optimized)return;}if(process.env.DATABASE_URL&&requestUrl.pathname==='/api/dispositions'&&req.method==='GET'){const user=getUser(req);if(!user){send(res,401,{error:'Silakan login terlebih dahulu.'});return;}const optimized=await optimizedDispositionList(req,res,requestUrl,user);if(optimized)return;}res._defer=true;await storage.transaction(async(data,dirty,_replace,transaction)=>{db=data;markDirty=dirty;req.fileTransaction=transaction;sessions=new Map((db.sessions||[]).filter(s=>s.expiresAt>Date.now()).map(s=>[s.id,s]));await route(req,res);});res._defer=false;const reply=res._reply;if(reply){res.writeHead(reply.status,reply.headers);res.end(reply.body);}}else await route(req,res);}
   catch(error){res._defer=false;if(!res.headersSent)send(res,error.status||500,{error:error.status?error.message:'Terjadi kesalahan server.'});else res.end();if(!error.status)console.error('Request gagal:',error.code||error.name);}
 });
 server.requestTimeout=30000;server.headersTimeout=10000;

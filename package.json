@@ -16,6 +16,7 @@
     "import:dry-run": "node scripts/import-dry-run.mjs",
     "test:import-dry-run": "node scripts/import-dry-run-tests.mjs",
     "test:archive-sql": "node scripts/archive-sql-tests.mjs",
+    "test:dashboard-sql": "node scripts/dashboard-sql-tests.mjs",
     "test:disposition-sql": "node scripts/disposition-sql-tests.mjs",
     "test:security": "node scripts/security-tests.mjs",
     "test:database": "node scripts/database-tests.mjs",
