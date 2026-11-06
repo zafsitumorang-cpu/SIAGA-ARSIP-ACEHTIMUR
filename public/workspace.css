@@ -310,3 +310,25 @@ textarea[aria-invalid="true"]:focus {
 .workspace .table th:first-child, .workspace .table td:first-child { padding-left: 16px; }.workspace .table td:first-child { color: #657180; font-variant-numeric: tabular-nums; }
 .ws-chart-filters { display: flex; align-items: center; gap: 10px; }.ws-chart-filter select { min-width: 112px; }
 @media(max-width:620px){.ws-chart-filters { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }.ws-chart-filter select { min-width: 90px; }.profile-menu-popover { right: 0; }}
+
+/* Disposition worklist spacing and hierarchy. */
+.workspace #content:has(#dispositionSearchForm) > .panel { padding: 22px 24px 20px; }
+.workspace #dispositionSummary { margin: 0 0 18px; padding: 12px 15px; border: 1px solid #f0d0cd; border-radius: 8px; color: #6a302c; background: #fff6f5; font-size: 12px; line-height: 1.6; }
+.workspace #dispositionSearchForm .archive-basic-grid { grid-template-columns: minmax(260px, 2fr) minmax(190px, 1fr) minmax(170px, 1fr) minmax(130px, .7fr); gap: 14px; align-items: end; }
+.workspace #dispositionSearchForm .field { min-width: 0; margin: 0 0 14px; }
+.workspace #dispositionSearchForm .archive-filter-actions { margin: 0; padding: 13px 0 0; border-top: 1px solid #edf0f4; }
+.workspace #dispositionSearchForm .archive-filter-actions .btn { min-height: 38px; padding-inline: 16px; }
+.workspace #dispositionResults { margin-top: 18px; }
+.workspace #dispositionResults > .archive-result-summary { margin: 0 0 5px; color: #263238; font-size: 12px; font-weight: 700; }
+.workspace #dispositionResults > .muted { margin: 0 0 14px; color: #657180; font-size: 11px; line-height: 1.6; }
+.workspace #dispositionResults .table-wrap { border: 1px solid #e5e9ef; border-radius: 9px; }
+.workspace #dispositionResults .table { min-width: 900px; }
+.workspace #dispositionResults .table th { padding: 13px 14px; }
+.workspace #dispositionResults .table td { padding: 14px; line-height: 1.6; }
+.workspace #dispositionResults .disp-note { min-width: 180px; max-width: 340px; color: #475569; }
+.workspace #dispositionResults .status-change { min-width: 170px; margin: 0 0 7px; }
+.workspace #dispositionResults .disp-history { display: inline-flex; min-height: 34px; color: #a51f1b; background: #fff7f6; border-color: #efc5c1; }
+.workspace .quality-queue { margin: 24px 0; padding: 24px; }
+.workspace .quality-queue h2 { margin: 0 0 12px; }.workspace .quality-queue p { margin: 8px 0; line-height: 1.7; }.workspace .quality-queue .actions { display: flex; gap: 9px; margin-top: 18px; }
+@media(max-width:1050px){.workspace #dispositionSearchForm .archive-basic-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }}
+@media(max-width:620px){.workspace #content:has(#dispositionSearchForm) > .panel { padding: 16px 14px; }.workspace #dispositionSearchForm .archive-basic-grid { grid-template-columns: 1fr; gap: 10px; }.workspace #dispositionSearchForm .field { margin-bottom: 4px; }.workspace #dispositionSearchForm .archive-filter-actions { justify-content: stretch; }.workspace #dispositionSearchForm .archive-filter-actions button { flex: 1; }.workspace #dispositionSummary { margin-bottom: 14px; }.workspace .quality-queue { padding: 18px 16px; }.workspace .quality-queue .actions { align-items: stretch; flex-direction: column; }.workspace .quality-queue .actions .btn { justify-content: center; }}
