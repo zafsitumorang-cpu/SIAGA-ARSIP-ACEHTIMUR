@@ -267,6 +267,22 @@ textarea[aria-invalid="true"]:focus {
 /* Official SIAGA ARSIP mark in the workspace shell. */
 .workspace .ws-logo-image { width: 40px; height: 40px; border-radius: 11px; object-fit: cover; flex: 0 0 auto; }
 
+/* Archives, settings, and audit surfaces: keep dense administration work readable. */
+.workspace .archive-row-actions { display: flex; flex-wrap: wrap; gap: 6px; min-width: 270px; }
+.workspace .archive-row-actions .btn { min-height: 32px; padding: 8px 10px; font-size: 10px; white-space: nowrap; }
+.workspace .archive-row-actions .table-link { color: #bd241f; border-color: #efc5c1; background: #fff7f6; }
+.workspace .archive-row-actions .table-link:hover { background: #ffebe9; }
+.workspace #archiveSearchForm .archive-filter-actions { margin-top: 2px; padding-top: 12px; border-top: 1px solid #edf0f4; }
+.workspace #archiveSearchForm .archive-filter-actions .btn { min-height: 34px; }
+.workspace .settings-grid { grid-template-columns: 1fr; gap: 18px; }
+.workspace .settings-grid > .panel { min-width: 0; }
+.workspace .settings-grid .table-wrap { max-width: 100%; border: 1px solid #edf0f4; border-radius: 8px; }
+.workspace .settings-grid .table { min-width: 720px; }
+.workspace .settings-grid > .panel:first-child { padding-bottom: 28px; }
+.workspace .audit-page-heading { align-items: flex-end; }.workspace .audit-page-heading p { margin: 8px 0 0; font-size: 12px; }.workspace .audit-page-heading > .btn { flex: 0 0 auto; }
+.workspace .audit-panel { padding: 0 20px 20px; }.workspace .audit-summary { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 0; color: #657180; font-size: 11px; }.workspace .audit-summary b { margin-right: 5px; color: #263238; font-size: 16px; }.workspace .audit-table { min-width: 720px; }.workspace .audit-table th { padding-left: 14px; padding-right: 14px; }.workspace .audit-table td { padding: 14px; }.workspace .audit-table time { white-space: nowrap; color: #526070; font-variant-numeric: tabular-nums; }.workspace .audit-empty { padding: 54px 20px; border-top: 1px solid #edf0f4; text-align: center; }.workspace .audit-empty b { font-size: 14px; }.workspace .audit-empty p { margin: 7px 0 0; color: #657180; font-size: 12px; }
+@media(max-width:620px){.workspace .archive-row-actions { min-width: 250px; }.workspace .settings-grid .panel { padding: 18px 16px; }.workspace .audit-page-heading { align-items: flex-start; }.workspace .audit-page-heading > .btn { width: auto; }.workspace .audit-panel { padding: 0 14px 14px; }.workspace .audit-summary { align-items: flex-start; flex-direction: column; gap: 5px; }.workspace .audit-table { min-width: 680px; }}
+
 /* Dashboard polish: shorter welcome block, clearer search, and useful first actions. */
 .workspace .ws-search { background: #fff; border-color: #efc5c1; color: #596779; }
 .workspace .ws-search input { color: #263238; }.workspace .ws-search input::placeholder, .workspace .ws-search kbd { color: #657180; }
