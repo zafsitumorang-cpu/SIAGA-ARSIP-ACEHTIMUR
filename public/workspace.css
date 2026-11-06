@@ -332,3 +332,23 @@ textarea[aria-invalid="true"]:focus {
 .workspace .quality-queue h2 { margin: 0 0 12px; }.workspace .quality-queue p { margin: 8px 0; line-height: 1.7; }.workspace .quality-queue .actions { display: flex; gap: 9px; margin-top: 18px; }
 @media(max-width:1050px){.workspace #dispositionSearchForm .archive-basic-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }}
 @media(max-width:620px){.workspace #content:has(#dispositionSearchForm) > .panel { padding: 16px 14px; }.workspace #dispositionSearchForm .archive-basic-grid { grid-template-columns: 1fr; gap: 10px; }.workspace #dispositionSearchForm .field { margin-bottom: 4px; }.workspace #dispositionSearchForm .archive-filter-actions { justify-content: stretch; }.workspace #dispositionSearchForm .archive-filter-actions button { flex: 1; }.workspace #dispositionSummary { margin-bottom: 14px; }.workspace .quality-queue { padding: 18px 16px; }.workspace .quality-queue .actions { align-items: stretch; flex-direction: column; }.workspace .quality-queue .actions .btn { justify-content: center; }}
+
+/* Archive search panel spacing and result rhythm. */
+.workspace #content:has(#archiveSearchForm) > .panel { padding: 20px 22px 18px; }
+.workspace #archiveSearchForm .archive-basic-grid { grid-template-columns: minmax(260px, 2fr) minmax(180px, 1fr) minmax(180px, 1fr); gap: 14px; align-items: end; padding: 0 0 14px; }
+.workspace #archiveSearchForm .field { min-width: 0; margin: 0; }
+.workspace #archiveSearchForm #archiveAdvanced { margin: 0 -22px; padding: 13px 22px; border-top: 1px solid #edf0f4; border-bottom: 1px solid #edf0f4; }
+.workspace #archiveSearchForm #archiveAdvanced summary { color: #344152; font-size: 12px; font-weight: 700; }
+.workspace #archiveSearchForm #archiveAdvanced summary span { margin-left: 8px; color: #657180; font-weight: 400; }
+.workspace #archiveSearchForm .archive-filter-actions { margin: 0; padding: 13px 0 0; border: 0; }
+.workspace #archiveSearchForm .archive-filter-actions > span { margin-right: auto; }
+.workspace #archiveFilterError { margin: 14px 0; }
+.workspace #archiveResults { margin-top: 16px; }
+.workspace #archiveResults .archive-result-summary { margin: 0 0 5px; color: #263238; font-size: 12px; font-weight: 700; }
+.workspace #archiveResults .archive-sort-hint { margin: 0 0 14px; font-size: 11px; line-height: 1.6; }
+.workspace #archiveResults .table-wrap { border: 1px solid #e5e9ef; border-radius: 9px; }
+.workspace #archiveResults .table th { padding: 13px 14px; }
+.workspace #archiveResults .table td { padding: 14px; line-height: 1.6; }
+.workspace #archiveResults .archive-pagination { margin-top: 16px; padding-top: 14px; }
+@media(max-width:1050px){.workspace #archiveSearchForm .archive-basic-grid { grid-template-columns: minmax(220px,1.5fr) 1fr 1fr; }}
+@media(max-width:720px){.workspace #content:has(#archiveSearchForm) > .panel { padding: 16px 14px; }.workspace #archiveSearchForm .archive-basic-grid { grid-template-columns: 1fr; gap: 12px; padding-bottom: 12px; }.workspace #archiveSearchForm #archiveAdvanced { margin: 0 -14px; padding: 12px 14px; }.workspace #archiveSearchForm #archiveAdvanced summary span { margin: 5px 0 0; }.workspace #archiveSearchForm .archive-filter-actions { justify-content: stretch; }.workspace #archiveSearchForm .archive-filter-actions > span { width: 100%; }.workspace #archiveSearchForm .archive-filter-actions button { flex: 1; }.workspace #archiveResults .archive-pagination { align-items: flex-start; gap: 12px; }}
