@@ -42,6 +42,9 @@ jobs:
       - run: npm run test:subsections
       - run: npm run test:categories
       - run: npm run test:classifications
+      - run: npm run test:category-master
+        env:
+          PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
       - run: npm run test:export

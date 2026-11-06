@@ -84,7 +84,7 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 ## 05 — Master klasifikasi dan kategori
 
 - [x] **05.1 — Kelola klasifikasi penuh.** Kode/nama/deskripsi/aktif; ubah atau nonaktif tanpa memutus arsip lama. **Selesai:** katalog admin, form arsip, filter dan ekspor mengenali referensi lama; pilihan aktif tervalidasi; nama baru memakai alias bila kode stabil; perubahan status/metadata diaudit; aturan kode terdokumentasi dan siap disahkan ARS. Tes: `npm run test:classifications` (JSON + PostgreSQL).
-- [ ] **05.2 — Tutup FR-11 secara eksplisit.** Implementasikan kategori yang benar-benar dapat dipilih, divalidasi dan diakses sesuai skema; atau sahkan pilot hanya dua jenis dan pindahkan kemampuan kategori ke lanjutan. **Selesai:** penambahan nama kategori saja tidak dicentang sebagai modul kategori selesai.
+- [x] **05.2 — Tutup FR-11 secara eksplisit.** Registri kategori kini terstruktur dengan kode/nama/deskripsi/status aktif; kategori dapat dipilih, divalidasi, dicari, difilter, dilihat dan diekspor melalui scope arsip yang sama. Kategori nonaktif tidak dipakai untuk arsip baru dan tetap menjaga referensi lama. Alias `/api/admin/categories` dipertahankan untuk kompatibilitas. Tes: `npm run test:category-master` (JSON + PostgreSQL) dan browser form.
 - [ ] **05.3 — Uji perubahan master.** Data lama, label duplikat, kategori nonaktif dan akses diuji. **Selesai:** perubahan master tidak memberikan akses baru atau mengubah arti arsip lama diam-diam.
 
 ## 06 — Akun, audit dan keamanan operasional aplikasi

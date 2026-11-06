@@ -330,6 +330,20 @@ const pass=message=>console.log('PASS',message);
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('tr')).some(row=>row.textContent.includes('Klasifikasi UI dummy')&&row.textContent.includes('Aktifkan')));
     pass('classification master: fields render, a new coded entry is saved, and inactive state is visible');
 
+    for(const cid of ['newCategoryCode','newCategory','newCategoryDescription']){
+      assert.ok(await page.locator(`label[for="${cid}"]`).count()>=1,`Missing label for ${cid}`);
+    }
+    await page.fill('#newCategoryCode','UI-CAT-05-2');
+    await page.fill('#newCategory','Kategori UI dummy');
+    await page.fill('#newCategoryDescription','Kategori master UI dummy');
+    await page.click('#categoryForm button');
+    await page.waitForFunction(()=>document.querySelector('#content')?.textContent.includes('Kategori UI dummy'));
+    const categoryRow=page.locator('tr').filter({hasText:'Kategori UI dummy'});
+    assert.equal(await categoryRow.count(),1);
+    await categoryRow.locator('.category-toggle').click();
+    await page.waitForFunction(()=>Array.from(document.querySelectorAll('tr')).some(row=>row.textContent.includes('Kategori UI dummy')&&row.textContent.includes('Aktifkan')));
+    pass('category master: fields render, a new coded entry is saved, and inactive state is visible');
+
     // User Edit Form modal
     await page.locator('.user-edit').first().click();
     await page.waitForSelector('#editUserForm');

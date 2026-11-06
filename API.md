@@ -74,12 +74,13 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 - `GET /api/admin/classifications` — admin membaca katalog master (`id`, `code`, `label`, `description`, `active`, `aliases`).
 - `POST /api/admin/classifications` — admin menambah klasifikasi dengan `label` wajib, `code` opsional (`A-Z`, angka, `.`, `_`, `/`, `-`), deskripsi opsional dan status aktif default.
 - `PATCH /api/admin/classifications/{id-or-code-or-label}` — admin mengubah deskripsi/kode/status; nama baru menyimpan nama lama sebagai alias bila kode stabil. Klasifikasi legacy tanpa kode harus diberi kode sebelum ganti nama.
-- `GET/POST/PATCH /api/admin/archive-categories`
+- `GET /api/admin/archive-categories` — admin membaca registri kategori (`id`, `code`, `label`, `description`, `active`, `aliases`).
+- `POST/PATCH /api/admin/archive-categories[/id-or-code-or-label]` — admin mengelola kategori berkode; status nonaktif memblokir arsip baru tanpa menghapus referensi lama. `/api/admin/categories` tetap alias kompatibilitas.
 - `GET /api/admin/audit-events?actor=&action=&from=&to=`
 - `GET /api/users` — daftar pengguna aktif untuk admin/pimpinan, tanpa password hash.
 - `GET /api/admin/users` — daftar semua akun (termasuk nonaktif) untuk admin, tanpa password hash.
 - Klasifikasi nonaktif tidak dapat dipilih untuk arsip baru, tetapi referensi pada arsip lama tetap dapat dibaca, dicari, difilter dan diekspor. Perubahan master dicatat sebagai audit tanpa menyalin isi metadata arsip.
-- `POST /api/admin/categories` — admin menambah kategori arsip untuk perluasan bertahap.
+- Kategori awal 00.3 dan kategori tambahan memakai registri yang sama pada pilihan form, validasi server, filter, detail, pencarian dan ekspor; perubahan tidak memberikan akses baru karena kategori hanya metadata dan scope tetap mengikuti subbagian/role.
 - Endpoint konfigurasi tidak boleh mengubah hak akses secara implisit.
 
 ## Pola respons

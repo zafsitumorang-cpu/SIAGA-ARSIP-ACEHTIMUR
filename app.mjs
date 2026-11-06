@@ -20,7 +20,7 @@ import {archiveQuality} from './lib/archive-quality.mjs';
 import {archiveIndex,indexFields,indexLimits,validateIndexFields,structuredFileName} from './lib/archive-index.mjs';
 import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspection.mjs';
 import {officialSubsections,isSubsection,sameSubsection,subsectionLabel} from './lib/subsection-taxonomy.mjs';
-import {administrativeArchiveCategories,defaultArchiveCategory} from './lib/archive-taxonomy.mjs';
+import {administrativeArchiveCategories,defaultArchiveCategory,categoryLabels,categoryRecords,findArchiveCategory,validateCategoryInput} from './lib/archive-taxonomy.mjs';
 import {classificationLabels,classificationPayload,findClassification,classificationRecords,validateClassificationInput} from './lib/classification-taxonomy.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -48,7 +48,7 @@ const roles = {
 
 function id(prefix = 'id') { return `${prefix}_${crypto.randomUUID()}`; }
 function now() { return new Date().toISOString(); }
-function categoryRegistry() { return [...new Set([...archiveCategories, ...(db?.categories || [])])]; }
+function categoryRegistry() { return categoryLabels([...archiveCategories, ...(db?.categories || [])]); }
 const hash = passwordHash;
 
 async function seed() {
@@ -133,7 +133,7 @@ async function route(req, res) {
       const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
       audit(u.id,'view_list','archive','list');await persist();
       const response={...result,items:result.items.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
-      if(u.role==='admin')response.classificationCatalog=classificationPayload(db.classifications);
+      if(u.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
       return send(res,200,response);
     }
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='GET'){const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a))return send(res,404,{error:'Arsip tidak ditemukan.'});audit(u.id,'view','archive',a.id);await persist();return send(res,200,archivePayload(a));}
@@ -212,7 +212,28 @@ async function route(req, res) {
       db.classifications[index]=next;audit(u.id,next.active?'update_classification':'disable_classification','classification',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();
       return send(res,200,{classifications:classificationLabels(db.classifications),classificationCatalog:classificationPayload(db.classifications)});
     }
-    if (pathname === '/api/admin/categories' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama kategori wajib diisi.' }); if (!db.categories.includes(value) && !archiveCategories.includes(value)) db.categories.push(value); audit(u.id, 'create_category', 'category', value); await persist(); return send(res, 201, { categories: categoryRegistry() }); }
+    if ((pathname === '/api/admin/archive-categories' || pathname === '/api/admin/categories') && req.method === 'GET') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      return send(res, 200, { items: categoryRecords([...archiveCategories, ...(db.categories || [])]) });
+    }
+    if ((pathname === '/api/admin/archive-categories' || pathname === '/api/admin/categories') && req.method === 'POST') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const input=validateCategoryInput(await body(req));const records=categoryRecords([...archiveCategories,...(db.categories||[])]);
+      if(records.some(item=>item.label.toLowerCase()===input.label.toLowerCase()||input.code&&item.code.toLowerCase()===input.code.toLowerCase()))return send(res,409,{error:'Nama atau kode kategori sudah digunakan.'});
+      const created={id:input.code||id('category'),code:input.code||'',label:input.label,description:input.description||'',active:input.active!==false,aliases:[],createdBy:u.id,createdAt:now(),updatedAt:now()};db.categories.push(created);audit(u.id,'create_category','category',created.id,created.code?`${created.code} — ${created.label}`:created.label);await persist();return send(res,201,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+    }
+    if (pathname.startsWith('/api/admin/archive-categories/') && req.method === 'PATCH') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));const index=db.categories.findIndex(item=>findArchiveCategory([item],key));
+      if(index<0)return send(res,404,{error:'Kategori tambahan tidak ditemukan.'});
+      const current=categoryRecords([db.categories[index]])[0],input=validateCategoryInput(await body(req),{partial:true});
+      if(input.label!==undefined&&input.label!==current.label&&!current.code&&!input.code)return send(res,422,{error:'Kategori legacy tanpa kode tidak dapat diganti nama. Tetapkan kode terlebih dahulu agar referensi arsip lama tetap terlacak.'});
+      const next={...current,...Object.fromEntries(Object.entries(input).filter(([,value])=>value!==undefined)),id:current.id||input.code||id('category'),aliases:[...new Set(current.aliases)],createdBy:current.createdBy||u.id,createdAt:current.createdAt||now(),updatedAt:now()};
+      if(input.label!==undefined&&input.label!==current.label)next.aliases=[...new Set([...next.aliases,current.label])];
+      const others=categoryRecords([...archiveCategories,...db.categories]).filter((_,i)=>i!==archiveCategories.length+index);
+      if(others.some(item=>item.label.toLowerCase()===next.label.toLowerCase()||next.code&&item.code.toLowerCase()===next.code.toLowerCase()||item.aliases.includes(next.label)))return send(res,409,{error:'Nama atau kode kategori sudah digunakan.'});
+      db.categories[index]=next;audit(u.id,next.active?'update_category':'disable_category','category',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+    }
     if(pathname==='/api/archives'&&req.method==='POST'){
       if(!['admin','recorder'].includes(u.role))return send(res,403,{error:'Peran ini tidak dapat mencatat arsip.'});
       const b=await body(req);
