@@ -15,6 +15,7 @@ await withApiFixtures('classifications', async ({ request, restart }) => {
   const login = async (username, password) => (await request('/api/login', null, 'POST', { username, password })).cookie;
   const admin = await login('admin', 'admin123');
   const employee = await login('pegawai.administrasi', 'pegawai123');
+  const foreignEmployee = await login('pegawai.hukum', 'pegawai123');
   assert.equal((await request('/api/admin/classifications', employee)).status, 403);
   const initial = await request('/api/admin/classifications', admin);
   assert.equal(initial.status, 200);
@@ -33,6 +34,7 @@ await withApiFixtures('classifications', async ({ request, restart }) => {
   const record = { type: 'administrative', category: 'Arsip Administrasi Umum', number: 'CLASS/001', letterDate: '2026-11-06', subject: 'Arsip klasifikasi dummy', classification: 'Retensi dummy', subsection: 'Administrasi' };
   const archive = await request('/api/archives', admin, 'POST', record);
   assert.equal(archive.status, 201);
+  assert.equal((await request(`/api/archives/${archive.body.id}`, foreignEmployee)).status, 404);
   const disabled = await request('/api/admin/classifications/ADM-99', admin, 'PATCH', { active: false });
   assert.equal(disabled.status, 200);
   assert.equal(disabled.body.classificationCatalog.find(entry => entry.code === 'ADM-99').active, false);
@@ -50,6 +52,7 @@ await withApiFixtures('classifications', async ({ request, restart }) => {
   const renamedItem = renamed.body.classificationCatalog.find(entry => entry.code === 'ADM-99');
   assert.deepEqual(renamedItem.aliases, ['Retensi dummy']);
   assert.equal((await request('/api/archives?classification=Retensi%20dummy', admin)).body.items.some(entry => entry.id === archive.body.id), true);
+  assert.equal((await request(`/api/archives/${archive.body.id}`, foreignEmployee)).status, 404);
   assert.equal((await request('/api/archives', admin, 'POST', { ...record, number: 'CLASS/003', classification: 'Retensi resmi' })).status, 201);
   const audit = await request('/api/admin/audit', admin);
   assert.ok(audit.body.items.some(event => event.action === 'create_classification' && event.entityId === 'ADM-99'));

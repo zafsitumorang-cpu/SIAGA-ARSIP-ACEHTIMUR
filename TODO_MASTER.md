@@ -85,7 +85,7 @@ Urutan bukan perkiraan hari kerja. Jadwal baru ditetapkan setelah ruang lingkup,
 
 - [x] **05.1 — Kelola klasifikasi penuh.** Kode/nama/deskripsi/aktif; ubah atau nonaktif tanpa memutus arsip lama. **Selesai:** katalog admin, form arsip, filter dan ekspor mengenali referensi lama; pilihan aktif tervalidasi; nama baru memakai alias bila kode stabil; perubahan status/metadata diaudit; aturan kode terdokumentasi dan siap disahkan ARS. Tes: `npm run test:classifications` (JSON + PostgreSQL).
 - [x] **05.2 — Tutup FR-11 secara eksplisit.** Registri kategori kini terstruktur dengan kode/nama/deskripsi/status aktif; kategori dapat dipilih, divalidasi, dicari, difilter, dilihat dan diekspor melalui scope arsip yang sama. Kategori nonaktif tidak dipakai untuk arsip baru dan tetap menjaga referensi lama. Alias `/api/admin/categories` dipertahankan untuk kompatibilitas. Tes: `npm run test:category-master` (JSON + PostgreSQL) dan browser form.
-- [ ] **05.3 — Uji perubahan master.** Data lama, label duplikat, kategori nonaktif dan akses diuji. **Selesai:** perubahan master tidak memberikan akses baru atau mengubah arti arsip lama diam-diam.
+- [x] **05.3 — Uji perubahan master.** Data lama, label/kode duplikat, master nonaktif, alias nama lama, restart JSON/PostgreSQL dan scope pengguna diuji. **Selesai:** perubahan master tidak memberikan akses baru atau mengubah arti arsip lama diam-diam. Bukti: `npm run test:classifications` 11 dan `npm run test:category-master` 7.
 
 ## 06 — Akun, audit dan keamanan operasional aplikasi
 
