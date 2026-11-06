@@ -118,14 +118,14 @@ async function optimizedArchiveList(req,res,url,user){
 }
 async function optimizedArchiveExport(req,res,url,user){
   if(!process.env.DATABASE_URL||req.method!=='GET'||!['/api/export.csv','/api/export.xlsx'].includes(url.pathname)||url.searchParams.get('completeness'))return false;
-  const filters=archiveFilters(url.searchParams,db,subsections),classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]);
+  const filters=archiveFilters(url.searchParams,db,subsections),classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]),xlsx=url.pathname.endsWith('.xlsx');
   const query=buildArchiveListQuery({user,filters,classificationValues:classifications,categoryValues:categories,scopeValues,paginate:false});
   const rows=await storage.read(async({client})=>{
-    const result=await client.query(query.rows),auditRecord={id:id('audit'),actorId:user.id,action:'export',entity:'archive',entityId:'search',at:now(),detail:'PostgreSQL query'};
+    const result=await client.query(query.rows),auditRecord={id:id('audit'),actorId:user.id,action:'export',entity:'archive',entityId:'search',at:now(),detail:`${result.rows.length} data; ${xlsx?'XLSX':'CSV'}; PostgreSQL query`};
     await client.query('INSERT INTO siaga_audit(id,occurred_at,payload) VALUES($1,$2,$3) ON CONFLICT DO NOTHING',[auditRecord.id,auditRecord.at,JSON.stringify(auditRecord)]);
     return result.rows.map(row=>archivePayload(row.payload));
   });
-  const xlsx=url.pathname.endsWith('.xlsx'),data=xlsx?await archiveXlsx(rows):archiveCsv(rows);
+  const data=xlsx?await archiveXlsx(rows):archiveCsv(rows);
   send(res,200,data,xlsx?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'text/csv; charset=utf-8',{'Content-Disposition':`attachment; filename="siaga-arsip-export.${xlsx?'xlsx':'csv'}"`});return true;
 }
 async function optimizedDashboard(req,res,url,user){
