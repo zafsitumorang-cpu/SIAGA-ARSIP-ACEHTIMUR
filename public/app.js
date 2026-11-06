@@ -10,7 +10,7 @@ import {openArchiveQuality} from './archive-quality.js';
 import {archiveSourceFields,bindArchiveSourceFields} from './archive-source-fields.js';
 import {setupFormA11y} from './form-a11y.js';
 const app = document.querySelector('#app');
-const state = { user: null, page: 'dashboard', archives: [], archiveItems: [], archivePage: 1, archivePageSize: 25, dashboard: null, filters: { q: '', type: '', category: '', year: '', status: '' }, classifications: [], classificationCatalog: [], categories: [], categoryCatalog: [], users: [], modal: null, selected: null };
+const state = { user: null, page: 'dashboard', archives: [], archiveItems: [], archivePage: 1, archivePageSize: 25, dashboard: null, filters: { q: '', type: '', category: '', year: '', status: '', classification: '', subsection: '', from: '', to: '', completeness: '' }, classifications: [], classificationCatalog: [], categories: [], categoryCatalog: [], users: [], modal: null, selected: null, pendingDetailId: '', skipNextPopRender: false };
 const subsections = ['Administrasi', 'Hukum dan Sengketa Proses', 'Pencegahan, Partisipasi Masyarakat, dan Humas', 'Penanganan Pelanggaran dan Data Informasi'];
 const subsectionAliases = { 'Administrasi':'Administrasi', 'Hukum':'Hukum dan Sengketa Proses', 'Hukum dan Sengketa Proses':'Hukum dan Sengketa Proses', 'Pengawasan':'Pencegahan, Partisipasi Masyarakat, dan Humas', 'Pencegahan, Partisipasi Masyarakat, dan Humas':'Pencegahan, Partisipasi Masyarakat, dan Humas', 'PPPS':'Penanganan Pelanggaran dan Data Informasi', 'Penanganan Pelanggaran dan Data Informasi':'Penanganan Pelanggaran dan Data Informasi' };
 const subsectionLabel = value => subsectionAliases[value] || value || '';
@@ -18,6 +18,40 @@ const sameSubsection = (left,right) => Boolean(subsectionLabel(left) && subsecti
 const localToday = () => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Jakarta', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
 const $ = (s, root = document) => root.querySelector(s);
 const esc = (v = '') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const routePages = new Set(['dashboard','archives','dispositions','settings','audit']);
+function readWorkspaceRoute() {
+  const raw = window.location.hash.replace(/^#/, '');
+  if (!raw.startsWith('workspace/')) return null;
+  const [path, query = ''] = raw.slice('workspace/'.length).split('?');
+  if (!routePages.has(path)) return null;
+  const params = new URLSearchParams(query);
+  const filters = {};
+  for (const key of ['q','type','category','year','status','classification','subsection','from','to','completeness']) filters[key] = params.get(key) || '';
+  const page = Math.max(1, Number(params.get('page') || 1) || 1);
+  const pageSize = [10,25,50,100].includes(Number(params.get('page_size'))) ? Number(params.get('page_size')) : 25;
+  return { page: path, filters, archivePage: page, archivePageSize: pageSize, detail: params.get('detail') || '' };
+}
+function workspaceHash({detail = ''} = {}) {
+  const params = new URLSearchParams();
+  if (state.page === 'archives') {
+    for (const [key, value] of Object.entries(state.filters)) if (value) params.set(key, value);
+    if (state.archivePage > 1) params.set('page', String(state.archivePage));
+    if (state.archivePageSize !== 25) params.set('page_size', String(state.archivePageSize));
+    if (detail) params.set('detail', detail);
+  }
+  const query = params.toString();
+  return `#workspace/${state.page}${query ? `?${query}` : ''}`;
+}
+function syncWorkspaceRoute({replace = false, detail = ''} = {}) {
+  const url = workspaceHash({detail});
+  if (replace) window.history.replaceState({siaga: 'workspace'}, '', url);
+  else window.history.pushState({siaga: 'workspace'}, '', url);
+}
+function applyWorkspaceRoute(route) {
+  if (!route) return false;
+  state.page = route.page; state.filters = {...state.filters, ...route.filters}; state.archivePage = route.archivePage; state.archivePageSize = route.archivePageSize; state.pendingDetailId = route.detail;
+  return true;
+}
 async function api(url, options = {}) {
   const stop=requestActivity();
   try { const r=await fetch(url,{...options,headers:{'Content-Type':'application/json','X-SIAGA-Request':'1',...(options.headers||{})}});const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.error||'Permintaan gagal'),{status:r.status});return j; }
@@ -128,7 +162,7 @@ function loginView() {
   };
   $('#loginForm').noValidate = true;
 }
-async function loadApp() { const me = await api('/api/me'); state.user = me.user; await refresh(); renderShell(); }
+async function loadApp() { const me = await api('/api/me'); state.user = me.user; applyWorkspaceRoute(readWorkspaceRoute()); await refresh(); renderShell(); }
 async function refresh(){
   const [dashboard,result,notifications]=await Promise.all([api('/api/dashboard'),api('/api/archives'),api('/api/notifications').catch(()=>null)]);
   state.notifications=notifications;state.dashboard=dashboard;state.archives=result.items;state.classifications=result.classifications;state.classificationCatalog=result.classificationCatalog||state.classificationCatalog;state.categories=result.categories||state.categories;state.categoryCatalog=result.categoryCatalog||state.categoryCatalog;syncWorkspaceStatus();
@@ -139,7 +173,7 @@ function renderShell() {
   app.innerHTML = `<div class="shell design-shell workspace"><button class="ws-scrim" id="closeNav" aria-label="Tutup navigasi" hidden></button><aside class="side" id="workspaceNav"><a class="ws-brand" href="#" id="workspaceHome"><span class="ws-logo">SA</span><span>SIAGA <b>ARSIP</b><small>Bawaslu Aceh Timur</small></span></a><div class="nav-heading">RUANG KERJA</div><nav class="nav" aria-label="Navigasi sistem">${nav.map(([page,label,glyph])=>`<button data-page="${page}"><span class="nav-icon">${icon(glyph)}</span><span class="nav-label">${label}</span>${page==='dispositions' && state.dashboard.pending ? `<small class="nav-badge">${state.dashboard.pending}</small>`:''}</button>`).join('')}</nav><div class="ws-side-note"><span class="ws-demo-dot"></span>${state.demoMode?'Lingkungan uji coba':'Ruang kerja internal'}<p>${state.demoMode?'Data contoh untuk pengujian sistem kearsipan.':'Akses mengikuti peran dan subbagian.'}</p></div><div class="profile-card"><div class="avatar">${initials(state.user.name)}</div><div class="profile-copy"><b>${esc(state.user.name)}</b><small>${esc(roleNames[state.user.role] || state.user.role)}</small></div><button class="ws-icon-button" id="logout" aria-label="Keluar dari sistem">${icon('outgoing')}</button></div></aside><main class="main"><header class="top"><button class="ws-icon-button" id="toggleNav" aria-controls="workspaceNav" aria-expanded="true" aria-label="Buka atau tutup navigasi">${icon('menu')}</button><form class="ws-search" id="globalSearchForm" role="search">${icon('search')}<input id="globalSearch" type="search" maxlength="200" placeholder="Cari arsip surat…" aria-label="Cari arsip surat"><kbd>/</kbd></form><div class="ws-top-right"><span class="ws-office">Bawaslu Kabupaten Aceh Timur</span><button class="ws-icon-button" id="notificationBtn" aria-label="Lihat disposisi">${icon('bell')}${state.notifications?.unread?'<i class="ws-notification-dot"></i>':''}</button><div class="avatar" title="${esc(state.user.name)}">${initials(state.user.name)}</div></div></header><section class="content" id="content"></section><footer class="ws-footer"><span>SIAGA ARSIP · Bawaslu Aceh Timur</span><span>Akses sesuai peran & subbagian</span></footer></main></div>`;
   const shell = $('.workspace');
   function closeMobileNav() { shell.classList.remove('nav-open'); $('#closeNav').hidden = true; $('#toggleNav').setAttribute('aria-expanded',String(innerWidth>900 && !shell.classList.contains('nav-collapsed'))); }
-  document.querySelectorAll('[data-page]').forEach(button => button.onclick = async () => { if(button.dataset.page==='dashboard' && Object.values(state.filters).some(Boolean)){state.filters={q:'',type:'',category:'',year:'',status:''};try{await refresh();}catch(err){toast(err.message, 'error');return;}} state.navigationEpoch=(state.navigationEpoch||0)+1;state.page=button.dataset.page; document.querySelectorAll('[data-page]').forEach(item=>{ item.classList.toggle('active',item===button); item.setAttribute('aria-current',item===button?'page':'false'); }); closeMobileNav(); renderPage(); });
+  document.querySelectorAll('[data-page]').forEach(button => button.onclick = async () => { if(button.dataset.page==='dashboard' && Object.values(state.filters).some(Boolean)){state.filters={q:'',type:'',category:'',year:'',status:'',classification:'',subsection:'',from:'',to:'',completeness:''};state.archivePage=1;try{await refresh();}catch(err){toast(err.message, 'error');return;}} state.navigationEpoch=(state.navigationEpoch||0)+1;state.page=button.dataset.page; state.pendingDetailId=''; document.querySelectorAll('[data-page]').forEach(item=>{ item.classList.toggle('active',item===button); item.setAttribute('aria-current',item===button?'page':'false'); }); syncWorkspaceRoute(); closeMobileNav(); renderPage(); });
   $('#workspaceHome').onclick = event => {event.preventDefault(); document.querySelector('[data-page="dashboard"]').click();};
   $('#toggleNav').onclick = () => { if(innerWidth<=900){const open=shell.classList.toggle('nav-open'); $('#closeNav').hidden=!open; $('#toggleNav').setAttribute('aria-expanded',String(open));}else{shell.classList.toggle('nav-collapsed');$('#toggleNav').setAttribute('aria-expanded',String(!shell.classList.contains('nav-collapsed')));} };
   $('#closeNav').onclick=closeMobileNav;
@@ -148,7 +182,9 @@ function renderShell() {
   $('#logout').onclick=async()=>{await api('/api/logout',{method:'POST'});state.user=null;state.page=null;state.navigationEpoch=(state.navigationEpoch||0)+1;loginView();};
   $('#globalSearchForm').onsubmit=async event=>{event.preventDefault();state.filters.q=$('#globalSearch').value.trim();state.archivePage=1;try{await refresh();document.querySelector('[data-page="archives"]').click();}catch(err){toast(err.message, 'error');}};
   $('#toggleNav').setAttribute('aria-expanded',String(innerWidth>900));syncWorkspaceStatus();
-  document.querySelector(`[data-page="${state.page}"]`)?.click();
+  const route = readWorkspaceRoute();
+  if (route) { applyWorkspaceRoute(route); document.querySelectorAll('[data-page]').forEach(item=>{const active=item.dataset.page===state.page;item.classList.toggle('active',active);item.setAttribute('aria-current',active?'page':'false');}); renderPage(); }
+  else document.querySelector(`[data-page="${state.page}"]`)?.click();
 }
 function renderPage() {
   closeNotifications(false);
@@ -201,18 +237,19 @@ function metadataHistoryHtml(archive){
   const when=value=>value&&!Number.isNaN(Date.parse(value))?new Date(value).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'})+' WIB':'Waktu tidak tercatat';
   return `<section class="metadata-history" aria-labelledby="metadataHistoryTitle"><h4 id="metadataHistoryTitle">Riwayat koreksi metadata</h4><p class="muted">Riwayat mencatat kolom yang berubah, pelaku, waktu, dan versi. Nilai lama/baru tidak disalin ke riwayat.</p>${earlier?'<p class="notice">Rincian koreksi sebelum pencatatan riwayat ini belum tersedia.</p>':''}${history.length?`<ol>${[...history].reverse().map(event=>`<li><p><strong>Versi ${esc(event.version)}</strong> · ${esc(event.byName)}<br><time>${esc(when(event.at))}</time></p><p>Kolom diperbarui: ${esc(event.fieldLabels.join(', ')||'Tidak tercatat')}.</p></li>`).join('')}</ol>`:'<p>Belum ada koreksi metadata yang tercatat.</p>'}</section>`;
 }
-async function openArchiveDetail(archive) {
+async function openArchiveDetail(archive, {fromRoute = false} = {}) {
   const userId=state.user?.id,epoch=state.navigationEpoch,page=state.page;
   try{archive=await api('/api/archives/'+encodeURIComponent(archive.id));}catch(err){toast(err.message,'error');return;}
   if(!userId||state.user?.id!==userId||state.navigationEpoch!==epoch||state.page!==page)return;
+  if (!fromRoute) syncWorkspaceRoute({detail: archive.id});
   const previous=document.activeElement;
   app.insertAdjacentHTML('beforeend', `<div class="modal-back" id="modalBack"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle" tabindex="-1"><div class="modal-head"><h3 id="detailTitle">Detail arsip</h3><button class="icon-btn" id="closeModal" aria-label="Tutup detail">${icon('close')}</button></div><h4>${esc(archive.subject)}</h4><dl class="ws-detail-list">${[['Indeks sistem',archive.systemIndex],['Tahun arsip',archive.year],['Nomor agenda',archive.agendaNumber],['Kode klasifikasi',archive.classificationCode],['Jenis sumber',archive.sourceLabel],['Lokasi fisik',archive.physicalLocation],['Referensi sumber',archive.sourceReference],['Kategori',archive.category],['Nomor arsip',archive.number],['Tanggal arsip',archive.letterDate],['Jenis',archiveTypeLabel(archive.type)],['Asal / tujuan',archiveCounterparty(archive)],['Subbagian',archive.subsectionLabel||subsectionLabel(archive.subsection)],['Klasifikasi',archive.classification]].map(([label,value])=>`<div><dt>${label}</dt><dd>${esc(value||'—')}</dd></div>`).join('')}</dl>${archive.updatedAt?`<p class="muted archive-edit-intro">Terakhir diubah ${esc(new Date(archive.updatedAt).toLocaleString('id-ID',{timeZone:'Asia/Jakarta'}))} oleh ${esc(archive.updatedByName||'admin')}.</p>`:''}<p class="quality-state">${esc(archive.quality.label)}</p>${metadataHistoryHtml(archive)}${archiveChronology(archive,esc)}<div class="actions"><button class="btn btn-soft" id="qualityFromDetail">Kelengkapan & verifikasi</button><button class="btn btn-soft" id="filesFromDetail">Berkas & riwayat versi</button>${state.user?.role==='admin'?'<button class="btn btn-soft" id="editFromDetail">Ubah metadata</button><button class="btn btn-soft" id="deleteFromDetail">Hapus arsip</button>':''}${archive.fileAvailable&&/^(application\/pdf|image\/)/.test(archive.fileMimeType||'')?`<a class="btn btn-soft" href="/api/files/${encodeURIComponent(archive.fileId)}" target="_blank" rel="noopener">Lihat pratinjau</a>`:''}${archive.fileAvailable?`<a class="btn btn-primary" href="/api/files/${encodeURIComponent(archive.fileId)}" target="_blank" rel="noopener">Unduh berkas</a><a class="btn btn-soft" href="/api/files/${encodeURIComponent(archive.fileId)}?filename=structured" target="_blank" rel="noopener">Unduh nama terstruktur</a>`:'<span class="muted">Berkas belum dilengkapi.</span>'}</div></section></div>`);
-  const back=$('#modalBack'),dialog=$('.modal',back);const close=()=>{closeModal();previous?.focus();};$('#closeModal',back).onclick=close;$('#qualityFromDetail',back).onclick=()=>openQuality(archive.id);$('#filesFromDetail',back).onclick=()=>openArchiveFiles(archive.id);$('#editFromDetail',back)?.addEventListener('click',()=>openArchiveEdit(archive.id));$('#deleteFromDetail',back)?.addEventListener('click',async()=>{const reason=window.prompt('Alasan penghapusan arsip wajib diisi. Arsip akan disembunyikan tanpa menghapus berkas atau riwayat.','');if(!reason?.trim())return;try{await api(`/api/archives/${encodeURIComponent(archive.id)}`,{method:'DELETE',body:JSON.stringify({reason})});toast('Arsip disembunyikan.');close();await refresh();renderPage();}catch(error){toast(error.message,'error');}});
+  const back=$('#modalBack'),dialog=$('.modal',back);const close=()=>{const hadDetail=readWorkspaceRoute()?.detail===archive.id;closeModal();previous?.focus();if(hadDetail)syncWorkspaceRoute({replace:true});};$('#closeModal',back).onclick=close;$('#qualityFromDetail',back).onclick=()=>openQuality(archive.id);$('#filesFromDetail',back).onclick=()=>openArchiveFiles(archive.id);$('#editFromDetail',back)?.addEventListener('click',()=>openArchiveEdit(archive.id));$('#deleteFromDetail',back)?.addEventListener('click',async()=>{const reason=window.prompt('Alasan penghapusan arsip wajib diisi. Arsip akan disembunyikan tanpa menghapus berkas atau riwayat.','');if(!reason?.trim())return;try{await api(`/api/archives/${encodeURIComponent(archive.id)}`,{method:'DELETE',body:JSON.stringify({reason})});toast('Arsip disembunyikan.');close();await refresh();renderPage();}catch(error){toast(error.message,'error');}});
   back.onclick=event=>{if(event.target===back)close();};back.onkeydown=event=>{if(event.key==='Escape')close();if(event.key==='Tab'){const focusable=[...dialog.querySelectorAll('button,a[href]')];const first=focusable[0],last=focusable.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}};dialog.focus();
 }
 function renderArchives(){
   const root=$('#content');
-  renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd:()=>openModal('archive'),rowsHtml:archiveRows,bindActions:bindArchiveActions,loading:loadingSkeleton,isCurrent:()=>state.page==='archives'&&$('#content')===root});
+  renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd:()=>openModal('archive'),rowsHtml:archiveRows,bindActions:bindArchiveActions,loading:loadingSkeleton,onRouteChange:()=>syncWorkspaceRoute(),onLoaded:()=>{if(state.pendingDetailId){const id=state.pendingDetailId;state.pendingDetailId='';const archive=state.archiveItems.find(item=>item.id===id);if(archive)openArchiveDetail(archive,{fromRoute:true});}},isCurrent:()=>state.page==='archives'&&$('#content')===root});
 }
 async function openQuality(id){const page=state.page,epoch=state.navigationEpoch;try{await openArchiveQuality({id,api,app,esc,closeModal,canReview:state.user?.role==='admin',canInspect:canUpload(),toast,isCurrent:()=>state.page===page&&state.navigationEpoch===epoch,onSaved:async()=>{await refresh();if(state.page===page&&state.navigationEpoch===epoch)renderPage();}});}catch(failure){toast(failure.message,'error');}}
 async function openArchiveFiles(id){
@@ -485,6 +522,18 @@ const notificationsUI=createNotifications({api,esc,icon,toast,onUpdate:result=>{
 function closeNotifications(restore=true){notificationsUI.close(restore);}
 function toggleNotifications(){return notificationsUI.toggle();}
 const enhancedForms=new WeakSet();
+window.addEventListener('popstate', () => {
+  if (!state.user) return;
+  const route = readWorkspaceRoute();
+  if (!route) return;
+  if (!route.detail && $('#modalBack')) closeModal(true);
+  const skipRender = state.skipNextPopRender;
+  state.skipNextPopRender = false;
+  state.navigationEpoch = (state.navigationEpoch || 0) + 1;
+  applyWorkspaceRoute(route);
+  document.querySelectorAll('[data-page]').forEach(item=>{const active=item.dataset.page===state.page;item.classList.toggle('active',active);item.setAttribute('aria-current',active?'page':'false');});
+  if (!skipRender) renderPage();
+});
 new MutationObserver(()=>{
   document.querySelectorAll('.workspace form').forEach(form=>{
     if(enhancedForms.has(form)||!form.onsubmit||form.dataset.managedSubmit==='true')return;enhancedForms.add(form);const handler=form.onsubmit;

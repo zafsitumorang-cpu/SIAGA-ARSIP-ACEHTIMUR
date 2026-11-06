@@ -1,5 +1,5 @@
 const keys=['q','type','category','year','classification','subsection','from','to','status','completeness'];
-export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd,rowsHtml,bindActions,loading,isCurrent}){
+export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd,rowsHtml,bindActions,loading,onLoaded,onRouteChange,isCurrent}){
   const wide=['admin','leader'].includes(state.user.role);
   const legacySubsectionOptions=[['Hukum','Hukum (nama lama)'],['Pengawasan','Pengawasan (nama lama)'],['PPPS','PPPS (nama lama)']];
   const filters=Object.fromEntries(keys.map(key=>[key,state.filters[key]||'']));
@@ -34,8 +34,8 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
   function paint(data){
     const first=data.total?(data.page-1)*data.page_size+1:0,last=Math.min(data.total,data.page*data.page_size);
     results.innerHTML=`<p class="archive-result-summary" role="status">${data.total?`Menampilkan ${first}–${last} dari ${data.total} arsip`:'Tidak ada arsip yang sesuai filter.'}</p><p class="muted archive-sort-hint">Urutan: waktu pencatatan terbaru. Ekspor mengikuti urutan yang sama.</p>${data.items.length?rowsHtml(data.items):'<div class="empty">Coba ubah kriteria atau gunakan Reset filter.</div>'}<div class="archive-pagination"><label for="archivePageSize">Per halaman <select id="archivePageSize">${[10,25,50,100].map(size=>`<option ${size===data.page_size?'selected':''}>${size}</option>`).join('')}</select></label><span>Halaman ${data.page} dari ${data.pages}</span><div><button class="btn btn-soft" id="archivePrevious" ${data.page<=1?'disabled':''}>Sebelumnya</button><button class="btn btn-soft" id="archiveNext" ${data.page>=data.pages?'disabled':''}>Berikutnya</button></div></div>`;
-    bindActions();root.querySelector('#archivePrevious').onclick=()=>load(data.page-1);root.querySelector('#archiveNext').onclick=()=>load(data.page+1);
-    root.querySelector('#archivePageSize').onchange=event=>{state.archivePageSize=Number(event.target.value);load(1);};
+    bindActions();root.querySelector('#archivePrevious').onclick=async()=>{await load(data.page-1);onRouteChange?.();};root.querySelector('#archiveNext').onclick=async()=>{await load(data.page+1);onRouteChange?.();};
+    root.querySelector('#archivePageSize').onchange=async event=>{state.archivePageSize=Number(event.target.value);await load(1);onRouteChange?.();};
   }
   async function load(page=state.archivePage||1){
     const request=++sequence,query=params();query.set('page',String(page));query.set('page_size',String(state.archivePageSize||25));
@@ -51,14 +51,15 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
       const criteria=new URLSearchParams(query);criteria.delete('page');criteria.delete('page_size');
       if(data.total)exports.forEach((link,index)=>{link.href=`/api/export.${index?'xlsx':'csv'}?`+criteria;link.removeAttribute('aria-disabled');link.tabIndex=0;});
       paint(data);
+      onLoaded?.(data);
     }catch(failure){
       if(request!==sequence||!current())return;
       error.textContent=failure.message;error.hidden=false;results.innerHTML='<div class="empty">Daftar belum dapat dimuat. Filter Anda tetap tersimpan.<br><button type="button" class="btn btn-soft" id="retryArchiveSearch">Coba lagi</button></div>';
       root.querySelector('#retryArchiveSearch').onclick=()=>load(page);
     }finally{if(request===sequence&&current())busy(false);}
   }
-  form.onsubmit=async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));state.filters=Object.fromEntries(keys.map(key=>[key,values[key]||'']));state.archivePage=1;await load(1);};
-  root.querySelector('#reset').onclick=()=>{for(const key of keys){state.filters[key]='';if(form.elements[key]&&!form.elements[key].disabled)form.elements[key].value='';}state.archivePage=1;load(1);};
+  form.onsubmit=async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));state.filters=Object.fromEntries(keys.map(key=>[key,values[key]||'']));state.archivePage=1;await load(1);onRouteChange?.();};
+  root.querySelector('#reset').onclick=async()=>{for(const key of keys){state.filters[key]='';if(form.elements[key]&&!form.elements[key].disabled)form.elements[key].value='';}state.archivePage=1;await load(1);onRouteChange?.();};
   root.querySelector('#addArchive')?.addEventListener('click',onAdd);
   load();
 }

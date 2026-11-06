@@ -34,6 +34,8 @@ Pembaruan 02.3 memperluas file-versions menjadi 11 skenario browser termasuk lam
 
 `archive-index.cjs` memakai loopback 3534: 8 skenario sumber/agenda/kode tambah/edit, validasi locator, indeks tetap/pencarian/detail aman, referensi Drive tanpa network fetch, CSV/XLSX, nama unduh terstruktur, 360px/keyboard dan error JS. `test:index` memakai port 3526/3527 dan menguji 28 model/JSON/PG termasuk fingerprint create legacy. Fixture sementara, tanpa akses sumber/arsip produksi.
 
+`detail-deeplink.cjs` memakai loopback 3542: URL hash detail menyimpan halaman dan ukuran halaman, penutupan detail mengembalikan konteks daftar, dan deep-link terautentikasi membuka detail yang sama tanpa endpoint publik. Fixture sementara dan sesi login demo dibersihkan setelah tes.
+
 `archive-inspection.cjs` memakai loopback 3535: 6 skenario checklist/hash/kandidat, acceptance/alasan duplikat, bukti QC, binary rusak yang menolak approval, mobile/keyboard dan arsip tidak dihapus/error JS. `test:inspection` memakai 3528/3529 dan mencakup 26 JSON/PG. Port archive-index dipindah ke 3534 agar tidak bertabrakan dengan test:versions 3514/3515 saat suite paralel. Fixture API approval lama mengirim checklist baru tanpa melemahkan assertion; replay receipt lama diuji tersendiri.
 
 `metadata-history.cjs` memakai loopback 3536 dan DATA_DIR sementara: ringkasan koreksi tanpa nilai lama/baru, no-op, pembaca scoped tanpa edit, dua tab/draft, pembatasan disposisi, mobile/keyboard, histori legacy tidak direkayasa dan respons setelah logout. Screenshot bukti desktop/mobile disimpan di /tmp/siaga-044-{desktop,mobile}.png. `test:metadata-history` memakai 3530/3531, 28 pemeriksaan JSON/PostgreSQL. Tidak ada login, mutasi atau pengambilan arsip dari demo publik.
