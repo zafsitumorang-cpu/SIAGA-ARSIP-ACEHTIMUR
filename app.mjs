@@ -95,7 +95,7 @@ async function optimizedArchiveList(req,res,url,user){
   if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/archives'||url.searchParams.get('completeness'))return false;
   const filters=archiveFilters(url.searchParams,db,subsections);
   const rawPage=url.searchParams.get('page')||'1',rawSize=url.searchParams.get('page_size')||'25';
-  if(!/^\d+$/.test(rawPage)||!['10','25','50','100'].includes(rawSize))return false;
+  if(!/^[1-9]\d*$/.test(rawPage)||!Number.isSafeInteger(Number(rawPage))||!['10','25','50','100'].includes(rawSize))return false;
   const requestedPage=Math.max(1,Number(rawPage)),pageSize=Number(rawSize);
   const classifications=filters.classificationValues||[],categories=filters.categoryValues||[],scopeValues=subsections.filter(value=>sameSubsection(value,user.subsection)).concat(user.subsection||[]);
   const query=buildArchiveListQuery({user,filters,page:requestedPage,pageSize,classificationValues:classifications,categoryValues:categories,scopeValues});
