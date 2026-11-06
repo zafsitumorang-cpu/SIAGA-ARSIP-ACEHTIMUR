@@ -1,0 +1,30 @@
+name: Browser checks
+on: [push, pull_request]
+
+jobs:
+  browser-test:
+    name: Playwright browser suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install repository dependencies
+        run: npm ci
+      - name: Install Playwright 1.64.1 and Chromium browser
+        run: |
+          mkdir -p /tmp/siaga-browser-tools
+          npm install --prefix /tmp/siaga-browser-tools playwright@1.64.1
+          /tmp/siaga-browser-tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Run browser tests serially
+        run: |
+          set -e
+          for test_file in tests/browser/*.cjs; do
+            echo "=========================================="
+            echo "Running $test_file"
+            echo "=========================================="
+            SIAGA_PLAYWRIGHT_MODULE=/tmp/siaga-browser-tools/node_modules/playwright node "$test_file"
+          done

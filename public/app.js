@@ -8,6 +8,7 @@ import {renderDispositionWorklist} from './disposition-worklist.js';
 import {createNotifications} from './notifications.js';
 import {openArchiveQuality} from './archive-quality.js';
 import {archiveSourceFields,bindArchiveSourceFields} from './archive-source-fields.js';
+import {setupFormA11y} from './form-a11y.js';
 const app = document.querySelector('#app');
 const state = { user: null, page: 'dashboard', archives: [], archiveItems: [], archivePage: 1, archivePageSize: 25, dashboard: null, filters: { q: '', type: '', year: '', status: '' }, classifications: [], users: [], modal: null, selected: null };
 const subsections = ['Administrasi', 'Hukum', 'Pengawasan', 'PPPS'];
@@ -77,17 +78,52 @@ async function loadPublic() {
   } finally { container.setAttribute('aria-busy', 'false'); }
 }
 function loginView() {
-  app.innerHTML = `<main class="auth-page"><section class="auth-story"><a href="#" class="auth-brand" id="authHome"><span class="auth-mark">SA<span>.</span></span><span><b>SIAGA ARSIP</b><small>Bawaslu Kabupaten Aceh Timur</small></span></a><div class="auth-message"><h1>Catatan yang tertata.<br><span>Kerja yang terarah.</span></h1><p>Kelola naskah dinas, temukan berkas, dan tindak lanjuti disposisi di ruang kerja Anda.</p><div class="auth-capabilities"><span>${icon('archive')} Arsip surat</span><span>${icon('disposition')} Disposisi</span><span>${icon('audit')} Riwayat aktivitas</span></div></div><div class="auth-story-foot"><span>Akses sesuai peran dan subbagian.</span><small>© ${new Date().getFullYear()} SIAGA ARSIP</small></div></section><section class="auth-main"><button class="auth-back" id="goPublic">${icon('arrow')} Kembali ke portal publik</button><div class="auth-form-wrap"><h2>Selamat datang kembali.</h2><p>Masuk dengan akun yang diberikan oleh pengelola sistem.</p><form id="loginForm"><div class="auth-field"><label for="authUsername">Nama pengguna</label><input id="authUsername" name="username" autocomplete="username" required placeholder="Masukkan nama pengguna" autocapitalize="none" spellcheck="false"></div><div class="auth-field"><label for="authPassword">Kata sandi</label><div class="auth-password"><input id="authPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan kata sandi"><button type="button" id="togglePassword" aria-controls="authPassword" aria-pressed="false">Tampilkan</button></div></div><p class="auth-error" id="loginError" role="alert" hidden></p><button class="auth-submit" id="loginSubmit">Masuk ke ruang arsip ${icon('arrow')}</button></form><p class="auth-help">Kesulitan masuk? Hubungi admin pengelola arsip untuk bantuan akun.</p>${state.demoMode?`<details class="auth-demo"><summary>Akun uji coba</summary><p>Sistem saat ini menggunakan data demo.</p><dl><div><dt>Administrator</dt><dd>admin / admin123</dd></div><div><dt>Pimpinan</dt><dd>pimpinan / pimpinan123</dd></div><div><dt>Pegawai Administrasi</dt><dd>pegawai.administrasi / pegawai123</dd></div></dl></details>`:''}<div class="auth-privacy">${icon('archive')}<p>Akses dokumen mengikuti hak pengguna. Aktivitas pengelolaan tercatat dalam sistem.</p></div></div><span class="auth-institution">BAWASLU KABUPATEN ACEH TIMUR</span></section></main>`;
+  app.innerHTML = `<main class="auth-page"><section class="auth-story"><a href="#" class="auth-brand" id="authHome"><span class="auth-mark">SA<span>.</span></span><span><b>SIAGA ARSIP</b><small>Bawaslu Kabupaten Aceh Timur</small></span></a><div class="auth-message"><h1>Catatan yang tertata.<br><span>Kerja yang terarah.</span></h1><p>Kelola naskah dinas, temukan berkas, dan tindak lanjuti disposisi di ruang kerja Anda.</p><div class="auth-capabilities"><span>${icon('archive')} Arsip surat</span><span>${icon('disposition')} Disposisi</span><span>${icon('audit')} Riwayat aktivitas</span></div></div><div class="auth-story-foot"><span>Akses sesuai peran dan subbagian.</span><small>© ${new Date().getFullYear()} SIAGA ARSIP</small></div></section><section class="auth-main"><button class="auth-back" id="goPublic">${icon('arrow')} Kembali ke portal publik</button><div class="auth-form-wrap"><h2>Selamat datang kembali.</h2><p>Masuk dengan akun yang diberikan oleh pengelola sistem.</p><form id="loginForm"><div class="auth-field"><label for="authUsername">Nama pengguna <span class="field-req-text">(wajib)</span></label><input id="authUsername" name="username" autocomplete="username" required placeholder="Masukkan nama pengguna" autocapitalize="none" spellcheck="false"><span id="authUsername-error" class="field-error" role="alert" hidden></span></div><div class="auth-field"><label for="authPassword">Kata sandi <span class="field-req-text">(wajib)</span></label><div class="auth-password"><input id="authPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan kata sandi"><button type="button" id="togglePassword" aria-controls="authPassword" aria-pressed="false">Tampilkan</button></div><span id="authPassword-error" class="field-error" role="alert" hidden></span></div><p class="auth-error" id="loginError" role="alert" tabindex="-1" hidden></p><div id="loginStatus" class="sr-only" role="status" aria-live="polite"></div><button class="auth-submit" id="loginSubmit">Masuk ke ruang arsip ${icon('arrow')}</button></form><p class="auth-help">Kesulitan masuk? Hubungi admin pengelola arsip untuk bantuan akun.</p>${state.demoMode?`<details class="auth-demo"><summary>Akun uji coba</summary><p>Sistem saat ini menggunakan data demo.</p><dl><div><dt>Administrator</dt><dd>admin / admin123</dd></div><div><dt>Pimpinan</dt><dd>pimpinan / pimpinan123</dd></div><div><dt>Pegawai Administrasi</dt><dd>pegawai.administrasi / pegawai123</dd></div></dl></details>`:''}<div class="auth-privacy">${icon('archive')}<p>Akses dokumen mengikuti hak pengguna. Aktivitas pengelolaan tercatat dalam sistem.</p></div></div><span class="auth-institution">BAWASLU KABUPATEN ACEH TIMUR</span></section></main>`;
   $('#goPublic').onclick = publicView;
   $('#authHome').onclick = event => { event.preventDefault(); publicView(); };
   $('#togglePassword').onclick = event => { const input = $('#authPassword'); const shown = input.type === 'password'; input.type = shown ? 'text' : 'password'; event.currentTarget.textContent = shown ? 'Sembunyikan' : 'Tampilkan'; event.currentTarget.setAttribute('aria-pressed', String(shown)); };
   $('#loginForm').onsubmit = async event => {
-    event.preventDefault(); const form = event.currentTarget; const button = $('#loginSubmit'); const error = $('#loginError');
-    error.hidden = true; button.disabled = true; button.textContent = 'Sedang masuk…'; form.setAttribute('aria-busy', 'true');
-    try { await api('/api/login', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) }); state.page = 'dashboard'; await loadApp(); }
-    catch (err) { error.textContent = err.message || 'Tidak dapat masuk. Periksa koneksi dan coba lagi.'; error.hidden = false; }
+    event.preventDefault(); const form = event.currentTarget; const button = $('#loginSubmit'); const error = $('#loginError'); const status = $('#loginStatus');
+    const uIn = $('#authUsername'), pIn = $('#authPassword'), uErr = $('#authUsername-error'), pErr = $('#authPassword-error');
+    error.hidden = true; error.textContent = '';
+    uIn.removeAttribute('aria-invalid'); pIn.removeAttribute('aria-invalid');
+    uIn.removeAttribute('aria-describedby'); pIn.removeAttribute('aria-describedby');
+    if (uErr) uErr.hidden = true; if (pErr) pErr.hidden = true;
+
+    const errors = [];
+    if (!uIn.value.trim()) { errors.push({ id: 'authUsername', message: 'Nama pengguna wajib diisi.', input: uIn, errEl: uErr }); }
+    if (!pIn.value) { errors.push({ id: 'authPassword', message: 'Kata sandi wajib diisi.', input: pIn, errEl: pErr }); }
+    if (errors.length > 0) {
+      for (const e of errors) {
+        e.input.setAttribute('aria-invalid', 'true');
+        e.input.setAttribute('aria-describedby', `${e.id}-error`);
+        if (e.errEl) { e.errEl.textContent = e.message; e.errEl.hidden = false; }
+      }
+      error.innerHTML = `<ul class="error-summary-list">${errors.map(e => `<li><a href="#${e.id}">${e.message}</a></li>`).join('')}</ul>`;
+      error.hidden = false;
+      error.querySelectorAll('a').forEach(a => a.onclick = (ev) => { ev.preventDefault(); form.querySelector(a.getAttribute('href'))?.focus(); });
+      error.focus();
+      if (status) status.textContent = 'Gagal masuk: periksa nama pengguna dan kata sandi.';
+      return;
+    }
+
+    button.disabled = true; button.textContent = 'Sedang masuk…'; form.setAttribute('aria-busy', 'true');
+    if (status) status.textContent = 'Sedang masuk ke sistem…';
+    try {
+      await api('/api/login', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(form))) });
+      if (status) status.textContent = 'Berhasil masuk ke sistem.';
+      state.page = 'dashboard'; await loadApp();
+    }
+    catch (err) {
+      uIn.setAttribute('aria-invalid', 'true'); pIn.setAttribute('aria-invalid', 'true');
+      uIn.setAttribute('aria-describedby', 'loginError'); pIn.setAttribute('aria-describedby', 'loginError');
+      error.textContent = err.message || 'Tidak dapat masuk. Periksa nama pengguna dan kata sandi Anda.';
+      error.hidden = false; error.focus();
+      if (status) status.textContent = 'Gagal masuk: ' + (err.message || 'periksa kredensial.');
+    }
     finally { button.disabled = false; button.innerHTML = `Masuk ke ruang arsip ${icon('arrow')}`; form.setAttribute('aria-busy', 'false'); }
   };
+  $('#loginForm').noValidate = true;
 }
 async function loadApp() { const me = await api('/api/me'); state.user = me.user; await refresh(); renderShell(); }
 async function refresh(){
@@ -184,39 +220,232 @@ function canUpdate(d) { return state.user.role === 'admin' || state.user.role ==
 async function renderSettings() {
   try {
     const target=$('#content');const [users, roles] = await Promise.all([api('/api/admin/users'), api('/api/admin/roles')]); if(state.page!=='settings'||$('#content')!==target)return;state.users = users.items;target.setAttribute('aria-busy','false');
-    $('#content').innerHTML = `<div class="title-row"><div><div class="eyebrow">Administrasi sistem</div><h1>Pengaturan</h1></div></div><div class="grid-2"><div class="panel"><b>Buat akun baru</b><p class="muted" style="font-size:12px">Akun dibuat dan dikelola langsung oleh admin.</p><form id="userForm"><div class="form-grid"><div class="field"><label>Username</label><input name="username" required></div><div class="field"><label>Nama lengkap</label><input name="name" required></div><div class="field"><label>Email</label><input name="email" type="email"></div><div class="field"><label>Kata sandi</label><input name="password" type="password" minlength="8" required></div><div class="field"><label>Peran</label><select name="role">${roles.items.map(x => `<option value="${x}">${x}</option>`).join('')}</select></div><div class="field subsection-field"><label>Subbagian</label><select name="subsection">${(state.user.role==='recorder'?[state.user.subsection]:subsections).map(x => `<option>${esc(x)}</option>`).join('')}</select></div></div><button class="btn btn-primary">Buat akun</button></form></div><div class="panel"><b>Klasifikasi arsip</b><p class="muted" style="font-size:12px">Tambahkan pilihan yang sudah disepakati kantor.</p><form id="classificationForm" style="display:flex;gap:8px"><input name="label" required placeholder="Nama klasifikasi"><button class="btn btn-soft">Tambah</button></form><div class="tag-list" style="margin-top:14px">${state.classifications.map(x => `<span class="badge badge-out">${esc(x)}</span>`).join(' ')}</div><div class="notice" style="margin-top:20px">Perubahan klasifikasi dicatat ke audit log dan tidak otomatis mengubah akses subbagian.</div></div></div><div class="panel" style="margin-top:18px"><div class="title-row" style="margin-bottom:10px"><div><b>Daftar akun</b><div class="muted" style="font-size:12px">Peran, subbagian, dan status akses.</div></div></div><div class="table-wrap"><table class="table"><thead><tr><th>Nama / username</th><th>Peran</th><th>Subbagian</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${state.users.map(x => `<tr><td><b>${esc(x.name)}</b><br><span class="muted">${esc(x.username)}</span></td><td>${esc(x.role)}</td><td>${esc(x.subsection || 'Lintas subbagian')}</td><td><span class="badge ${x.active ? 'badge-done' : 'badge-pending'}">${x.active ? 'Aktif' : 'Nonaktif'}</span></td><td><button class="btn btn-soft user-edit" data-id="${x.id}">Ubah</button> <button class="btn btn-soft user-toggle" data-id="${x.id}" data-active="${x.active}">${x.active ? 'Nonaktifkan' : 'Aktifkan'}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+    $('#content').innerHTML = `<div class="title-row"><div><div class="eyebrow">Administrasi sistem</div><h1>Pengaturan</h1></div></div><div class="grid-2"><div class="panel"><b>Buat akun baru</b><p class="muted" style="font-size:12px">Akun dibuat dan dikelola langsung oleh admin.</p>
+    <div id="userFormErrorSummary" class="form-error-summary archive-edit-error" role="alert" tabindex="-1" hidden><h4 class="form-error-title">Periksa kesalahan pengisian akun:</h4><ul class="error-summary-list"></ul><p class="form-error-desc" hidden></p></div>
+    <form id="userForm" data-managed-submit="true"><div class="form-grid">
+      <div class="field"><label for="create-user-username">Username <span class="field-req-text">(wajib)</span></label><input id="create-user-username" name="username" required autocomplete="username"><span id="create-user-username-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="create-user-name">Nama lengkap <span class="field-req-text">(wajib)</span></label><input id="create-user-name" name="name" required autocomplete="name"><span id="create-user-name-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="create-user-email">Email <span class="field-opt-text">(opsional)</span></label><input id="create-user-email" name="email" type="email" autocomplete="email" aria-describedby="create-user-email-help"><small id="create-user-email-help" class="field-help">Dicatat sebagai informasi kontak akun.</small><span id="create-user-email-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="create-user-password">Kata sandi <span class="field-req-text">(wajib)</span></label><input id="create-user-password" name="password" type="password" minlength="8" required autocomplete="new-password" aria-describedby="create-user-password-help"><small id="create-user-password-help" class="field-help">Minimal 8 karakter.</small><span id="create-user-password-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="create-user-role">Peran <span class="field-req-text">(wajib)</span></label><select id="create-user-role" name="role">${roles.items.map(x => `<option value="${x}">${x}</option>`).join('')}</select><span id="create-user-role-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field subsection-field"><label for="create-user-subsection">Subbagian <span id="create-user-sub-req" class="field-req-text">(wajib)</span></label><select id="create-user-subsection" name="subsection" aria-describedby="create-user-subsection-help">${(state.user.role==='recorder'?[state.user.subsection]:subsections).map(x => `<option>${esc(x)}</option>`).join('')}</select><small id="create-user-subsection-help" class="field-help">Diperlukan untuk peran pencatat, pengunggah, dan pegawai.</small><span id="create-user-subsection-error" class="field-error" role="alert" hidden></span></div>
+    </div><div id="userFormStatus" class="form-status sr-only" role="status" aria-live="polite"></div><button class="btn btn-primary" id="saveNewUser">Buat akun</button></form></div>
+    <div class="panel"><b>Klasifikasi arsip</b><p class="muted" style="font-size:12px">Tambahkan pilihan yang sudah disepakati kantor.</p><form id="classificationForm" style="display:flex;gap:8px"><label for="newClassification" class="sr-only">Nama klasifikasi</label><input id="newClassification" name="label" required placeholder="Nama klasifikasi"><button class="btn btn-soft">Tambah</button></form><div class="tag-list" style="margin-top:14px">${state.classifications.map(x => `<span class="badge badge-out">${esc(x)}</span>`).join(' ')}</div><div class="notice" style="margin-top:20px">Perubahan klasifikasi dicatat ke audit log dan tidak otomatis mengubah akses subbagian.</div></div></div><div class="panel" style="margin-top:18px"><div class="title-row" style="margin-bottom:10px"><div><b>Daftar akun</b><div class="muted" style="font-size:12px">Peran, subbagian, dan status akses.</div></div></div><div class="table-wrap"><table class="table"><thead><tr><th>Nama / username</th><th>Peran</th><th>Subbagian</th><th>Status</th><th>Aksi</th></tr></thead><tbody>${state.users.map(x => `<tr><td><b>${esc(x.name)}</b><br><span class="muted">${esc(x.username)}</span></td><td>${esc(x.role)}</td><td>${esc(x.subsection || 'Lintas subbagian')}</td><td><span class="badge ${x.active ? 'badge-done' : 'badge-pending'}">${x.active ? 'Aktif' : 'Nonaktif'}</span></td><td><button class="btn btn-soft user-edit" data-id="${x.id}">Ubah</button> <button class="btn btn-soft user-toggle" data-id="${x.id}" data-active="${x.active}">${x.active ? 'Nonaktifkan' : 'Aktifkan'}</button></td></tr>`).join('')}</tbody></table></div></div>`;
     animateContent($('#content'));
-    const role = $('select[name=role]'); const subsectionField = $('.subsection-field'); const toggleSubsection = () => subsectionField.classList.toggle('hidden', ['admin', 'leader'].includes(role.value)); role.onchange = toggleSubsection; toggleSubsection();
-    $('#userForm').onsubmit = async e => { e.preventDefault(); try { await api('/api/admin/users', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(e.target))) }); toast('Akun berhasil dibuat.'); await renderSettings(); } catch (err) { toast(err.message, 'error'); } };
+    const role = $('#create-user-role'); const subsectionField = $('.subsection-field'); const subSelect = $('#create-user-subsection'); const subReq = $('#create-user-sub-req');
+    const toggleSubsection = () => {
+      const isLeaderAdmin = ['admin', 'leader'].includes(role.value);
+      subsectionField.classList.toggle('hidden', isLeaderAdmin);
+      subSelect.disabled = isLeaderAdmin;
+      if (isLeaderAdmin) {
+        subSelect.removeAttribute('required');
+        subSelect.removeAttribute('aria-required');
+        if (subReq) { subReq.textContent = '(tidak berlaku)'; subReq.className = 'field-opt-text'; }
+      } else {
+        subSelect.required = true;
+        subSelect.setAttribute('aria-required', 'true');
+        if (subReq) { subReq.textContent = '(wajib)'; subReq.className = 'field-req-text'; }
+      }
+    };
+    role.onchange = toggleSubsection; toggleSubsection();
+
+    const uForm = $('#userForm');
+    const uA11y = setupFormA11y(uForm, { errorSummaryId: 'userFormErrorSummary', statusId: 'userFormStatus', summaryTitle: 'Periksa kesalahan pengisian akun:' });
+
+    uForm.onsubmit = async e => {
+      e.preventDefault();
+      if (!uA11y.validate()) return;
+      const btn = $('#saveNewUser');
+      btn.disabled = true; btn.innerHTML = '<i class="ws-spinner"></i> Menyimpan…';
+      uA11y.setSubmitting('Sedang membuat akun baru…');
+      try {
+        await api('/api/admin/users', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(e.target))) });
+        uA11y.setSuccess('Akun berhasil dibuat.');
+        toast('Akun berhasil dibuat.');
+        await renderSettings();
+      } catch (err) {
+        let msg = err.message;
+        if (err.status === 401) {
+          msg = 'Sesi Anda telah berakhir. Formulir tetap dibuka agar draf Anda tidak hilang. Salin draf Anda atau buka tab baru untuk masuk kembali.';
+        }
+        uA11y.setFailure(msg);
+        toast(msg, 'error');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Buat akun';
+      }
+    };
     $('#classificationForm').onsubmit = async e => { e.preventDefault(); try { const result = await api('/api/admin/classifications', { method: 'POST', body: JSON.stringify(Object.fromEntries(new FormData(e.target))) }); state.classifications = result.classifications; e.target.reset(); toast('Klasifikasi ditambahkan.'); renderSettings(); } catch (err) { toast(err.message, 'error'); } };
     document.querySelectorAll('.user-edit').forEach(b => b.onclick = () => openUserModal(b.dataset.id));
     document.querySelectorAll('.user-toggle').forEach(b => b.onclick = async () => { try { await api(`/api/admin/users/${b.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ active: b.dataset.active !== 'true' }) }); toast('Status akun diperbarui.'); renderSettings(); } catch (err) { toast(err.message, 'error'); } });
   } catch (err) { if(state.page==='settings')pageLoadError(err); }
 }
-function openUserModal(userId) { const user = state.users.find(x => x.id === userId); if (!user) return; app.insertAdjacentHTML('beforeend', `<div class="modal-back" id="modalBack"><section class="modal"><div class="modal-head"><h3>Ubah akun</h3><button class="icon-btn" id="closeModal">×</button></div><form id="editUserForm"><div class="field"><label>Username</label><input value="${esc(user.username)}" disabled></div><div class="field"><label>Nama lengkap</label><input name="name" value="${esc(user.name)}" required></div><div class="field"><label>Email</label><input name="email" type="email" value="${esc(user.email || '')}"></div><div class="field"><label>Kata sandi baru (opsional)</label><input name="password" type="password" minlength="8" placeholder="Kosongkan jika tidak berubah"></div><div class="field"><label>Peran</label><select name="role">${['admin','leader','recorder','uploader','employee'].map(x => `<option ${x === user.role ? 'selected' : ''}>${x}</option>`).join('')}</select></div><div class="field edit-subsection"><label>Subbagian</label><select name="subsection">${subsections.map(x => `<option ${x === user.subsection ? 'selected' : ''}>${x}</option>`).join('')}</select></div><div class="actions"><button type="button" class="btn btn-soft" id="cancelModal">Batal</button><button class="btn btn-primary">Simpan perubahan</button></div></form></section></div>`); $('#closeModal').onclick = closeModal; $('#cancelModal').onclick = closeModal; const role = $('#editUserForm select[name=role]'); const field = $('.edit-subsection'); const toggle = () => field.classList.toggle('hidden', ['admin', 'leader'].includes(role.value)); role.onchange = toggle; toggle(); $('#editUserForm').onsubmit = async e => { e.preventDefault(); try { const values = Object.fromEntries(new FormData(e.target)); if (!values.password) delete values.password; await api(`/api/admin/users/${userId}`, { method: 'PATCH', body: JSON.stringify(values) }); closeModal(); if(userId===state.user.id){state.user=null;loginView();toast('Akun diperbarui. Silakan masuk kembali.');}else{toast('Akun berhasil diperbarui.');renderSettings();} } catch (err) { toast(err.message, 'error'); } }; }
+function openUserModal(userId) {
+  const user = state.users.find(x => x.id === userId); if (!user) return;
+  app.insertAdjacentHTML('beforeend', `<div class="modal-back" id="modalBack"><section class="modal"><div class="modal-head"><h3>Ubah akun</h3><button class="icon-btn" id="closeModal" aria-label="Tutup ubah akun">×</button></div>
+  <div id="editUserErrorSummary" class="form-error-summary archive-edit-error" role="alert" tabindex="-1" hidden><h4 class="form-error-title">Periksa kesalahan pengisian akun:</h4><ul class="error-summary-list"></ul><p class="form-error-desc" hidden></p></div>
+  <form id="editUserForm" data-managed-submit="true">
+    <div class="field"><label for="edit-user-username">Username</label><input id="edit-user-username" value="${esc(user.username)}" disabled></div>
+    <div class="field"><label for="edit-user-name">Nama lengkap <span class="field-req-text">(wajib)</span></label><input id="edit-user-name" name="name" value="${esc(user.name)}" required autocomplete="name"><span id="edit-user-name-error" class="field-error" role="alert" hidden></span></div>
+    <div class="field"><label for="edit-user-email">Email <span class="field-opt-text">(opsional)</span></label><input id="edit-user-email" name="email" type="email" value="${esc(user.email || '')}" autocomplete="email"><span id="edit-user-email-error" class="field-error" role="alert" hidden></span></div>
+    <div class="field"><label for="edit-user-password">Kata sandi baru <span class="field-opt-text">(opsional)</span></label><input id="edit-user-password" name="password" type="password" minlength="8" placeholder="Kosongkan jika tidak berubah" autocomplete="new-password" aria-describedby="edit-user-password-help"><small id="edit-user-password-help" class="field-help">Minimal 8 karakter jika ingin diubah.</small><span id="edit-user-password-error" class="field-error" role="alert" hidden></span></div>
+    <div class="field"><label for="edit-user-role">Peran <span class="field-req-text">(wajib)</span></label><select id="edit-user-role" name="role">${['admin','leader','recorder','uploader','employee'].map(x => `<option ${x === user.role ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    <div class="field edit-subsection"><label for="edit-user-subsection">Subbagian <span id="edit-user-sub-req" class="field-req-text">(wajib)</span></label><select id="edit-user-subsection" name="subsection">${subsections.map(x => `<option ${x === user.subsection ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    <div id="editUserStatus" class="form-status sr-only" role="status" aria-live="polite"></div>
+    <div class="actions"><button type="button" class="btn btn-soft" id="cancelModal">Batal</button><button class="btn btn-primary" id="saveEditUser">Simpan perubahan</button></div>
+  </form></section></div>`);
+  $('#closeModal').onclick = closeModal; $('#cancelModal').onclick = closeModal;
+  const role = $('#editUserForm select[name=role]'); const field = $('.edit-subsection'); const subSelect = $('#editUserForm select[name=subsection]'); const subReq = $('#edit-user-sub-req');
+  const toggle = () => {
+    const isLeaderAdmin = ['admin', 'leader'].includes(role.value);
+    field.classList.toggle('hidden', isLeaderAdmin);
+    subSelect.disabled = isLeaderAdmin;
+    if (isLeaderAdmin) {
+      subSelect.removeAttribute('required');
+      subSelect.removeAttribute('aria-required');
+      if (subReq) { subReq.textContent = '(tidak berlaku)'; subReq.className = 'field-opt-text'; }
+    } else {
+      subSelect.required = true;
+      subSelect.setAttribute('aria-required', 'true');
+      if (subReq) { subReq.textContent = '(wajib)'; subReq.className = 'field-req-text'; }
+    }
+  };
+  role.onchange = toggle; toggle();
+
+  const editForm = $('#editUserForm');
+  const editA11y = setupFormA11y(editForm, { errorSummaryId: 'editUserErrorSummary', statusId: 'editUserStatus', summaryTitle: 'Periksa kesalahan pengisian akun:' });
+
+  editForm.onsubmit = async e => {
+    e.preventDefault();
+    if (!editA11y.validate()) return;
+    const btn = $('#saveEditUser');
+    btn.disabled = true; btn.innerHTML = '<i class="ws-spinner"></i> Menyimpan…';
+    editA11y.setSubmitting('Sedang menyimpan perubahan akun…');
+    try {
+      const values = Object.fromEntries(new FormData(e.target));
+      if (!values.password) delete values.password;
+      await api(`/api/admin/users/${userId}`, { method: 'PATCH', body: JSON.stringify(values) });
+      editA11y.setSuccess('Akun berhasil diperbarui.');
+      closeModal();
+      if(userId===state.user.id){state.user=null;loginView();toast('Akun diperbarui. Silakan masuk kembali.');}
+      else{toast('Akun berhasil diperbarui.');renderSettings();}
+    } catch (err) {
+      let msg = err.message;
+      if (err.status === 401) {
+        msg = 'Sesi Anda telah berakhir. Formulir tetap dibuka agar draf Anda tidak hilang. Salin draf Anda atau buka tab baru untuk masuk kembali.';
+      }
+      editA11y.setFailure(msg);
+      toast(msg, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Simpan perubahan';
+    }
+  };
+}
 function renderAudit() { const target=$('#content');return api('/api/admin/audit').then(r => { if(state.page!=='audit'||$('#content')!==target)return;target.setAttribute('aria-busy','false'); $('#content').innerHTML = `<div class="title-row"><div><div class="eyebrow">Jejak sistem</div><h1>Audit aktivitas</h1></div></div><div class="panel">${archiveRows([]).replace('Belum ada arsip.', `<div class="table-wrap"><table class="table"><thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Detail</th></tr></thead><tbody>${r.items.map(x => `<tr><td>${new Date(x.at).toLocaleString('id-ID')}</td><td>${esc(x.actorName)}</td><td><span class="badge badge-out">${esc(x.action)}</span></td><td>${esc(x.detail)}</td></tr>`).join('')}</tbody></table></div>`)}</div>`; animateContent(target);}).catch(e => {if(state.page==='audit')pageLoadError(e);}); }
-function openUploadModal(archiveId) { const a = (state.page==='archives'?state.archiveItems:state.archives).find(x => x.id === archiveId); if (!a) return; app.insertAdjacentHTML('beforeend', `<div class="modal-back" id="modalBack"><section class="modal"><div class="modal-head"><h3>Unggah berkas arsip</h3><button class="icon-btn" id="closeModal">×</button></div><p class="muted" style="font-size:12px">${esc(a.number)} · ${esc(a.subject)}</p><form id="uploadForm"><div class="field"><label>Berkas digital</label><input name="upload" type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx" required><small class="muted">PDF, JPG/PNG, XLSX, DOCX · maksimal 15 MB</small></div><div class="actions"><button type="button" class="btn btn-soft" id="cancelModal">Batal</button><button class="btn btn-primary">Unggah</button></div></form></section></div>`); $('#closeModal').onclick = closeModal; $('#cancelModal').onclick = closeModal; $('#uploadForm').onsubmit = async e => { e.preventDefault(); try { const file = e.target.querySelector('[name=upload]').files[0]; await api(`/api/archives/${archiveId}/files`, { method: 'POST', body: JSON.stringify({ fileName: file.name, mimeType: file.type, data: await readFile(file) }) }); closeModal(); await refresh(); renderPage(); toast('Berkas berhasil diunggah.'); } catch (err) { toast(err.message, 'error'); } }; }
+function openUploadModal(archiveId) {
+  const a = (state.page==='archives'?state.archiveItems:state.archives).find(x => x.id === archiveId); if (!a) return;
+  app.insertAdjacentHTML('beforeend', `<div class="modal-back" id="modalBack"><section class="modal"><div class="modal-head"><h3>Unggah berkas arsip</h3><button class="icon-btn" id="closeModal" aria-label="Tutup unggah berkas">×</button></div><p class="muted" style="font-size:12px">${esc(a.number)} · ${esc(a.subject)}</p>
+  <div id="uploadFormErrorSummary" class="form-error-summary archive-edit-error" role="alert" tabindex="-1" hidden></div>
+  <form id="uploadForm" data-managed-submit="true"><div class="field">
+    <label for="upload-file">Berkas digital <span class="field-req-text">(wajib)</span></label>
+    <input id="upload-file" name="upload" type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx" required aria-describedby="upload-file-help">
+    <small id="upload-file-help" class="field-help muted">PDF, JPG/PNG, XLSX, DOCX · maksimal 15 MB</small>
+    <span id="upload-file-error" class="field-error" role="alert" hidden></span>
+  </div>
+  <div id="uploadFormStatus" class="form-status sr-only" role="status" aria-live="polite"></div>
+  <div class="actions"><button type="button" class="btn btn-soft" id="cancelModal">Batal</button><button class="btn btn-primary" id="saveUploadModal">Unggah berkas</button></div></form></section></div>`);
+  $('#closeModal').onclick = closeModal; $('#cancelModal').onclick = closeModal;
+  const upForm = $('#uploadForm');
+  const upA11y = setupFormA11y(upForm, { errorSummaryId: 'uploadFormErrorSummary', statusId: 'uploadFormStatus', summaryTitle: 'Periksa berkas unggahan:' });
+
+  upForm.onsubmit = async e => {
+    e.preventDefault();
+    const fileIn = $('#upload-file');
+    const file = fileIn.files[0];
+    const btn = $('#saveUploadModal');
+
+    if (!file) {
+      upA11y.showErrors([{ id: 'upload-file', message: 'Pilih berkas digital yang akan diunggah.' }], 'Pilih berkas digital yang akan diunggah.');
+      return;
+    }
+
+    btn.disabled = true; btn.innerHTML = '<i class="ws-spinner"></i> Mengunggah…';
+    upA11y.setSubmitting('Sedang membaca dan mengunggah berkas…');
+    try {
+      const data = await readFile(file);
+      await api(`/api/archives/${archiveId}/files`, { method: 'POST', body: JSON.stringify({ fileName: file.name, mimeType: file.type, data }) });
+      upA11y.setSuccess('Berkas berhasil diunggah.');
+      closeModal(); await refresh(); renderPage(); toast('Berkas berhasil diunggah.');
+    } catch (err) {
+      let msg = err.message;
+      if (err.status === 401) {
+        msg = 'Sesi Anda telah berakhir. Formulir dan berkas tetap terbuka. Silakan buka tab baru untuk masuk kembali.';
+      }
+      upA11y.setFailure(msg, [{ id: 'upload-file', message: msg }]);
+      toast(msg, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Unggah berkas';
+    }
+  };
+}
 function openDisposition(archiveId) { const archive=(state.page==='archives'?state.archiveItems:state.archives).find(item=>item.id===archiveId);const page=state.page,epoch=state.navigationEpoch;if(archive)openDispositionForm({archive,app,api,esc,closeModal,refresh,renderPage,toast,isCurrent:()=>state.page===page&&state.navigationEpoch===epoch}); }
 function openModal(kind){
   state.modal=kind;
   app.insertAdjacentHTML('beforeend',`<div class="modal-back" id="modalBack"><section class="modal"><div class="modal-head"><h3>Tambah arsip surat</h3><button type="button" class="icon-btn" id="closeModal" aria-label="Tutup pencatatan arsip">×</button></div>
+  <div id="archiveFormErrorSummary" class="form-error-summary archive-edit-error" role="alert" tabindex="-1" hidden>
+    <h4 class="form-error-title" id="archiveFormErrorTitle">Periksa kembali isian formulir:</h4>
+    <ul class="error-summary-list" id="archiveFormErrorList"></ul>
+    <p class="form-error-desc" id="archiveFormErrorDesc" hidden></p>
+  </div>
   <form id="archiveForm" data-managed-submit="true">
   <fieldset id="archiveMetadata" class="archive-create-fields"><legend class="archive-create-legend">Metadata surat</legend><div class="form-grid">
-  <div class="field"><label for="create-type">Jenis surat</label><select id="create-type" name="type"><option value="incoming">Surat masuk</option><option value="outgoing">Surat keluar</option></select></div>
-  <div class="field"><label for="create-subsection">Subbagian penanggung jawab</label><select id="create-subsection" name="subsection">${(state.user.role==='recorder'?[state.user.subsection]:subsections).map(value=>`<option>${esc(value)}</option>`).join('')}</select></div>
-  <div class="field"><label for="create-number">Nomor surat</label><input id="create-number" name="number" required maxlength="200" placeholder="Contoh: IN/AT/011/2026"></div>
-  <div class="field"><label for="create-letterDate">Tanggal surat</label><input id="create-letterDate" name="letterDate" type="date" required value="${localToday()}"></div>
-  <div class="field incoming-only"><label for="create-receivedDate">Tanggal diterima</label><input id="create-receivedDate" name="receivedDate" type="date" value="${localToday()}"></div>
-  <div class="field"><label for="create-classification">Klasifikasi</label><select id="create-classification" name="classification">${state.classifications.map(value=>`<option>${esc(value)}</option>`).join('')}</select></div>
-  <div class="field"><label for="create-origin">Asal surat</label><input id="create-origin" name="origin" maxlength="500" placeholder="Untuk surat masuk"></div>
-  <div class="field"><label for="create-destination">Tujuan surat</label><input id="create-destination" name="destination" maxlength="500" placeholder="Untuk surat keluar"></div>
-  <div class="field full"><label for="create-subject">Perihal</label><textarea id="create-subject" name="subject" rows="2" required maxlength="2000"></textarea></div>
-  <div class="field outgoing-only"><label for="create-signatory">Penandatangan</label><input id="create-signatory" name="signatory" maxlength="300" placeholder="Nama/jabatan penandatangan"></div>
+  <div class="field"><label for="create-type">Jenis surat <span class="field-req-text">(wajib)</span></label><select id="create-type" name="type"><option value="incoming">Surat masuk</option><option value="outgoing">Surat keluar</option></select><span id="create-type-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-subsection">Subbagian penanggung jawab <span class="field-req-text">(wajib)</span></label><select id="create-subsection" name="subsection">${(state.user.role==='recorder'?[state.user.subsection]:subsections).map(value=>`<option>${esc(value)}</option>`).join('')}</select><span id="create-subsection-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-number">Nomor surat <span class="field-req-text">(wajib)</span></label><input id="create-number" name="number" required maxlength="200" placeholder="Contoh: IN/AT/011/2026"><span id="create-number-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-letterDate">Tanggal surat <span class="field-req-text">(wajib)</span></label><input id="create-letterDate" name="letterDate" type="date" required value="${localToday()}"><span id="create-letterDate-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field incoming-only"><label for="create-receivedDate">Tanggal diterima <span id="create-receivedDate-req" class="field-req-text">(wajib)</span></label><input id="create-receivedDate" name="receivedDate" type="date" value="${localToday()}"><span id="create-receivedDate-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-classification">Klasifikasi <span class="field-req-text">(wajib)</span></label><select id="create-classification" name="classification">${state.classifications.map(value=>`<option>${esc(value)}</option>`).join('')}</select><span id="create-classification-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-origin">Asal surat <span id="create-origin-req" class="field-req-text">(wajib)</span></label><input id="create-origin" name="origin" maxlength="500" placeholder="Untuk surat masuk"><span id="create-origin-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field"><label for="create-destination">Tujuan surat <span id="create-destination-req" class="field-opt-text">(opsional)</span></label><input id="create-destination" name="destination" maxlength="500" placeholder="Untuk surat keluar"><span id="create-destination-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field full"><label for="create-subject">Perihal <span class="field-req-text">(wajib)</span></label><textarea id="create-subject" name="subject" rows="2" required maxlength="2000"></textarea><span id="create-subject-error" class="field-error" role="alert" hidden></span></div>
+  <div class="field outgoing-only"><label for="create-signatory">Penandatangan <span id="create-signatory-req" class="field-req-text">(wajib)</span></label><input id="create-signatory" name="signatory" maxlength="300" placeholder="Nama/jabatan penandatangan"><span id="create-signatory-error" class="field-error" role="alert" hidden></span></div>
   </div>${archiveSourceFields({},esc,'create')}</fieldset>
-  ${canUpload()?'<div class="field"><label for="create-upload">Unggah berkas (opsional)</label><input id="create-upload" name="upload" type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx"><small class="muted">PDF, JPG/PNG, XLSX, DOCX · maksimal 15 MB</small></div>':''}
+  ${canUpload()?'<div class="field"><label for="create-upload">Unggah berkas <span class="field-opt-text">(opsional)</span></label><input id="create-upload" name="upload" type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.docx" aria-describedby="create-upload-help"><small id="create-upload-help" class="field-help muted">PDF, JPG/PNG, XLSX, DOCX · maksimal 15 MB</small><span id="create-upload-error" class="field-error" role="alert" hidden></span></div>':''}
   <p id="archiveSaveNotice" class="notice" role="status" hidden></p><p id="archiveSaveError" class="archive-edit-error" role="alert" tabindex="-1" hidden></p>
+  <div id="archiveFormStatus" class="form-status sr-only" role="status" aria-live="polite"></div>
   <div class="actions"><button type="button" class="btn btn-soft" id="cancelModal">Batal</button><button type="submit" class="btn btn-primary" id="saveArchive">Simpan arsip</button></div></form></section></div>`);
-  const type=$('#create-type');const toggle=()=>{document.querySelectorAll('.incoming-only').forEach(el=>el.classList.toggle('hidden',type.value!=='incoming'));document.querySelectorAll('.outgoing-only').forEach(el=>el.classList.toggle('hidden',type.value!=='outgoing'));};type.onchange=toggle;toggle();
+  const type=$('#create-type');
+  const toggle=()=>{
+    const incoming = type.value === 'incoming';
+    document.querySelectorAll('.incoming-only').forEach(el=>el.classList.toggle('hidden',!incoming));
+    document.querySelectorAll('.outgoing-only').forEach(el=>el.classList.toggle('hidden',incoming));
+    const recIn = $('#create-receivedDate'), destIn = $('#create-destination'), sigIn = $('#create-signatory'), origIn = $('#create-origin');
+    const origReq = $('#create-origin-req'), destReq = $('#create-destination-req');
+    if (recIn) {
+      recIn.required = incoming;
+      if (incoming) recIn.setAttribute('aria-required','true'); else recIn.removeAttribute('aria-required');
+    }
+    if (origIn) {
+      origIn.required = incoming;
+      if (incoming) origIn.setAttribute('aria-required','true'); else origIn.removeAttribute('aria-required');
+      if (origReq) {
+        origReq.textContent = incoming ? '(wajib)' : '(opsional)';
+        origReq.className = incoming ? 'field-req-text' : 'field-opt-text';
+      }
+    }
+    if (destIn) {
+      destIn.required = !incoming;
+      if (!incoming) destIn.setAttribute('aria-required','true'); else destIn.removeAttribute('aria-required');
+      if (destReq) {
+        destReq.textContent = !incoming ? '(wajib)' : '(opsional)';
+        destReq.className = !incoming ? 'field-req-text' : 'field-opt-text';
+      }
+    }
+    if (sigIn) {
+      sigIn.required = !incoming;
+      if (!incoming) sigIn.setAttribute('aria-required','true'); else sigIn.removeAttribute('aria-required');
+    }
+  };
+  type.onchange=toggle;toggle();
   bindArchiveSourceFields($('#archiveForm'));
   bindArchiveCreate({form:$('#archiveForm'),api,readFile,onClose:()=>closeModal(true),onSaved:async()=>{await refresh();renderPage();},toast});
 }
@@ -250,7 +479,7 @@ new MutationObserver(()=>{
     if(enhancedForms.has(form)||!form.onsubmit||form.dataset.managedSubmit==='true')return;enhancedForms.add(form);const handler=form.onsubmit;
     form.onsubmit=async function(event){event.preventDefault();if(form.dataset.submitting)return;form.dataset.submitting='true';form.setAttribute('aria-busy','true');const button=event.submitter||form.querySelector('button:not([type="button"])');const original=button?.innerHTML;if(button){button.disabled=true;button.innerHTML='<i class="ws-spinner"></i> Menyimpan…';}try{await handler.call(form,event);}finally{delete form.dataset.submitting;form.setAttribute('aria-busy','false');if(button){button.disabled=false;button.innerHTML=original;}}};
   });
-  const back=$('#modalBack');if(back&&!back.dataset.enhanced){back.dataset.enhanced='true';const dialog=back.querySelector('.modal');if(dialog&&!dialog.hasAttribute('role')){back._restoreFocus=document.activeElement;dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('tabindex','-1');const heading=dialog.querySelector('h3');if(heading){heading.id='workspaceDialogTitle';dialog.setAttribute('aria-labelledby',heading.id);}dialog.focus();back.addEventListener('keydown',event=>{if(event.key==='Escape'&&!back.querySelector('[data-submitting]'))closeModal();if(event.key==='Tab'){const items=[...dialog.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled)')].filter(el=>el.getClientRects().length);const first=items[0],last=items.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});}}
+  const back=$('#modalBack');if(back&&!back.dataset.enhanced){back.dataset.enhanced='true';const dialog=back.querySelector('.modal');if(dialog){back._restoreFocus=document.activeElement;if(!dialog.hasAttribute('role')){dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('tabindex','-1');const heading=dialog.querySelector('h3');if(heading){heading.id='workspaceDialogTitle';dialog.setAttribute('aria-labelledby',heading.id);}}dialog.focus();back.addEventListener('keydown',event=>{if(event.key==='Escape'&&!back.querySelector('[data-submitting]'))closeModal();if(event.key==='Tab'){const items=[...dialog.querySelectorAll('button:not(:disabled),a[href],input:not(:disabled),select:not(:disabled),textarea:not(:disabled)')].filter(el=>el.getClientRects().length);const first=items[0],last=items.at(-1);if(event.shiftKey&&(document.activeElement===first||document.activeElement===dialog)){event.preventDefault();last?.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}}});}}
 }).observe(app,{childList:true,subtree:true});
 async function start() { try{const config=await api('/api/config');state.demoMode=config.demoMode;}catch{state.demoMode=false;}try { await loadApp(); } catch { publicView(); } }
 start();
