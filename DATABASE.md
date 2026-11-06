@@ -23,7 +23,8 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 
 ### `subsections`
 - `id`, `code`, `name`, `is_active`.
-- Seed tahap pertama: Administrasi, Hukum, Pengawasan, PPPS.
+- Seed target mengikuti RA: Administrasi; Hukum dan Sengketa Proses; Pencegahan, Partisipasi Masyarakat, dan Humas; Penanganan Pelanggaran dan Data Informasi.
+- Reader runtime menerima alias legacy Hukum/Pengawasan/PPPS selama transisi dummy tanpa mengubah identitas scope; migrasi arsip nyata memerlukan manifest pemetaan yang disetujui.
 - `user_subsection`: `user_id`, `subsection_id`, `assigned_by`; aturan aplikasi membatasi satu subbagian per pegawai. Admin dan pimpinan dapat memiliki cakupan lintas bagian melalui role, bukan penugasan pegawai biasa.
 
 ### `archive_categories`

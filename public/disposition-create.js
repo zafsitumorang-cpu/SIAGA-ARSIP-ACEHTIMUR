@@ -8,11 +8,11 @@ export function openDispositionForm({archive,app,api,esc,closeModal,refresh,rend
   <form id="dispForm" data-managed-submit="true">
     <div class="field">
       <label for="dispSubsection">Tujuan subbagian <span class="field-req-text">(wajib)</span></label>
-      <select id="dispSubsection" name="assignedSubsection"><option>${esc(archive.subsection)}</option></select>
+    <select id="dispSubsection" name="assignedSubsection"><option value="${esc(archive.subsection)}">${esc(archive.subsectionLabel||archive.subsection)}</option></select>
     </div>
     <div class="field">
       <label for="dispRecipient">Penerima <span class="field-opt-text">(opsional)</span></label>
-      <select id="dispRecipient" name="assignedUserId" disabled aria-describedby="dispRecipientHelp"><option value="">Tim subbagian ${esc(archive.subsection)}</option></select>
+      <select id="dispRecipient" name="assignedUserId" disabled aria-describedby="dispRecipientHelp"><option value="">Tim subbagian ${esc(archive.subsectionLabel||archive.subsection)}</option></select>
       <small id="dispRecipientHelp" class="field-help">Memuat penerima aktif…</small>
       <span id="dispRecipient-error" class="field-error" hidden></span>
     </div>
@@ -54,7 +54,7 @@ export function openDispositionForm({archive,app,api,esc,closeModal,refresh,rend
     if(loading)return;loading=true;retry.disabled=true;
     error.hidden=true;if(summary)summary.hidden=true;retry.hidden=true;
     try{const result=await api(`/api/archives/${encodeURIComponent(archive.id)}/disposition-recipients`);if(!root.isConnected||!isCurrent())return;
-      select.innerHTML=`<option value="">Tim subbagian ${esc(archive.subsection)}</option>`+result.items.map(user=>`<option value="${esc(user.id)}">${esc(user.name)}</option>`).join('');
+      select.innerHTML=`<option value="">Tim subbagian ${esc(archive.subsectionLabel||archive.subsection)}</option>`+result.items.map(user=>`<option value="${esc(user.id)}">${esc(user.name)}</option>`).join('');
       root.querySelector('#dispRecipientHelp').textContent='Pilih tim atau satu orang. Tugas individu hanya diperbarui penerima dan admin/pimpinan. Tidak menambah akses lintas subbagian.';
       ready=true;select.disabled=false;submit.disabled=false;select.focus();
     }catch(failure){if(!root.isConnected||!isCurrent())return;fail(failure);retry.hidden=false;root.querySelector('#dispRecipientHelp').textContent='Penerima belum dapat dimuat; coba lagi.';}finally{loading=false;retry.disabled=false;}

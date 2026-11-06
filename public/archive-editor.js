@@ -12,7 +12,8 @@ export async function openArchiveEditor(options){
   const restore=old?document.querySelector(`.edit-archive[data-id="${CSS.escape(id)}"]`):document.activeElement;
   old?.remove();
   const locked=archive.dispositions.length>0;
-  const choices=(items,value)=>items.map(item=>`<option value="${esc(item)}" ${item===value?'selected':''}>${esc(item)}</option>`).join('');
+  const subsectionChoices=[...new Set([archive.subsection,...subsections])];
+  const choices=(items,value)=>items.map(item=>`<option value="${esc(item)}" ${item===value?'selected':''}>${esc(item===archive.subsection?(archive.subsectionLabel||item):item)}</option>`).join('');
   const input=(name,label,type='text',max=500)=>`<div class="field" data-field="${name}"><label for="edit-${name}">${label} <span id="edit-${name}-req" class="field-opt-text">(opsional)</span></label><input id="edit-${name}" name="${name}" type="${type}" maxlength="${max}" value="${esc(archive[name]||'')}"><span id="edit-${name}-error" class="field-error" role="alert" hidden></span></div>`;
   app.insertAdjacentHTML('beforeend',`<div class="modal-back" id="modalBack"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="editArchiveTitle" tabindex="-1">
     <div class="modal-head"><h3 id="editArchiveTitle">Ubah metadata arsip</h3><button type="button" class="icon-btn" id="closeEditArchive" aria-label="Tutup perubahan">${icon('close')}</button></div>
@@ -25,7 +26,7 @@ export async function openArchiveEditor(options){
     </div>
     <form id="editArchiveForm"><div class="form-grid">
       <div class="field"><label for="edit-type">Jenis surat <span class="field-req-text">(wajib)</span></label><select name="type" id="edit-type" ${locked?'disabled':''}><option value="incoming" ${archive.type==='incoming'?'selected':''}>Surat masuk</option><option value="outgoing" ${archive.type==='outgoing'?'selected':''}>Surat keluar</option></select><span id="edit-type-error" class="field-error" role="alert" hidden></span></div>
-      <div class="field"><label for="edit-subsection">Subbagian penanggung jawab <span class="field-req-text">(wajib)</span></label><select name="subsection" id="edit-subsection" ${locked?'disabled':''}>${choices(subsections,archive.subsection)}</select><span id="edit-subsection-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="edit-subsection">Subbagian penanggung jawab <span class="field-req-text">(wajib)</span></label><select name="subsection" id="edit-subsection" ${locked?'disabled':''}>${choices(subsectionChoices,archive.subsection)}</select><span id="edit-subsection-error" class="field-error" role="alert" hidden></span></div>
       ${input('number','Nomor surat','text',200)}${input('letterDate','Tanggal surat','date',10)}${input('receivedDate','Tanggal diterima','date',10)}
       <div class="field"><label for="edit-classification">Klasifikasi <span class="field-req-text">(wajib)</span></label><select name="classification" id="edit-classification">${choices([...new Set([archive.classification,...classifications])],archive.classification)}</select><span id="edit-classification-error" class="field-error" role="alert" hidden></span></div>
       ${input('origin','Asal surat')}${input('destination','Tujuan surat')}

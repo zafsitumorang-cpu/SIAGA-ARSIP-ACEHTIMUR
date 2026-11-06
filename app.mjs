@@ -19,6 +19,7 @@ import {notificationPage,markNotifications} from './lib/notifications.mjs';
 import {archiveQuality} from './lib/archive-quality.mjs';
 import {archiveIndex,indexFields,indexLimits,validateIndexFields,structuredFileName} from './lib/archive-index.mjs';
 import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspection.mjs';
+import {officialSubsections,isSubsection,sameSubsection,subsectionLabel} from './lib/subsection-taxonomy.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -36,7 +37,8 @@ let sessions=new Map(), db, markDirty;
 const SESSION_TTL=8*60*60*1000;
 const loginAttempts=new Map();
 
-const subsections = ['Administrasi', 'Hukum', 'Pengawasan', 'PPPS'];
+const subsections = officialSubsections;
+const demoSubsections = ['Administrasi', 'Hukum', 'Pengawasan', 'PPPS'];
 const roles = {
   admin: 'admin', leader: 'leader', recorder: 'recorder', uploader: 'uploader', employee: 'employee'
 };
@@ -58,8 +60,8 @@ async function seed() {
   ];
   const archives = [];
   const classifications = ['Administrasi umum', 'Kepegawaian', 'Koordinasi dan rapat', 'Pengawasan Pemilu', 'Produk hukum'];
-  for (let i = 1; i <= 10; i++) archives.push({ id: `in_${i}`, type: 'incoming', number: `IN/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-10-${String((i % 20) + 1).padStart(2, '0')}`, receivedDate: `2026-10-${String((i % 20) + 2).padStart(2, '0')}`, origin: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Sekretariat Daerah', 'Panwaslu Kecamatan'][i % 4], destination: ['Pimpinan', 'Subbagian Administrasi', 'Subbagian Hukum', 'Subbagian Pengawasan'][i % 4], subject: ['Undangan koordinasi tahapan pemilu', 'Penyampaian laporan administrasi', 'Permintaan data pengawasan', 'Rapat persiapan kegiatan'][i % 4], classification: classifications[i % classifications.length], subsection: subsections[i % 4], fileName: `surat-masuk-${i}.pdf`, fileId: `file_in_${i}`, createdBy: 'u_admin', createdAt: now(), status: 'registered', dispositions: [] });
-  for (let i = 1; i <= 10; i++) archives.push({ id: `out_${i}`, type: 'outgoing', number: `OUT/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-09-${String((i % 20) + 1).padStart(2, '0')}`, destination: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Camat setempat', 'Panwaslu Kecamatan'][i % 4], subject: ['Penyampaian surat tugas', 'Undangan rapat koordinasi', 'Permohonan data pendukung', 'Pemberitahuan kegiatan'][i % 4], signatory: 'Ketua Bawaslu Kabupaten Aceh Timur', classification: classifications[(i + 2) % classifications.length], subsection: subsections[(i + 1) % 4], fileName: `surat-keluar-${i}.pdf`, fileId: `file_out_${i}`, createdBy: 'u_admin', createdAt: now(), dispositions: [] });
+  for (let i = 1; i <= 10; i++) archives.push({ id: `in_${i}`, type: 'incoming', number: `IN/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-10-${String((i % 20) + 1).padStart(2, '0')}`, receivedDate: `2026-10-${String((i % 20) + 2).padStart(2, '0')}`, origin: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Sekretariat Daerah', 'Panwaslu Kecamatan'][i % 4], destination: ['Pimpinan', 'Subbagian Administrasi', 'Subbagian Hukum', 'Subbagian Pengawasan'][i % 4], subject: ['Undangan koordinasi tahapan pemilu', 'Penyampaian laporan administrasi', 'Permintaan data pengawasan', 'Rapat persiapan kegiatan'][i % 4], classification: classifications[i % classifications.length], subsection: demoSubsections[i % 4], fileName: `surat-masuk-${i}.pdf`, fileId: `file_in_${i}`, createdBy: 'u_admin', createdAt: now(), status: 'registered', dispositions: [] });
+  for (let i = 1; i <= 10; i++) archives.push({ id: `out_${i}`, type: 'outgoing', number: `OUT/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-09-${String((i % 20) + 1).padStart(2, '0')}`, destination: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Camat setempat', 'Panwaslu Kecamatan'][i % 4], subject: ['Penyampaian surat tugas', 'Undangan rapat koordinasi', 'Permohonan data pendukung', 'Pemberitahuan kegiatan'][i % 4], signatory: 'Ketua Bawaslu Kabupaten Aceh Timur', classification: classifications[(i + 2) % classifications.length], subsection: demoSubsections[(i + 1) % 4], fileName: `surat-keluar-${i}.pdf`, fileId: `file_out_${i}`, createdBy: 'u_admin', createdAt: now(), dispositions: [] });
   const audit = [{ id: id('audit'), actorId: 'u_admin', action: 'seed_demo', entity: 'system', entityId: 'system', at: now(), detail: '20 arsip dummy dibuat untuk demo' }];
   const data = { users, archives, classifications, categories: ['Surat Masuk', 'Surat Keluar'], audit, notifications: [] };
   data.sessions=[];return data;
@@ -68,14 +70,14 @@ async function seed() {
 await fs.mkdir(FILE_DIR,{recursive:true,mode:0o700});
 await storage.transaction(async(data,dirty,replace)=>{if(!data)await replace(await seed());});
 async function persist() { db.sessions=[...sessions.values()];markDirty(); }
-function safeUser(user) { const { passwordHash, ...rest } = user; return rest; }
+function safeUser(user) { const { passwordHash, ...rest } = user; return {...rest, subsectionLabel: subsectionLabel(user.subsection) || null}; }
 function audit(actorId, action, entity, entityId, detail = '') { db.audit.unshift({ id: id('audit'), actorId, action, entity, entityId, at: now(), detail }); }
 function cookie(name, value, maxAge = 60 * 60 * 8) { return `${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${SECURE_COOKIE?'; Secure':''}`; }
 function parseCookies(req) { return Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map(x => { const i = x.indexOf('='); return [x.slice(0, i).trim(), x.slice(i + 1)]; })); }
 function getUser(req) { const session=sessions.get(tokenHash(parseCookies(req).sid));if(!session||session.expiresAt<=Date.now()){if(session)sessions.delete(session.id);return null;}return db.users.find(u=>u.id===session.userId&&u.active)||null; }
 function revokeSessions(userId){for(const [key,value]of sessions)if(value.userId===userId)sessions.delete(key);}
 function isWide(user) { return user && (user.role === 'admin' || user.role === 'leader'); }
-function canSee(user, archive) { return isWide(user) || (user && user.subsection === archive.subsection); }
+function canSee(user, archive) { return isWide(user) || (user && sameSubsection(user.subsection, archive.subsection)); }
 function send(res,status,body,type='application/json',extra={}) { const reply={status,body:type==='application/json'?JSON.stringify(body):body,headers:{'Content-Type':type,'Cache-Control':'no-store',...extra}};if(res._defer){res._reply=reply;return;}res.writeHead(status,reply.headers);res.end(reply.body); }
 async function body(req){if(req._parsedBody)return req._parsedBody;const max=req.url.split('?')[0].endsWith('/files')?24*1024*1024:128*1024;if(Number(req.headers['content-length'])>max)fail(413,'Request terlalu besar.');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)fail(413,'Request terlalu besar.');chunks.push(chunk);}try{const result=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!result||Array.isArray(result)||typeof result!=='object')fail(422,'Body harus berupa objek JSON.');req._parsedBody=result;return result;}catch(error){if(error.status)throw error;fail(400,'JSON tidak valid.');}}
 function requireAuth(req, res) { const user = getUser(req); if (!user) { send(res, 401, { error: 'Silakan login terlebih dahulu.' }); return null; } return user; }
@@ -93,7 +95,7 @@ function metadataHistoryPayload(archive){
     return {id:event.id,version:event.version,fields,fieldLabels:fields.map(field=>metadataLabels[field]),by:author?.id||null,byName:author?.name||'Pengguna tidak tersedia',at:event.at};
   });
 }
-function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, metadataHistory:metadataHistoryPayload(a), ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, subsectionLabel:subsectionLabel(a.subsection), metadataHistory:metadataHistoryPayload(a), ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -153,7 +155,7 @@ async function route(req, res) {
       if (!username || !name || password.length < 8 || password.length>1024 || !Object.values(roles).includes(role)) return send(res, 422, { error: 'Username, nama, kata sandi minimal 8 karakter, dan peran wajib valid.' });
       if (db.users.some(x => x.username.toLowerCase() === username.toLowerCase())) return send(res, 422, { error: 'Username sudah digunakan.' });
       const needsSubsection = !['admin', 'leader'].includes(role); const subsection = needsSubsection ? String(b.subsection || '') : null;
-      if (needsSubsection && !subsections.includes(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
+      if (needsSubsection && !isSubsection(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
       const created = { id: id('user'), username, name, passwordHash: await hash(password), role, subsection, email: String(b.email || '').trim(), active: true };
       db.users.push(created); audit(u.id, 'create_user', 'user', created.id, created.username); await persist(); return send(res, 201, safeUser(created));
     }
@@ -164,7 +166,7 @@ async function route(req, res) {
       if (!Object.values(roles).includes(role) || !name) return send(res, 422, { error: 'Nama atau peran tidak valid.' });
       if (target.id === u.id && b.active === false) return send(res, 422, { error: 'Akun admin yang sedang dipakai tidak dapat dinonaktifkan.' });
       const needsSubsection = !['admin', 'leader'].includes(role); const subsection = needsSubsection ? String(b.subsection === undefined ? target.subsection || '' : b.subsection) : null;
-      if (needsSubsection && !subsections.includes(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
+      if (needsSubsection && !isSubsection(subsection)) return send(res, 422, { error: 'Subbagian wajib dipilih untuk peran ini.' });
       if(b.password!==undefined&&String(b.password).length&&(String(b.password).length<8||String(b.password).length>1024))return send(res,422,{error:'Kata sandi harus 8–1024 karakter.'});
       target.name = name; target.email = b.email === undefined ? target.email : String(b.email).trim(); target.role = role; target.subsection = subsection;
       if (b.password !== undefined && String(b.password).length) { if (String(b.password).length < 8) return send(res, 422, { error: 'Kata sandi minimal 8 karakter.' }); target.passwordHash = await hash(String(b.password)); }
@@ -289,7 +291,7 @@ async function route(req, res) {
       const receipt=requestReceipt(req,u.id,'disposition:create:'+a.id,values);
       if(receipt&&(a.dispositionReceipts||[]).some(stored=>matchesReceipt(stored,receipt)))return send(res,200,archivePayload(a));
       if(a.type!=='incoming')fail(422,'Disposisi hanya untuk surat masuk.');
-      if(values.assignedSubsection!==a.subsection)fail(422,'Tujuan disposisi harus sesuai subbagian arsip.');
+      if(!sameSubsection(values.assignedSubsection,a.subsection))fail(422,'Tujuan disposisi harus sesuai subbagian arsip.');
       if(values.assignedUserId&&!dispositionRecipients(db.users,a).some(user=>user.id===values.assignedUserId))fail(422,'Penerima tidak valid.');
       const d={id:id('disp'),...values,status:'Belum ditindaklanjuti',version:0,createdBy:u.id,createdAt:now(),updates:[]};
       a.dispositions.push(d);if(receipt)(a.dispositionReceipts||=[]).push(receipt);

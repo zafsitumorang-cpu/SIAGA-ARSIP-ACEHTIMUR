@@ -18,7 +18,7 @@ Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bil
 | type | incoming / outgoing |
 | year | Empat digit berdasarkan tanggal surat |
 | classification | Nama klasifikasi terdaftar |
-| subsection | Administrasi / Hukum / Pengawasan / PPPS; tidak memperluas izin pengguna |
+| subsection | Administrasi / Hukum dan Sengketa Proses / Pencegahan, Partisipasi Masyarakat, dan Humas / Penanganan Pelanggaran dan Data Informasi; alias legacy Hukum/Pengawasan/PPPS tetap diterima selama transisi dan tidak memperluas izin pengguna |
 | from, to | YYYY-MM-DD, tanggal surat inklusif; awal tidak boleh melewati akhir |
 | status | Belum ditindaklanjuti / Sedang diproses / Selesai pada salah satu disposisi |
 | page, page_size | Halaman positif; ukuran 10/25/50/100, default 25 |
@@ -184,6 +184,10 @@ Review menyimpan checklist, pageCount, bukti checksum, keputusan duplikat dan al
 ### Koreksi metadata dan histori yang diizinkan (04.4)
 
 `PATCH /api/archives/:id` tetap **admin-only** karena keputusan 00.2 belum disahkan. Peran lain ditolak 403, anonim 401. `expectedVersion` integer wajib; versi usang 409, metadata tidak valid/field di luar allowlist 422. Bila arsip mempunyai disposisi apa pun, perubahan jenis atau subbagian ditolak 422 dengan pesan jelas, termasuk ketika seluruh disposisi sudah Selesai. Koreksi field lain mempertahankan identitas pencatat, berkas/versi/lampiran serta seluruh penugasan dan histori tugas. Pemindahan subbagian hanya tersedia tanpa disposisi; seluruh akses detail/histori/file kemudian mengikuti pemilik baru dan pemilik lama kehilangan akses.
+
+### Taksonomi subbagian 00.1
+
+`GET /api/admin/subsections` dan payload arsip menggunakan empat label resmi dari RA. Record dummy/legacy yang menyimpan `Hukum`, `Pengawasan`, atau `PPPS` tetap diterima sebagai alias kompatibilitas; respons menambahkan `subsectionLabel` resmi. Perbandingan scope, filter dan disposisi memakai identitas unit yang sama sehingga pergantian label tidak memindahkan atau memperluas akses.
 
 Perubahan nyata menambah satu `metadataHistory` pada transaksi yang sama dengan kenaikan metadataVersion: `{id,version,fields,by,at}`. Tidak menyimpan nilai sebelum/sesudah atau salinan isi metadata. No-op dan request ditolak tidak menambah histori/revisi. Audit umum tetap hanya memuat nama kolom yang berubah, tanpa nilai, termasuk perihal/lokasi/referensi sumber. Konflik dua tab dan balapan pemindahan terhadap pembuatan disposisi diperiksa di dalam transaksi/lock yang sama.
 

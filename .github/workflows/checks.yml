@@ -39,6 +39,7 @@ jobs:
       - run: npm run uat
       - run: npm run test:migration
       - run: npm run test:query
+      - run: npm run test:subsections
       - run: npm run test:export
       - run: npm run test:files
       - run: npm run test:versions
