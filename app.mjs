@@ -20,6 +20,7 @@ import {archiveQuality} from './lib/archive-quality.mjs';
 import {archiveIndex,indexFields,indexLimits,validateIndexFields,structuredFileName} from './lib/archive-index.mjs';
 import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspection.mjs';
 import {officialSubsections,isSubsection,sameSubsection,subsectionLabel} from './lib/subsection-taxonomy.mjs';
+import {administrativeArchiveCategories,defaultArchiveCategory} from './lib/archive-taxonomy.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC = path.join(ROOT, 'public');
@@ -39,12 +40,14 @@ const loginAttempts=new Map();
 
 const subsections = officialSubsections;
 const demoSubsections = ['Administrasi', 'Hukum', 'Pengawasan', 'PPPS'];
+const archiveCategories = [...administrativeArchiveCategories];
 const roles = {
   admin: 'admin', leader: 'leader', recorder: 'recorder', uploader: 'uploader', employee: 'employee'
 };
 
 function id(prefix = 'id') { return `${prefix}_${crypto.randomUUID()}`; }
 function now() { return new Date().toISOString(); }
+function categoryRegistry() { return [...new Set([...archiveCategories, ...(db?.categories || [])])]; }
 const hash = passwordHash;
 
 async function seed() {
@@ -63,7 +66,7 @@ async function seed() {
   for (let i = 1; i <= 10; i++) archives.push({ id: `in_${i}`, type: 'incoming', number: `IN/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-10-${String((i % 20) + 1).padStart(2, '0')}`, receivedDate: `2026-10-${String((i % 20) + 2).padStart(2, '0')}`, origin: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Sekretariat Daerah', 'Panwaslu Kecamatan'][i % 4], destination: ['Pimpinan', 'Subbagian Administrasi', 'Subbagian Hukum', 'Subbagian Pengawasan'][i % 4], subject: ['Undangan koordinasi tahapan pemilu', 'Penyampaian laporan administrasi', 'Permintaan data pengawasan', 'Rapat persiapan kegiatan'][i % 4], classification: classifications[i % classifications.length], subsection: demoSubsections[i % 4], fileName: `surat-masuk-${i}.pdf`, fileId: `file_in_${i}`, createdBy: 'u_admin', createdAt: now(), status: 'registered', dispositions: [] });
   for (let i = 1; i <= 10; i++) archives.push({ id: `out_${i}`, type: 'outgoing', number: `OUT/AT/${String(i).padStart(3, '0')}/2026`, letterDate: `2026-09-${String((i % 20) + 1).padStart(2, '0')}`, destination: ['Bawaslu Provinsi Aceh', 'KPU Aceh Timur', 'Camat setempat', 'Panwaslu Kecamatan'][i % 4], subject: ['Penyampaian surat tugas', 'Undangan rapat koordinasi', 'Permohonan data pendukung', 'Pemberitahuan kegiatan'][i % 4], signatory: 'Ketua Bawaslu Kabupaten Aceh Timur', classification: classifications[(i + 2) % classifications.length], subsection: demoSubsections[(i + 1) % 4], fileName: `surat-keluar-${i}.pdf`, fileId: `file_out_${i}`, createdBy: 'u_admin', createdAt: now(), dispositions: [] });
   const audit = [{ id: id('audit'), actorId: 'u_admin', action: 'seed_demo', entity: 'system', entityId: 'system', at: now(), detail: '20 arsip dummy dibuat untuk demo' }];
-  const data = { users, archives, classifications, categories: ['Surat Masuk', 'Surat Keluar'], audit, notifications: [] };
+  const data = { users, archives, classifications, categories: archiveCategories, audit, notifications: [] };
   data.sessions=[];return data;
 }
 
@@ -95,7 +98,7 @@ function metadataHistoryPayload(archive){
     return {id:event.id,version:event.version,fields,fieldLabels:fields.map(field=>metadataLabels[field]),by:author?.id||null,byName:author?.name||'Pengguna tidak tersedia',at:event.at};
   });
 }
-function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;return { ...visible, subsectionLabel:subsectionLabel(a.subsection), metadataHistory:metadataHistoryPayload(a), ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
+function archivePayload(a) { const {creationReceipt,uploadReceipts,dispositionReceipts,qualityReceipts,...visible}=a;const category=a.category||defaultArchiveCategory(a.type);return { ...visible, category, subsectionLabel:subsectionLabel(a.subsection), metadataHistory:metadataHistoryPayload(a), ...archiveIndex(a), quality:archiveQuality(a,fileAvailable),qualityReviews:(a.qualityReviews||[]).map(({duplicates,...review})=>({...review,duplicateCount:duplicates?.length??null,byName:db.users.find(user=>user.id===review.by)?.name||''})), documents:archiveDocuments(a).map(document=>({...document,versions:document.versions.map(version=>({...version,uploadedByName:db.users.find(user=>user.id===version.uploadedBy)?.name||'',available:fileAvailable(version.fileId)}))})), metadataVersion:a.metadataVersion||0, updatedByName:db.users.find(user=>user.id===a.updatedBy)?.name||'', fileAvailable: Boolean(a.fileName&&fileAvailable(a.fileId)), dispositions:a.dispositions.map(dispositionPayload) }; }
 
 async function route(req, res) {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); const pathname = url.pathname;
@@ -128,7 +131,7 @@ async function route(req, res) {
       const result=archivePage(visibleArchives(u,url),url.searchParams);
       const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
       audit(u.id,'view_list','archive','list');await persist();
-      return send(res,200,{...result,items:result.items.map(archivePayload),classifications:db.classifications,subsections,years});
+      return send(res,200,{...result,items:result.items.map(archivePayload),classifications:db.classifications,categories:categoryRegistry(),subsections,years});
     }
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='GET'){const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a))return send(res,404,{error:'Arsip tidak ditemukan.'});audit(u.id,'view','archive',a.id);await persist();return send(res,200,archivePayload(a));}
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='PATCH'){
@@ -181,13 +184,18 @@ async function route(req, res) {
       target.active = false; revokeSessions(target.id); audit(u.id, 'disable_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
     }
     if (pathname === '/api/admin/classifications' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama klasifikasi wajib diisi.' }); if (!db.classifications.includes(value)) db.classifications.push(value); audit(u.id, 'create_classification', 'classification', value); await persist(); return send(res, 201, { classifications: db.classifications }); }
-    if (pathname === '/api/admin/categories' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama kategori wajib diisi.' }); if (!db.categories.includes(value)) db.categories.push(value); audit(u.id, 'create_category', 'category', value); await persist(); return send(res, 201, { categories: db.categories }); }
+    if (pathname === '/api/admin/categories' && req.method === 'POST') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); const b = await body(req); const value = String(b.label || '').trim(); if (!value) return send(res, 422, { error: 'Nama kategori wajib diisi.' }); if (!db.categories.includes(value) && !archiveCategories.includes(value)) db.categories.push(value); audit(u.id, 'create_category', 'category', value); await persist(); return send(res, 201, { categories: categoryRegistry() }); }
     if(pathname==='/api/archives'&&req.method==='POST'){
       if(!['admin','recorder'].includes(u.role))return send(res,403,{error:'Peran ini tidak dapat mencatat arsip.'});
       const b=await body(req);
-      const values={type:b.type,number:b.number,letterDate:b.letterDate,receivedDate:b.type==='incoming'?b.receivedDate:undefined,origin:b.origin||'',destination:b.destination||'',subject:b.subject,signatory:b.signatory||'',classification:b.classification,subsection:b.subsection};
+      const defaultCategory=defaultArchiveCategory(b.type);
+      const values={type:b.type,category:b.category||defaultCategory,number:b.number,letterDate:b.letterDate,receivedDate:b.type==='incoming'?b.receivedDate:'',origin:b.origin||'',destination:b.destination||'',subject:b.subject,signatory:b.signatory||'',classification:b.classification,subsection:b.subsection};
       for(const field of Object.keys(indexFields))if(Object.hasOwn(b,field))values[field]=text(b[field],indexFields[field],indexLimits[field]);
-      const receipt=requestReceipt(req,u.id,'archive:create',values);
+      // Keep legacy idempotency fingerprints stable when the caller omitted the
+      // additive category field; the stored archive still receives its default.
+      const receiptValues=Object.hasOwn(b,'category')?values:{...values};
+      if(!Object.hasOwn(b,'category'))delete receiptValues.category;
+      const receipt=requestReceipt(req,u.id,'archive:create',receiptValues);
       // ponytail: receipts follow the full-dataset store; use an indexed receipt table when that store is replaced.
       const existing=receipt&&db.archives.find(item=>item.creationReceipt?.keyHash===receipt.keyHash);
       if(existing){
@@ -195,7 +203,7 @@ async function route(req, res) {
         matchesReceipt(existing.creationReceipt,receipt);
         return send(res,200,archivePayload(existing));
       }
-      validateArchive(b,u,db,subsections);validateIndexFields(values);
+      validateArchive(values,u,db,subsections);validateIndexFields(values);
       const archive={id:id('archive'),...values,fileName:'',fileId:'',createdBy:u.id,createdAt:now(),dispositions:[],...(receipt?{creationReceipt:receipt}:{})};
       db.archives.unshift(archive);audit(u.id,'create','archive',archive.id,archive.number);await persist();
       return send(res,201,archivePayload(archive));

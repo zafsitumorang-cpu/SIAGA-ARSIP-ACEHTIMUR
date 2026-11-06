@@ -29,8 +29,8 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 
 ### `archive_categories`
 - `id`, `code`, `name`, `description`, `is_active`, `created_by`, `created_at`.
-- Seed: Surat Masuk, Surat Keluar. Admin dapat menambah kategori.
-- Struktur field untuk kategori lanjutan perlu konfigurasi dan versi skema sebelum dipakai.
+- Seed runtime 00.3: Surat Masuk, Surat Keluar, Arsip Administrasi Umum, Surat Tugas, Laporan Hasil Pengawasan, Dokumen Kegiatan, Keuangan, Kepegawaian, Produk Hukum, Notulensi, Dokumentasi Kegiatan, dan Dokumen Pendukung. Admin dapat menambah kategori pada registri JSONB/`siaga_categories`.
+- Tipe `administrative` memakai metadata umum; field asal/tujuan/tanggal diterima/penandatangan nullable dan tidak diwajibkan. Master aktif/nonaktif, kode, deskripsi, dan retensi kategori penuh tetap paket 05 sebelum data nyata.
 
 ### `classifications`
 - `id`, `code` (opsional sampai standar resmi tersedia), `label`, `description`, `is_active`, `created_by`, `created_at`.

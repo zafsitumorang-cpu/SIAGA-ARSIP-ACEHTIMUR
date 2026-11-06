@@ -31,11 +31,11 @@ Penugasan individual hanya dapat menunjuk pegawai aktif pada subbagian arsip. Pe
 
 ## Pengelolaan arsip
 
-7. Tahap pertama memiliki kategori Surat Masuk dan Surat Keluar.
-8. Admin mengelola opsi klasifikasi; belum ada daftar resmi. Kategori tambahan dapat dibuat admin, tetapi penggunaan kategori baru mensyaratkan form, akses, dan retensi yang disetujui.
+7. Scope kerja mencakup seluruh arsip administrasi. Runtime memakai tipe surat masuk, surat keluar, dan arsip administrasi umum dengan metadata umum yang sama.
+8. Registri awal kategori mengikuti scope RA: Surat Masuk, Surat Keluar, Arsip Administrasi Umum, Surat Tugas, Laporan Hasil Pengawasan, Dokumen Kegiatan, Keuangan, Kepegawaian, Produk Hukum, Notulensi, Dokumentasi Kegiatan, dan Dokumen Pendukung. Admin dapat menambah kategori, tetapi pengelolaan master aktif/nonaktif, kode, deskripsi, dan retensi tetap paket 05.
 9. Pencatatan metadata dan unggah berkas dilakukan oleh peran berbeda. Pengguna hanya menjalankan tugas yang ditugaskan; pemetaan pengguna aktual masih perlu dikonfirmasi.
-10. Surat masuk wajib memiliki nomor dan tanggal surat, tanggal diterima, asal, perihal, tujuan/disposisi, klasifikasi, subbagian penanggung jawab, serta berkas pindai/lampiran sesuai tahapan kelengkapan.
-11. Surat keluar wajib memiliki nomor dan tanggal, tujuan, perihal, penandatangan, klasifikasi, subbagian penanggung jawab, dan berkas final.
+10. Surat masuk wajib memiliki nomor dan tanggal surat, tanggal diterima, asal, perihal, klasifikasi, subbagian penanggung jawab, serta berkas pindai/lampiran sesuai tahapan kelengkapan.
+11. Surat keluar wajib memiliki nomor dan tanggal, tujuan, perihal, penandatangan, klasifikasi, subbagian penanggung jawab, dan berkas final. Arsip administrasi umum memakai nomor, tanggal, perihal, kategori, klasifikasi, subbagian, dan berkas utama tanpa memaksa field khusus surat.
 12. Format unggah yang diizinkan: PDF, JPG, XLSX, DOCX; batas ukuran ditetapkan administrator saat implementasi.
 13. Sistem tidak menerbitkan tautan publik ke berkas arsip.
 14. Nomor surat tidak ditetapkan unik global sampai pola nomor resmi kantor dikonfirmasi.

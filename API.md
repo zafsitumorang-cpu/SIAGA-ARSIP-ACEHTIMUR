@@ -18,8 +18,9 @@ Mutasi POST/PATCH memerlukan header `X-SIAGA-Request: 1`, body JSON dan sesi bil
 
 | Parameter | Nilai |
 |---|---|
-| q | Substring literal, tanpa membedakan kapital, maksimal 200 karakter; nomor, asal, tujuan, perihal, klasifikasi atau subbagian |
-| type | incoming / outgoing |
+| q | Substring literal, tanpa membedakan kapital, maksimal 200 karakter; nomor, kategori, asal, tujuan, perihal, klasifikasi atau subbagian |
+| type | incoming / outgoing / administrative |
+| category | Nama kategori pada registri kategori aktif; kategori awal mengikuti scope 00.3 |
 | year | Empat digit berdasarkan tanggal surat |
 | classification | Nama klasifikasi terdaftar |
 | subsection | Administrasi / Hukum dan Sengketa Proses / Pencegahan, Partisipasi Masyarakat, dan Humas / Penanganan Pelanggaran dan Data Informasi; alias legacy Hukum/Pengawasan/PPPS tetap diterima selama transisi dan tidak memperluas izin pengguna |
@@ -33,9 +34,9 @@ Tanpa kedua parameter pagination, kontrak daftar tanpa halaman tetap dipertahank
 
 ### Ekspor aktual
 
-`GET /api/export.csv` dan `GET /api/export.xlsx` menerima delapan kriteria yang sama, mengekspor seluruh hasil berizin dan mengabaikan parameter halaman. Urutan sama dengan daftar paginasi: waktu pencatatan terbaru, lalu id menaik. Keduanya dicatat sebagai event `export` dengan jumlah data dan format; tanpa isi metadata/instruksi dalam audit. Query tidak valid ditolak 422 dan tanpa sesi ditolak 401.
+`GET /api/export.csv` dan `GET /api/export.xlsx` menerima sepuluh kriteria yang sama, termasuk kategori dan kelengkapan, mengekspor seluruh hasil berizin dan mengabaikan parameter halaman. Urutan sama dengan daftar paginasi: waktu pencatatan terbaru, lalu id menaik. Keduanya dicatat sebagai event `export` dengan jumlah data dan format; tanpa isi metadata/instruksi dalam audit. Query tidak valid ditolak 422 dan tanpa sesi ditolak 401.
 
-Kolom: Jenis, Nomor, Tanggal, Asal, Tujuan, Perihal, Klasifikasi, Subbagian, Status disposisi. Kolom Status disposisi berisi status unik dari semua disposisi arsip, dipisah titik koma; tanpa penugasan ditulis `Tanpa disposisi`. Filter status mencocokkan minimal satu disposisi, sedangkan kolom ekspor tetap merangkum semua status. Instruksi dan catatan tindak lanjut tidak diekspor.
+Kolom: Jenis, Kategori, Nomor, Tanggal, Asal, Tujuan, Perihal, Klasifikasi, Subbagian, Status disposisi, Indeks sistem, Tahun, Kode klasifikasi, Nomor agenda, Jenis sumber, Lokasi fisik, Referensi sumber, Kelengkapan. Kolom Status disposisi berisi status unik dari semua disposisi arsip, dipisah titik koma; tanpa penugasan ditulis `Tanpa disposisi`. Filter status mencocokkan minimal satu disposisi, sedangkan kolom ekspor tetap merangkum semua status. Instruksi dan catatan tindak lanjut tidak diekspor.
 
 XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. Semua nilai ditulis sebagai tipe String untuk mempertahankan nomor/tanggal ISO dan mencegah interpretasi formula. CSV memakai UTF-8 BOM, kutip standar, CRLF, serta awalan apostrof untuk teks yang berpotensi formula (termasuk setelah whitespace). Hasil kosong API tetap menghasilkan header saja. XLSX dibuat dalam memori; uji 1.300 rekaman sintetis bukan bukti performa/resource VPS.
 
@@ -52,8 +53,8 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 
 ## Arsip
 
-- `GET /api/archives?type=&q=&year=&classification=&subsection=&from=&to=&status=&page=1&page_size=25`
-- `POST /api/archives` — pencatat berwenang membuat metadata.
+- `GET /api/archives?type=&category=&q=&year=&classification=&subsection=&from=&to=&status=&page=1&page_size=25`
+- `POST /api/archives` — pencatat berwenang membuat metadata; `type=administrative` memakai metadata umum dan `category` dari registri.
 - `GET /api/archives/{id}` — pemeriksaan akses terjadi sebelum mengembalikan metadata.
 - `PATCH /api/archives/{id}` — hanya peran pengelola yang berwenang; perubahan tercatat.
 - `POST /api/archives/{id}/files` — pengunggah yang berwenang membuat sesi unggah/unggah berkas.
@@ -97,9 +98,11 @@ Kontrak saat ini memakai event dan status baca per pengguna; lihat bagian 03.5 d
 
 ### PATCH metadata yang sudah diterapkan
 
-`PATCH /api/archives/{id}` memerlukan role admin. Pegawai, recorder, uploader dan leader ditolak 403; anonymous 401. Baca versi terbaru dari GET detail (`metadataVersion`, default 0 untuk data lama), lalu sertakan `expectedVersion` integer pada PATCH. Versi usang menghasilkan 409; field tidak valid/di luar allowlist menghasilkan 422. Field yang dapat diubah: type, number, letterDate, receivedDate, origin, destination, subject, signatory, classification, subsection. PATCH sebagian didukung; field lain memakai nilai saat ini.
+`PATCH /api/archives/{id}` memerlukan role admin. Pegawai, recorder, uploader dan leader ditolak 403; anonymous 401. Baca versi terbaru dari GET detail (`metadataVersion`, default 0 untuk data lama), lalu sertakan `expectedVersion` integer pada PATCH. Versi usang menghasilkan 409; field tidak valid/di luar allowlist menghasilkan 422. Field yang dapat diubah: type, category, number, letterDate, receivedDate, origin, destination, subject, signatory, classification, subsection. PATCH sebagian didukung; field lain memakai nilai saat ini.
 
 File/pencatat/waktu pencatatan/disposisi tidak dapat dimasukkan melalui PATCH. Validasi surat masuk/keluar dan klasifikasi tetap berlaku. Jenis atau subbagian tidak boleh berubah jika arsip mempunyai disposisi, termasuk yang telah selesai, karena belum ada alur penugasan ulang. Tanpa disposisi admin boleh mengoreksi keduanya; scope baca/unduh mengikuti subbagian baru. Konversi ke surat keluar mengosongkan asal/tanggal diterima; konversi masuk mengosongkan penandatangan. Koreksi tanpa konversi mempertahankan field opsional lama. File tetap dipertahankan.
+
+Pada scope 00.3, `administrative` memakai metadata umum dan tidak mewajibkan `receivedDate`, `origin`, `destination`, atau `signatory`; API mengosongkan field khusus saat konversi ke tipe tersebut. `category` harus berasal dari registri kategori dan ikut dalam filter, pencarian, detail, dan ekspor. Status lengkap tetap memerlukan berkas utama; lampiran yang didaftarkan dinilai terpisah oleh QC.
 
 Perubahan nyata menaikkan metadataVersion dan mengisi updatedAt UTC/updatedBy; payload menyertakan updatedByName. No-op tidak menaikkan versi atau membuat audit palsu. Audit update_metadata mencatat aktor/waktu/arsip dan nama field, tanpa nilai lama/baru atau isi perihal. Histori nilai metadata belum tersedia. Data tambahan disimpan pada payload JSONB yang ada; schema SQL tidak berubah.
 

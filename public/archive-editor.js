@@ -3,7 +3,7 @@ import {setupFormA11y} from './form-a11y.js';
 let generation=0;
 
 export async function openArchiveEditor(options){
-  const {id,api,app,esc,icon,subsections,classifications,toast,closeModal,onSaved,canShow}=options;
+  const {id,api,app,esc,icon,subsections,classifications,categories=[],toast,closeModal,onSaved,canShow}=options;
   const request=++generation;
   let archive;
   try{archive=await api('/api/archives/'+encodeURIComponent(id));}catch(error){toast(error.message,'error');return;}
@@ -25,7 +25,8 @@ export async function openArchiveEditor(options){
       <p class="form-error-desc" id="editArchiveErrorDesc" hidden></p>
     </div>
     <form id="editArchiveForm"><div class="form-grid">
-      <div class="field"><label for="edit-type">Jenis surat <span class="field-req-text">(wajib)</span></label><select name="type" id="edit-type" ${locked?'disabled':''}><option value="incoming" ${archive.type==='incoming'?'selected':''}>Surat masuk</option><option value="outgoing" ${archive.type==='outgoing'?'selected':''}>Surat keluar</option></select><span id="edit-type-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="edit-type">Jenis arsip <span class="field-req-text">(wajib)</span></label><select name="type" id="edit-type" ${locked?'disabled':''}><option value="incoming" ${archive.type==='incoming'?'selected':''}>Surat masuk</option><option value="outgoing" ${archive.type==='outgoing'?'selected':''}>Surat keluar</option><option value="administrative" ${archive.type==='administrative'?'selected':''}>Arsip administrasi umum</option></select><span id="edit-type-error" class="field-error" role="alert" hidden></span></div>
+      <div class="field"><label for="edit-category">Kategori arsip <span class="field-req-text">(wajib)</span></label><select name="category" id="edit-category">${[...new Set([archive.category,...categories].filter(Boolean))].map(value=>`<option value="${esc(value)}" ${value===archive.category?'selected':''}>${esc(value)}</option>`).join('')}</select><span id="edit-category-error" class="field-error" role="alert" hidden></span></div>
       <div class="field"><label for="edit-subsection">Subbagian penanggung jawab <span class="field-req-text">(wajib)</span></label><select name="subsection" id="edit-subsection" ${locked?'disabled':''}>${choices(subsectionChoices,archive.subsection)}</select><span id="edit-subsection-error" class="field-error" role="alert" hidden></span></div>
       ${input('number','Nomor surat','text',200)}${input('letterDate','Tanggal surat','date',10)}${input('receivedDate','Tanggal diterima','date',10)}
       <div class="field"><label for="edit-classification">Klasifikasi <span class="field-req-text">(wajib)</span></label><select name="classification" id="edit-classification">${choices([...new Set([archive.classification,...classifications])],archive.classification)}</select><span id="edit-classification-error" class="field-error" role="alert" hidden></span></div>
@@ -59,9 +60,9 @@ export async function openArchiveEditor(options){
     }
   };
   function toggle(){
-    const incoming=select.value==='incoming';
+    const incoming=select.value==='incoming',outgoing=select.value==='outgoing';
     for(const name of ['receivedDate','origin','signatory']){
-      const visible=name==='signatory'?!incoming:incoming;
+      const visible=name==='signatory'?outgoing:(name==='receivedDate'||name==='origin')&&incoming;
       const field=form.querySelector(`[data-field="${name}"]`);
       field.hidden=!visible;
       const inp=field.querySelector('input');
@@ -80,12 +81,12 @@ export async function openArchiveEditor(options){
       const reqEl=form.querySelector(`#edit-${name}-req`);
       if(reqEl){ reqEl.textContent='(wajib)'; reqEl.className='field-req-text'; }
     }
-    form.elements.destination.required=!incoming;
-    if(!incoming) form.elements.destination.setAttribute('aria-required','true');
+    form.elements.destination.required=outgoing;
+    if(outgoing) form.elements.destination.setAttribute('aria-required','true');
     else form.elements.destination.removeAttribute('aria-required');
     const destReq = form.querySelector('#edit-destination-req');
     if(destReq){
-      if(!incoming){ destReq.textContent='(wajib)'; destReq.className='field-req-text'; }
+      if(outgoing){ destReq.textContent='(wajib)'; destReq.className='field-req-text'; }
       else { destReq.textContent='(opsional)'; destReq.className='field-opt-text'; }
     }
   }

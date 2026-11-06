@@ -212,6 +212,7 @@ a { color: inherit; }
 .badge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; border: 1px solid transparent; border-radius: 3px; font-size: 10px; font-weight: 780; white-space: nowrap; }
 .badge-in { border-color: #edc9cb; color: #8d2028; background: #fff4f3; }
 .badge-out { border-color: #c8dce5; color: #2f5b6e; background: #f0f7fa; }
+.badge-neutral { border-color: #d7dce3; color: #5b6574; background: #f3f5f7; }
 .badge-pending { border-color: #ecd6a9; color: #89600f; background: #fff8e8; }
 .badge-progress { border-color: #eed0b0; color: #8a4d18; background: #fff5e9; }
 .badge-done { border-color: #c3e2d4; color: #1f6b51; background: #effaf4; }
