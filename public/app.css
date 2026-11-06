@@ -518,10 +518,10 @@ body { font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI"
 }
 @media (max-width: 760px) {
   .lp-hero { position: relative; display: block; min-height: 650px; padding-top: 72px; padding-bottom: 92px; }
-  .lp-hero-copy { position: relative; z-index: 3; }
+  .lp-hero-copy { position: relative; z-index: 3; padding-bottom: 150px; }
   .lp-hero-image { position: absolute; z-index: 0; inset: 0; min-height: 0; border-radius: 0; }
   .lp-hero-image::after { background: linear-gradient(180deg, rgba(8, 9, 11, .66) 0%, rgba(8, 9, 11, .72) 52%, rgba(8, 9, 11, .9) 100%); }
-  .lp-hero-image figcaption { padding: 22px 6%; }
+  .lp-hero-image figcaption { bottom: 0; min-height: 92px; padding: 18px 6%; }
 }
 
 /* Public information pages and scroll-aware navigation. */
