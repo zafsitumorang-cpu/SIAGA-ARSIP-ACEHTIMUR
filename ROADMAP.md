@@ -12,12 +12,12 @@
 ## Minggu 2 — Fondasi aplikasi
 - Selesai pada MVP: login, akun demo, role/subbagian, otorisasi server-side.
 - Selesai pada MVP: admin dapat membuat/mengubah/mengaktifkan/menonaktifkan akun; alur `recorder` dan `uploader` dapat dipisahkan.
-- Selesai pada MVP: form surat masuk/keluar dan unggah berkas privat.
+- Selesai pada MVP: form surat masuk/keluar, arsip administrasi umum, dan unggah berkas privat.
 - Selesai pada MVP: daftar/filter metadata, dashboard internal, dan halaman publik agregat.
 
 ## Minggu 3 — Proses dan kontrol
 - Selesai pada MVP: disposisi, tiga status, histori, notifikasi in-app, ekspor CSV kompatibel Excel, dan audit.
-- Selesai pada MVP: endpoint admin untuk klasifikasi/kategori serta batas unggah 15 MB.
+- Selesai pada MVP: endpoint admin untuk klasifikasi/kategori serta batas unggah 15 MB; registri kategori awal memakai metadata umum.
 - Selesai pada MVP: backup snapshot dan runbook pemulihan.
 - Menunggu kantor: email provider, hardening deployment, OCR, antivirus, dan MFA.
 
@@ -35,4 +35,4 @@
 
 ## Risiko jadwal
 
-Target satu bulan ketat bila persetujuan hosting, konfigurasi email, dan kebijakan keamanan terlambat. Mitigasi: demonstrasi lokal/staging dengan dummy, batasi pilot ke surat masuk/keluar, dan tandai fitur email/OCR sebagai bersyarat. Jangan memindahkan data nyata sebelum lokasi hosting serta akses disetujui.
+Target satu bulan ketat bila persetujuan hosting, konfigurasi email, dan kebijakan keamanan terlambat. Mitigasi: demonstrasi lokal/staging dengan dummy, batasi pilot pada alur yang sudah diterima dan metadata umum, serta tandai fitur email/OCR sebagai bersyarat. Jangan memindahkan data nyata sebelum lokasi hosting serta akses disetujui.

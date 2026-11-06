@@ -17,7 +17,7 @@ Pemilik menyetujui asumsi kerja berikut untuk penyelarasan SIAGA ARSIP. Ini menj
 - Ruang lingkup target mencakup **seluruh arsip administrasi**, dengan implementasi bertahap menggunakan metadata umum dan kategori yang dapat dikembangkan.
 - Hak akses memakai prinsip hak minimum: admin/pengelola arsip mengelola konfigurasi, QC, koreksi metadata dan audit; pencatat membuat metadata; pengunggah mengelola berkas; pegawai menangani arsip dan disposisi dalam unitnya; pimpinan mengawasi lintas unit.
 - Disposisi individu hanya kepada pegawai aktif pada unit yang sesuai. Penugasan tidak memperluas akses lintas unit dan tidak mengubah pemilik arsip secara diam-diam.
-- Metadata umum berlaku untuk semua kategori. Kategori awal mengikuti RA: surat masuk, surat keluar, surat tugas, laporan pengawasan, dokumen kegiatan, keuangan, kepegawaian, produk hukum, notulensi, dokumentasi dan dokumen pendukung. Alur khusus kategori substantif memerlukan keputusan lanjutan.
+- Metadata umum berlaku untuk semua kategori. Registri awal runtime mencakup Surat Masuk, Surat Keluar, Arsip Administrasi Umum, Surat Tugas, Laporan Hasil Pengawasan, Dokumen Kegiatan, Keuangan, Kepegawaian, Produk Hukum, Notulensi, Dokumentasi Kegiatan, dan Dokumen Pendukung. Alur khusus kategori substantif memerlukan keputusan lanjutan.
 
 ## Keputusan yang telah disepakati
 

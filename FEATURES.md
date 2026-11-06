@@ -2,19 +2,19 @@
 
 ## Arah produk yang disetujui pemilik (6 November 2026)
 
-Target produk mencakup seluruh arsip administrasi. Nomenklatur subbagian target mengikuti RA: Administrasi; Hukum dan Sengketa Proses; Pencegahan, Partisipasi Masyarakat, dan Humas; serta Penanganan Pelanggaran dan Data Informasi. Runtime saat ini masih membawa label lama dan alur surat masuk/keluar; pekerjaan penyelarasan pada TODO 00 dan registri arsip umum harus selesai sebelum cakupan ini dianggap tersedia.
+Target produk mencakup seluruh arsip administrasi. Runtime sudah menyediakan tipe `incoming`, `outgoing`, dan `administrative`, metadata umum, kategori 00.3, serta label resmi subbagian RA. Alias Hukum/Pengawasan/PPPS hanya dipertahankan untuk kompatibilitas data dummy lama; pengesahan formal kantor dan alur khusus kategori substantif masih terbuka.
 
 ## Pilot / MVP
 
 ### Akun dan akses
 - Login akun lokal.
 - Admin membuat/menonaktifkan akun, menetapkan satu peran atau kombinasi kemampuan yang disetujui dan satu subbagian.
-- Subbagian: Administrasi, Hukum, Pengawasan, PPPS.
+- Subbagian resmi: Administrasi, Hukum dan Sengketa Proses, Pencegahan, Partisipasi Masyarakat, dan Humas, serta Penanganan Pelanggaran dan Data Informasi. Alias lama hanya untuk data dummy.
 - Pimpinan dan admin dapat melihat lintas subbagian; pegawai dibatasi satu subbagian.
 
 ### Registrasi arsip
-- Form surat masuk dan surat keluar dengan kolom wajib sesuai PRD.
-- Registri kategori arsip administrasi lain dengan metadata umum sebagai tahap awal; formulir khusus hanya diaktifkan setelah proses, akses dan retensi disahkan.
+- Form surat masuk, surat keluar, dan arsip administrasi umum dengan kolom wajib sesuai tipe.
+- Registri 12 kategori awal dengan metadata umum; formulir khusus substantif hanya diaktifkan setelah proses, akses dan retensi disahkan.
 - Admin mengelola daftar klasifikasi.
 - Pencatatan dan unggah berkas adalah tanggung jawab/peran yang berbeda.
 - Berkas PDF/JPG/XLSX/DOCX privat, dapat dilihat/diunduh oleh pihak berwenang.
@@ -25,14 +25,14 @@ Target produk mencakup seluruh arsip administrasi. Nomenklatur subbagian target 
 - Notifikasi aplikasi; email bila konfigurasi tersedia.
 
 ### Cari, lapor, pantau
-- Pencarian metadata; filter tahun, jenis, klasifikasi, subbagian, dan status sesuai izin.
+- Pencarian metadata; filter kategori, tahun, jenis, klasifikasi, subbagian, kelengkapan, dan status sesuai izin.
 - Ekspor hasil metadata ke Excel.
 - Dashboard pimpinan: jumlah masuk, keluar, dan disposisi belum selesai; filter tahun.
 - Halaman publik: angka agregat masuk/keluar per tahun.
 
 ### Audit dan perlindungan
 - Audit create/update/view/download/delete, perubahan akses, dan disposisi.
-- Backup otomatis harian dengan salinan terpisah.
+- Snapshot backup lokal harian dilaporkan terpasang; salinan offsite, enkripsi, retensi, dan restore menyeluruh tetap ditunda sebagai gate keamanan.
 - Soft-delete/karantina dianjurkan sampai kebijakan retensi disepakati; tidak ada penghapusan permanen otomatis.
 
 ## Kesiapan migrasi
@@ -51,4 +51,4 @@ Target produk mencakup seluruh arsip administrasi. Nomenklatur subbagian target 
 - Administrasi: NPHD, pengadaan, kepegawaian, audit internal.
 - OCR isi PDF, bila dapat dipenuhi dengan kualitas dan tata kelola yang disetujui.
 
-Setiap kategori lanjutan perlu skema field, pemilik data, klasifikasi keamanan, akses, retensi, pelaporan, dan alur persetujuan tersendiri. Nama kategori yang dicatat pengguna adalah daftar kandidat, bukan keputusan bahwa kategori tersebut telah disahkan.
+Kategori awal 00.3 sudah dapat dipilih, divalidasi, dicari, dan diekspor dengan metadata umum. Setiap kategori substantif lanjutan tetap perlu skema field, pemilik data, klasifikasi keamanan, akses, retensi, pelaporan, dan alur persetujuan tersendiri.

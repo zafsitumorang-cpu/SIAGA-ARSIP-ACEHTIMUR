@@ -1,12 +1,12 @@
 # BUSINESS RULES — SIAGA ARSIP
 
-> **Penyelarasan pemilik, 6 November 2026:** target subbagian mengikuti dokumen RA dan cakupan target mencakup seluruh arsip administrasi. Aturan di bawah yang masih menyebut label runtime lama atau hanya surat masuk/keluar adalah kondisi implementasi sementara sampai TODO 00 dan registri arsip umum selesai. Tidak ada arsip nyata yang boleh dimasukkan selama tahap ini.
+> **Penyelarasan pemilik, 6 November 2026:** target subbagian mengikuti dokumen RA dan cakupan target mencakup seluruh arsip administrasi. Runtime sudah memakai label resmi, tiga tipe arsip, dan registri kategori 00.3. Pengesahan formal kantor, data nyata, retensi, dan alur kategori substantif belum diklaim.
 
 ## Pengguna dan ruang lingkup
 
 1. Admin sistem dan pengelola arsip adalah satu peran untuk tahap pertama.
 2. Akun dibuat dan dikelola admin; akun nonaktif tidak dapat login.
-3. Pegawai ditetapkan ke tepat satu subbagian: Administrasi, Hukum, Pengawasan, atau PPPS.
+3. Pegawai ditetapkan ke tepat satu subbagian resmi RA; alias lama hanya dibaca sebagai kompatibilitas data dummy.
 4. Pegawai hanya melihat dan mengunduh arsip subbagiannya. Pimpinan dan admin dapat melihat seluruh subbagian.
 5. Setiap arsip memiliki tepat satu subbagian penanggung jawab. Perubahan pemilik subbagian dilakukan admin dan dicatat.
 6. Pengunjung tanpa akun hanya dapat melihat agregat surat masuk/keluar per tahun.

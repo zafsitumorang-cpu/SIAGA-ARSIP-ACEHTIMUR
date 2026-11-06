@@ -17,22 +17,25 @@ Buka `http://localhost:3000`.
 | `admin` | `admin123` | Semua subbagian + audit |
 | `pimpinan` | `pimpinan123` | Semua subbagian + disposisi |
 | `pegawai.administrasi` | `pegawai123` | Administrasi |
-| `pegawai.hukum` | `pegawai123` | Hukum |
-| `pegawai.pengawasan` | `pegawai123` | Pengawasan |
-| `pegawai.ppps` | `pegawai123` | PPPS |
+| `pegawai.hukum` | `pegawai123` | Hukum dan Sengketa Proses |
+| `pegawai.pengawasan` | `pegawai123` | Pencegahan, Partisipasi Masyarakat, dan Humas |
+| `pegawai.ppps` | `pegawai123` | Penanganan Pelanggaran dan Data Informasi |
+
+Record dummy lama masih menyimpan alias Hukum/Pengawasan/PPPS; UI dan respons API menampilkan label resmi tanpa memperluas scope.
 
 ## Skenario utama
 
 1. Buka halaman publik dan pastikan angka 10 surat masuk, 10 surat keluar, dan total 20 tampil tanpa login.
-2. Masuk sebagai `pegawai.hukum`; pastikan daftar hanya menampilkan arsip subbagian Hukum.
+2. Masuk sebagai `pegawai.hukum`; pastikan daftar hanya menampilkan arsip subbagian Hukum dan Sengketa Proses.
 3. Masuk sebagai `pimpinan`; buka Arsip surat dan kirim disposisi pada salah satu surat masuk.
 4. Masuk sebagai pegawai pada subbagian tujuan; buka Disposisi dan ubah status menjadi `Sedang diproses`, lalu `Selesai`.
 5. Masuk sebagai `admin`; tambahkan arsip baru dan cek perubahan jumlah dashboard.
 6. Sebagai `admin`, buka Pengaturan; buat akun pegawai baru, ubah peran/subbagian, lalu nonaktifkan dan aktifkan kembali akun tersebut.
 7. Tambahkan klasifikasi baru dari Pengaturan, lalu pastikan pilihan muncul pada form arsip.
-8. Buat akun `recorder` dan `uploader` pada subbagian yang sama; pastikan pencatat dapat menyimpan metadata dan pengunggah dapat menambahkan berkas privat pada arsip tersebut.
-9. Gunakan pencarian dan tombol Ekspor CSV / Ekspor Excel (.xlsx).
-10. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, unggah, dan ekspor tercatat.
+8. Sebagai admin, buat satu arsip administrasi umum dengan kategori Keuangan; pastikan field surat masuk/keluar tidak dipaksakan, kategori tampil di detail, filter, dan ekspor.
+9. Buat akun `recorder` dan `uploader` pada subbagian yang sama; pastikan pencatat dapat menyimpan metadata dan pengunggah dapat menambahkan berkas privat pada arsip tersebut.
+10. Gunakan pencarian dan tombol Ekspor CSV / Ekspor Excel (.xlsx).
+11. Buka Audit aktivitas sebagai admin/pimpinan dan pastikan login, pencatatan, disposisi, perubahan status, pengelolaan akun, unggah, dan ekspor tercatat.
 
 ## Batasan pilot
 
@@ -65,7 +68,7 @@ Pengujian otomatis: `npm run test:query`, regresi keamanan JSON/PostgreSQL dan `
 
 ### Hasil UAT pengguna — 5 November 2026
 
-Pengguna melaporkan PPPS=5 arsip, ditambah surat keluar=3, lalu rentang tanggal sampai 8 September=1. Pilihan 10/25/50/100 ada dan halaman kedua menampilkan 11–20. CSV berisi 20/5/1 baris sesuai kriteria; login/ekspor tercatat di audit. Tidak ada arsip diubah. Filter Selesai belum diuji pengguna karena contoh belum memiliki disposisi. Kolom status CSV yang sebelumnya belum ada ditambahkan pada paket ekspor berikutnya.
+Pengguna melaporkan PPPS=5 arsip, ditambah surat keluar=3, lalu rentang tanggal sampai 8 September=1. Pilihan 10/25/50/100 ada dan halaman kedua menampilkan 11–20. CSV berisi 20/5/1 baris sesuai kriteria; login/ekspor tercatat di audit. Tidak ada arsip diubah. Filter Selesai belum diuji pengguna karena contoh belum memiliki disposisi. Kolom status disposisi tersedia pada CSV dan XLSX; penerimaan pengguna tetap terpisah dari uji otomatis.
 
 ## Uji Excel dan status disposisi
 

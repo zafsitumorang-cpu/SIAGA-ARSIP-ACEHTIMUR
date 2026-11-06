@@ -4,9 +4,9 @@
 
 Pengguna internal membuka sistem melalui internet → memasukkan akun lokal → server mengautentikasi → sistem memuat peran dan satu subbagian pengguna → pengguna melihat dashboard sesuai cakupan. Admin membuat dan menonaktifkan akun. Pengunjung umum membuka halaman statistik tanpa login.
 
-## 2. Surat masuk dan unggah
+## 2. Registrasi arsip dan unggah
 
-1. Pencatat memilih **Surat Masuk** dan mengisi nomor/tanggal surat, tanggal diterima, asal, perihal, tujuan/disposisi awal jika ada, klasifikasi, serta subbagian penanggung jawab.
+1. Pencatat memilih **Surat Masuk**, **Surat Keluar**, atau **Arsip Administrasi Umum**, lalu mengisi metadata wajib sesuai tipe, kategori, klasifikasi, serta subbagian penanggung jawab.
 2. Sistem memvalidasi field dan akses; surat disimpan dengan status proses pencatatan.
 3. Pengunggah yang berwenang memilih rekaman dan menambahkan PDF/JPG/XLSX/DOCX hasil pindai atau lampiran.
 4. Sistem memeriksa tipe/ukuran, menyimpan berkas secara privat, membuat audit event, dan menampilkan status kelengkapan.
@@ -32,7 +32,7 @@ Pimpinan/admin melihat jumlah surat masuk/keluar dan disposisi tertunda lintas s
 
 ## 7. Backup dan pemulihan
 
-Proses terjadwal membuat backup database dan file ke lokasi terpisah → admin menerima status keberhasilan/kegagalan → saat pemulihan, admin mengikuti prosedur terdokumentasi, menjaga audit dan memverifikasi konsistensi metadata-file.
+Timer lokal membuat snapshot database dan file → admin memeriksa status keberhasilan/kegagalan → offsite, enkripsi, retensi dan uji pemulihan menyeluruh tetap menunggu paket 11 sebelum arsip nyata.
 
 ## Jalur pengecualian
 

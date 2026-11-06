@@ -7,7 +7,7 @@
 
 ## Ringkasan
 
-SIAGA ARSIP adalah sistem web untuk menata seluruh arsip administrasi digital, membantu temu kembali dokumen, mengelola disposisi pada arsip yang memerlukannya, dan menyediakan statistik agregat publik. Implementasi dilakukan bertahap: surat masuk/keluar menjadi alur awal, sedangkan kategori arsip administrasi lain memakai metadata umum sebelum alur khususnya disahkan. Sistem perlu dapat dikembangkan agar admin dapat menambah kategori dan formulir metadata melalui pengaturan.
+SIAGA ARSIP adalah sistem web untuk menata seluruh arsip administrasi digital, membantu temu kembali dokumen, mengelola disposisi pada arsip yang memerlukannya, dan menyediakan statistik agregat publik. Alur surat masuk/keluar menjadi alur paling lengkap; arsip administrasi umum sudah dapat dicatat dengan metadata umum dan kategori awal 00.3 sebelum alur khusus substantif disahkan.
 
 ## Masalah
 
@@ -38,7 +38,7 @@ Setiap pegawai dibatasi pada satu subbagian: Administrasi; Hukum dan Sengketa Pr
 ## Ruang lingkup target dan tahap implementasi
 
 - Akun lokal yang dikelola admin; login bagi pegawai dan pimpinan. Sistem dapat diakses melalui internet setelah login.
-- Registri seluruh arsip administrasi, dengan alur surat masuk dan surat keluar sebagai alur awal yang paling lengkap.
+- Registri seluruh arsip administrasi, dengan tipe surat masuk, surat keluar, dan arsip administrasi umum; alur surat masuk/keluar adalah alur paling lengkap.
 - Kategori awal: surat tugas, laporan pengawasan, dokumen kegiatan, keuangan, kepegawaian, produk hukum, notulensi, dokumentasi dan dokumen pendukung menggunakan metadata umum sampai alur khusus disahkan.
 - Metadata, klasifikasi yang dikelola admin, unggah dan unduh berkas PDF/JPG/XLSX/DOCX.
 - Alur disposisi surat masuk dan status tindak lanjut: Belum ditindaklanjuti, Sedang diproses, Selesai.
@@ -46,7 +46,7 @@ Setiap pegawai dibatasi pada satu subbagian: Administrasi; Hukum dan Sengketa Pr
 - Pencarian dan filter metadata; OCR/full-text untuk isi PDF sebagai kemampuan bersyarat.
 - Dashboard pimpinan dan halaman publik agregat.
 - Ekspor daftar hasil pencarian ke Excel bagi pengguna yang berwenang.
-- Audit aktivitas, backup otomatis harian dengan salinan di lokasi terpisah.
+- Audit aktivitas dan snapshot backup lokal harian; offsite, enkripsi, retensi, dan uji pemulihan menyeluruh tetap menjadi gate sebelum arsip nyata.
 - Migrasi awal sekitar 1.300 arsip; 10 data dummy masuk dan 10 data dummy keluar digunakan untuk demo, bukan arsip nyata.
 
 ## Di luar tahap pertama
@@ -59,7 +59,7 @@ Kategori lanjutan yang dicatat sebagai backlog: berkas penanganan pelanggaran da
 - Surat masuk dapat melalui alur pencatatan → disposisi pimpinan → pembaruan status penerima.
 - Pegawai hanya melihat arsip subbagiannya; pimpinan/admin melihat lintas subbagian; publik hanya melihat agregat.
 - PDF dapat disimpan privat dan diunduh oleh pengguna berwenang.
-- Backup harian dan pencatatan aktivitas tersedia.
+- Snapshot backup lokal dan pencatatan aktivitas tersedia; backup offsite/restore menyeluruh belum diterima sebagai bukti go-live.
 - Uji coba dengan pengguna kantor menunjukkan pencarian metadata dan alur disposisi dapat dijalankan.
 - Rencana pemindaian dan pemindahan 1.000 PDF memiliki rekonsiliasi jumlah serta pemeriksaan metadata/berkas.
 

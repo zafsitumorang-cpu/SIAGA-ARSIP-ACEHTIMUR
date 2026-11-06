@@ -13,7 +13,7 @@ npm ci
 npm start
 ```
 
-Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Data demo berisi 10 surat masuk dan 10 surat keluar. Jangan memakai akun atau data demo untuk arsip nyata. Mode produksi, migrasi PostgreSQL dan bootstrap admin dijelaskan di [deploy/README.md](deploy/README.md).
+Buka `http://localhost:3000`. Akun demo: `admin` / `admin123`, `pimpinan` / `pimpinan123`, atau `pegawai.administrasi` / `pegawai123`. Seed demo berisi 10 surat masuk dan 10 surat keluar; form juga menyediakan tipe arsip administrasi umum dan registri kategori 00.3. Jangan memakai akun atau data demo untuk arsip nyata. Mode produksi, migrasi PostgreSQL dan bootstrap admin dijelaskan di [deploy/README.md](deploy/README.md).
 
 Skenario uji dan daftar akun lengkap tersedia di [MVP_TESTING.md](MVP_TESTING.md). Admin dapat membuat akun `recorder`, `uploader`, atau pegawai dari menu Pengaturan dan menetapkan satu subbagian.
 
@@ -36,7 +36,7 @@ Paket 5 November 2026 memperkuat scope subbagian, autentikasi/sesi, validasi ung
 
 ## Tahap pertama
 
-- Surat masuk dan surat keluar.
+- Seluruh arsip administrasi dengan alur surat masuk/keluar yang paling lengkap dan metadata umum untuk arsip administrasi lainnya.
 - Disposisi dan status: Belum ditindaklanjuti, Sedang diproses, Selesai.
 - Alur terpisah: pencatat menyimpan metadata, pengunggah menambahkan berkas privat.
 - Pegawai melihat satu subbagian; pimpinan dan admin lintas subbagian.

@@ -2,7 +2,7 @@
 
 **Status terbaru:** operator melaporkan upgrade commit `82a9327` selesai, dan pemeriksaan independen mengonfirmasi health/config produksi, HTTPS, aset baru serta penolakan akses anonim. Lihat [STATUS.md](STATUS.md) untuk bukti, sumber informasi dan pekerjaan yang belum selesai. Instruksi instalasi di bawah adalah referensi; jangan mengulangi bootstrap/impor pada database yang kini aktif.
 
-Pemasang backup harian pukul 02:00 WIB tersedia di [AUTOMATION.md](AUTOMATION.md). Ini dipasang satu kali tanpa restart aplikasi; keberadaan script tidak berarti timer sudah aktif pada VPS. Deployment otomatis dari GitHub masih memerlukan pengaturan tersendiri.
+Timer backup harian pukul 02:00 WIB dilaporkan sudah dipasang operator; [AUTOMATION.md](AUTOMATION.md) tetap menjadi panduan verifikasi dan rollback. Deployment otomatis dari GitHub juga dilaporkan sudah dipasang; keberadaan script saja bukan bukti unit aktif.
 
 Untuk VPS yang sudah diinventarisasi dengan layanan `siaga-arsip.service` dan data JSON di `/var/lib/siaga-arsip`, lihat [prosedur upgrade khusus](UPGRADE_EXISTING_VPS.md). Skrip menyiapkan release/database terpisah, snapshot final, pengujian kandidat dan pemulihan bila pergantian gagal. Eksekusi pada server tetap dilakukan melalui akses operator; keberadaan skrip bukan bukti migrasi sudah dilakukan.
 

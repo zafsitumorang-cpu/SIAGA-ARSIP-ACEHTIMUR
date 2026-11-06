@@ -6,7 +6,7 @@ Diperbarui 5 November 2026, Asia/Jakarta. Operator telah melaporkan inventaris U
 
 ## Sasaran rilis pertama
 
-Pencatatan dan pemeliharaan surat masuk/keluar; berkas privat; disposisi; akses satu subbagian; pencarian dan ekspor; audit; backup teruji. Pertahankan tampilan yang sudah dipilih. OCR, email otomatis, integrasi eksternal, kategori lanjutan dan analitik tambahan dapat dikerjakan setelah pilot stabil.
+Pencatatan dan pemeliharaan seluruh arsip administrasi dengan alur surat masuk/keluar yang paling lengkap; metadata umum, berkas privat, disposisi yang relevan, akses satu subbagian, pencarian, ekspor dan audit. Pertahankan tampilan yang sudah dipilih. OCR, email otomatis, integrasi eksternal, alur kategori substantif dan analitik tambahan dapat dikerjakan setelah pilot stabil.
 
 ## Tahap 1 — fondasi keamanan dan aturan bisnis
 

@@ -16,10 +16,9 @@
 ### Area internal
 
 - **Dashboard:** kartu jumlah surat masuk/keluar, disposisi belum selesai, filter tahun; pimpinan melihat lintas subbagian, pengguna lain hanya lingkupnya.
-- **Arsip:** tab Surat Masuk dan Surat Keluar; tabel, pencarian, filter, ekspor Excel.
-- **Detail surat masuk:** metadata, preview/unduh berkas berizin, kronologi disposisi, status dan pembaruan tindak lanjut.
-- **Detail surat keluar:** metadata, berkas final, riwayat perubahan.
-- **Tambah/Edit arsip:** form sesuai tipe surat; subbagian penanggung jawab wajib; klasifikasi dari daftar pilihan admin.
+- **Arsip:** satu daftar seluruh tipe arsip dengan filter kategori/jenis, tabel, pencarian, filter, dan ekspor Excel.
+- **Detail arsip:** metadata sesuai tipe, kategori, preview/unduh berkas berizin, kronologi disposisi bila ada, status dan riwayat perubahan.
+- **Tambah/Edit arsip:** form menyesuaikan surat masuk, surat keluar, atau arsip administrasi umum; subbagian penanggung jawab wajib; kategori dan klasifikasi berasal dari registri.
 - **Disposisi:** daftar tugas bagi penerima; pimpinan membuat disposisi dan menetapkan penerima.
 - **Manajemen:** akun, peran, subbagian, klasifikasi, kategori arsip, audit log, dan konfigurasi notifikasi.
 
@@ -29,9 +28,11 @@ Halaman tanpa login menampilkan jumlah surat masuk dan surat keluar, total bila 
 
 ## Formulir
 
-**Surat masuk:** nomor surat, tanggal surat, tanggal diterima, asal surat, perihal, tujuan/disposisi, klasifikasi, subbagian penanggung jawab, berkas hasil pindai/lampiran, pencatat, tanggal pencatatan. Kolom yang menyangkut disposisi muncul sebagai bagian alur pimpinan.
+**Surat masuk:** nomor surat, tanggal surat, tanggal diterima, asal surat, perihal, kategori, klasifikasi, subbagian penanggung jawab, berkas hasil pindai/lampiran, pencatat, tanggal pencatatan. Disposisi dibuat sebagai alur pimpinan.
 
-**Surat keluar:** nomor surat, tanggal surat, tujuan surat, perihal, penandatangan, klasifikasi, subbagian penanggung jawab, berkas final, pencatat, tanggal pencatatan.
+**Surat keluar:** nomor surat, tanggal surat, tujuan surat, perihal, kategori, penandatangan, klasifikasi, subbagian penanggung jawab, berkas final, pencatat, tanggal pencatatan.
+
+**Arsip administrasi umum:** nomor, tanggal, perihal, kategori, klasifikasi, subbagian, berkas utama/lampiran, pencatat, dan tanggal pencatatan; field asal/tujuan/tanggal diterima/penandatangan tidak dipaksakan.
 
 Jangan memaksakan nomor surat unik secara global sebelum aturan penomoran kantor diverifikasi. Validasi minimum: kolom wajib terisi, tanggal valid, tipe file yang diizinkan, dan ukuran file di bawah batas konfigurasi.
 

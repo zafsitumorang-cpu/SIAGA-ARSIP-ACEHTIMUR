@@ -9,14 +9,14 @@ Prioritas: **MUST** = wajib untuk pilot; **SHOULD** = penting jika layak; **LATE
 | FR-01 | MUST | Pengguna internal login dengan akun yang dibuat/dikelola admin; halaman statistik publik tidak memerlukan login. |
 | FR-02 | MUST | Admin mengelola akun aktif/nonaktif, menetapkan satu subbagian per pegawai, dan menetapkan peran. |
 | FR-03 | MUST | Sistem menyediakan peran admin/pengelola arsip, pencatat, pengunggah, pegawai/penerima disposisi, pimpinan, dan publik; kemampuan dapat dipisah sesuai penugasan. |
-| FR-04 | MUST | Pencatat membuat, membaca, dan memperbarui metadata surat masuk/keluar sesuai kewenangan. |
+| FR-04 | MUST | Pencatat membuat dan membaca metadata seluruh arsip administrasi sesuai kewenangan; koreksi metadata tetap admin-only sampai keputusan baru. |
 | FR-05 | MUST | Pengunggah menambahkan/mengganti berkas tanpa mengambil alih fungsi pencatatan; perubahan berkas tercatat. |
 | FR-06 | MUST | Surat masuk menyimpan nomor, tanggal surat, tanggal diterima, asal, perihal, tujuan/disposisi, klasifikasi, subbagian penanggung jawab, serta satu/lebih berkas. |
 | FR-07 | MUST | Surat keluar menyimpan nomor, tanggal, tujuan, perihal, penandatangan, klasifikasi, subbagian penanggung jawab, serta berkas final. |
 | FR-08 | MUST | Pimpinan membuat disposisi kepada subbagian/pegawai dan instruksi dapat ditelusuri. |
 | FR-09 | MUST | Penerima disposisi memperbarui status ke Belum ditindaklanjuti, Sedang diproses, atau Selesai. |
 | FR-10 | MUST | Pegawai hanya dapat melihat/mengunduh arsip satu subbagian yang ditetapkan; pimpinan dan admin dapat melihat lintas subbagian. |
-| FR-11 | MUST | Admin dapat mengelola daftar klasifikasi dan menambah kategori arsip melalui pengaturan. |
+| FR-11 | MUST | Admin dapat mengelola daftar klasifikasi dan registri kategori arsip; kategori awal 00.3 memakai metadata umum, sedangkan alur substantif memerlukan skema dan keputusan lanjutan. |
 | FR-12 | MUST | Pengguna berwenang mencari/filter berdasarkan nomor, tanggal, asal/tujuan, perihal, klasifikasi, tahun, dan status disposisi. |
 | FR-13 | MUST | Pengguna berwenang mengekspor hasil pencarian metadata ke XLSX; ekspor mengikuti batas akses yang sama. |
 | FR-14 | MUST | Halaman publik hanya memberikan angka agregat surat masuk/keluar dan filter tahun; tidak memberi akses ke metadata atau berkas individual. |
