@@ -252,14 +252,14 @@ async function openArchiveDetail(archive, {fromRoute = false} = {}) {
 }
 function renderArchives(){
   const root=$('#content');
-  renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd:()=>openModal('archive'),rowsHtml:archiveRows,bindActions:bindArchiveActions,loading:loadingSkeleton,onRouteChange:()=>syncWorkspaceRoute(),onLoaded:()=>{if(state.pendingDetailId){const id=state.pendingDetailId;state.pendingDetailId='';const archive=state.archiveItems.find(item=>item.id===id);if(archive)openArchiveDetail(archive,{fromRoute:true});}},isCurrent:()=>state.page==='archives'&&$('#content')===root});
+  renderArchiveSearch({root,state,api,esc,icon,subsections,canRecord,onAdd:()=>openModal('archive'),rowsHtml:archiveRows,bindActions:bindArchiveActions,loading:loadingSkeleton,onRouteChange:()=>syncWorkspaceRoute(),onLoaded:()=>{if(state.pendingDetailId){const id=state.pendingDetailId;state.pendingDetailId='';const archive=state.archiveItems.find(item=>item.id===id);if(archive)openArchiveDetail(archive,{fromRoute:true});}},isCurrent:()=>state.page==='archives'&&$('#content')===root});
 }
 async function openQuality(id){const page=state.page,epoch=state.navigationEpoch;try{await openArchiveQuality({id,api,app,esc,closeModal,canReview:state.user?.role==='admin',canInspect:canUpload(),toast,isCurrent:()=>state.page===page&&state.navigationEpoch===epoch,onSaved:async()=>{await refresh();if(state.page===page&&state.navigationEpoch===epoch)renderPage();}});}catch(failure){toast(failure.message,'error');}}
 async function openArchiveFiles(id){
   const page=state.page;
   try{await openFileHistory({id,api,app,esc,readFile,canUpload:canUpload(),closeModal,onSaved:async()=>{await refresh();renderPage();},toast,isCurrent:()=>state.page===page});}catch(failure){toast(failure.message,'error');}
 }
-function renderDispositions(){const root=$('#content'),epoch=state.navigationEpoch;renderDispositionWorklist({root,state,api,esc,onHistory:openDispositionTimeline,onDetail:openArchiveDetail,onChanged:refresh,toast,loading:loadingSkeleton,isCurrent:()=>state.page==='dispositions'&&state.navigationEpoch===epoch});}
+function renderDispositions(){const root=$('#content'),epoch=state.navigationEpoch;renderDispositionWorklist({root,state,api,esc,icon,onHistory:openDispositionTimeline,onDetail:openArchiveDetail,onChanged:refresh,toast,loading:loadingSkeleton,isCurrent:()=>state.page==='dispositions'&&state.navigationEpoch===epoch});}
 async function openDispositionTimeline(archiveId,dispositionId){const page=state.page,epoch=state.navigationEpoch;try{await openDispositionHistory({archiveId,dispositionId,api,app,esc,closeModal,canUpdate,supervisor:['admin','leader'].includes(state.user?.role),toast,onSaved:async()=>{await refresh();if(state.page===page&&state.navigationEpoch===epoch)renderPage();},isCurrent:()=>state.page===page&&state.navigationEpoch===epoch});}catch(failure){toast(failure.message,'error');}}
 function canUpdate(d) { return state.user.role === 'admin' || state.user.role === 'leader' || (d.assignedUserId ? d.assignedUserId === state.user.id : Boolean(state.user.subsection && sameSubsection(d.assignedSubsection,state.user.subsection))); }
 async function renderSettings() {

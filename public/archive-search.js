@@ -1,12 +1,12 @@
 const keys=['q','type','category','year','classification','subsection','from','to','status','completeness'];
-export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,onAdd,rowsHtml,bindActions,loading,onLoaded,onRouteChange,isCurrent}){
+export function renderArchiveSearch({root,state,api,esc,icon,subsections,canRecord,onAdd,rowsHtml,bindActions,loading,onLoaded,onRouteChange,isCurrent}){
   const wide=['admin','leader'].includes(state.user.role);
   const legacySubsectionOptions=[['Hukum','Hukum (nama lama)'],['Pengawasan','Pengawasan (nama lama)'],['PPPS','PPPS (nama lama)']];
   const filters=Object.fromEntries(keys.map(key=>[key,state.filters[key]||'']));
   if(!wide)filters.subsection='';state.filters=filters;
   const options=(items,value,empty)=>`<option value="">${empty}</option>`+items.map(item=>`<option value="${esc(item)}" ${item===value?'selected':''}>${esc(item)}</option>`).join('');
   const years=[...new Set([filters.year,String(new Date().getFullYear()),...state.archives.map(item=>item.letterDate?.slice(0,4))].filter(Boolean))].sort().reverse();
-  root.innerHTML=`<div class="title-row archive-page-heading"><div><div class="eyebrow">Pusat dokumen</div><h1>Arsip surat</h1></div><div class="archive-header-actions"><a class="btn btn-soft" id="archiveExport" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor CSV</a><a class="btn btn-soft" id="archiveExportXlsx" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor Excel (.xlsx)</a>${canRecord()?'<button class="btn btn-primary" id="addArchive">+ Tambah arsip</button>':''}</div></div>
+  root.innerHTML=`<div class="title-row archive-page-heading"><div><div class="eyebrow">Pusat dokumen</div><h1>Arsip surat</h1></div><div class="archive-header-actions"><button type="button" class="btn btn-soft" id="refreshArchives">${icon('refresh')} Perbarui</button><a class="btn btn-soft" id="archiveExport" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor CSV</a><a class="btn btn-soft" id="archiveExportXlsx" aria-disabled="true" tabindex="-1" target="_blank" rel="noopener">Ekspor Excel (.xlsx)</a>${canRecord()?'<button class="btn btn-primary" id="addArchive">+ Tambah arsip</button>':''}</div></div>
   <section class="panel"><form id="archiveSearchForm" role="search" aria-label="Filter arsip surat"><fieldset class="archive-filter-fields"><legend class="sr-only">Kriteria pencarian arsip</legend><div class="archive-basic-grid">
   <div class="field"><label for="search">Kata kunci</label><input id="search" name="q" type="search" maxlength="200" value="${esc(filters.q)}" placeholder="Nomor, perihal, asal atau tujuan"></div>
   <div class="field"><label for="type">Jenis arsip</label><select id="type" name="type"><option value="">Semua jenis</option><option value="incoming" ${filters.type==='incoming'?'selected':''}>Surat masuk</option><option value="outgoing" ${filters.type==='outgoing'?'selected':''}>Surat keluar</option><option value="administrative" ${filters.type==='administrative'?'selected':''}>Arsip administrasi umum</option></select></div>
@@ -61,5 +61,6 @@ export function renderArchiveSearch({root,state,api,esc,subsections,canRecord,on
   form.onsubmit=async event=>{event.preventDefault();const values=Object.fromEntries(new FormData(form));state.filters=Object.fromEntries(keys.map(key=>[key,values[key]||'']));state.archivePage=1;await load(1);onRouteChange?.();};
   root.querySelector('#reset').onclick=async()=>{for(const key of keys){state.filters[key]='';if(form.elements[key]&&!form.elements[key].disabled)form.elements[key].value='';}state.archivePage=1;await load(1);onRouteChange?.();};
   root.querySelector('#addArchive')?.addEventListener('click',onAdd);
+  root.querySelector('#refreshArchives')?.addEventListener('click',()=>form.requestSubmit());
   load();
 }
