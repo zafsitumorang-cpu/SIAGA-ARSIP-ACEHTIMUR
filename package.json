@@ -20,6 +20,7 @@
     "test:subsections": "node scripts/subsection-tests.mjs",
     "test:categories": "node scripts/archive-category-tests.mjs",
     "test:category-master": "node scripts/category-master-tests.mjs",
+    "test:lifecycle": "node scripts/archive-lifecycle-tests.mjs",
     "test:classifications": "node scripts/classification-tests.mjs",
     "test:export": "node scripts/export-tests.mjs",
     "test:files": "node scripts/file-model-tests.mjs",

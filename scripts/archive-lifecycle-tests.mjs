@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import { withApiFixtures } from '../tests/helpers/api-fixture.mjs';
+
+let checks=0;const pass=message=>{checks++;console.log('✓ '+message);};
+await withApiFixtures('lifecycle',async({request,restart})=>{
+  const login=async(username,password)=>(await request('/api/login',null,'POST',{username,password})).cookie;
+  const admin=await login('admin','admin123'),employee=await login('pegawai.administrasi','pegawai123'),foreign=await login('pegawai.hukum','pegawai123');
+  const record={type:'incoming',number:'LIFE/001',subject:'Arsip lifecycle dummy',origin:'Fixture',letterDate:'2026-11-06',receivedDate:'2026-11-06',subsection:'Administrasi',classification:'Administrasi umum'};
+  const created=await request('/api/archives',admin,'POST',record);assert.equal(created.status,201);
+  assert.equal((await request(`/api/archives/${created.body.id}`,employee)).status,200);
+  assert.equal((await request(`/api/archives/${created.body.id}`,foreign)).status,404);
+  assert.equal((await request(`/api/archives/${created.body.id}`,employee,'DELETE',{reason:'Bukan admin'})).status,403);
+  assert.equal((await request(`/api/archives/${created.body.id}`,'','DELETE',{})).status,401);
+  assert.equal((await request(`/api/archives/${created.body.id}`,'','POST',{reason:'x'})).status,401);
+  assert.equal((await request(`/api/archives/${created.body.id}` ,admin,'DELETE',{})).status,422);
+  const deleted=await request(`/api/archives/${created.body.id}`,admin,'DELETE',{reason:'Penghapusan dummy untuk uji pemulihan'});assert.equal(deleted.status,200);
+  assert.equal((await request('/api/archives',admin)).body.items.some(item=>item.id===created.body.id),false);
+  assert.equal((await request('/api/export.csv',admin)).bytes.toString().includes('LIFE/001'),false);
+  assert.equal((await request(`/api/archives/${created.body.id}`,admin)).status,404);
+  assert.equal((await request(`/api/archives/${created.body.id}/files`,admin,'POST',{fileName:'x.pdf',mimeType:'application/pdf',data:'bad'})).status,403);
+  pass('soft-delete menyembunyikan arsip dari daftar, detail, ekspor dan unggah/unduh biasa dengan scope role');
+  assert.equal((await request(`/api/archives/${created.body.id}/restore`,employee,'POST',{reason:'Bukan admin'})).status,403);
+  assert.equal((await request(`/api/archives/${created.body.id}/restore`,admin,'POST',{})).status,422);
+  const restored=await request(`/api/archives/${created.body.id}/restore`,admin,'POST',{reason:'Dikembalikan untuk uji alur'});assert.equal(restored.status,200);
+  assert.equal((await request(`/api/archives/${created.body.id}`,employee)).status,200);
+  assert.equal((await request('/api/archives',admin)).body.items.some(item=>item.id===created.body.id),true);
+  const audit=await request('/api/admin/audit',admin);assert.ok(audit.body.items.some(item=>item.action==='delete_archive'&&item.entityId===created.body.id));assert.ok(audit.body.items.some(item=>item.action==='restore_archive'&&item.entityId===created.body.id));
+  await restart();assert.equal((await request(`/api/archives/${created.body.id}`,employee)).status,200);
+  pass('pemulihan mengembalikan akses sah, mempertahankan metadata dan audit setelah restart');
+});
+console.log(`${checks} archive lifecycle checks passed.`);

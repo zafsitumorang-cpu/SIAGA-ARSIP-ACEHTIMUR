@@ -82,6 +82,10 @@ Bagian berikut adalah skema konseptual, belum seluruhnya diterapkan. Semua entit
 
 Event notifikasi in-app diturunkan dari createdAt/createdBy dan updates riwayat disposisi persisten. Read receipt `notificationReads[userId][eventId] = readAt` berada dalam payload siaga_dispositions (JSONB), sehingga tidak memerlukan DDL/migrasi massal; legacy updates tanpa ID memakai ID kombinasi yang stabil. GET tidak menulis; tanda baca/unread eksplisit menggunakan transaksi/advisory lock yang sama. DTO arsip/daftar kerja menyembunyikan map baca serta receipt retry. Array notifications lama bukan sumber inbox dan tidak menjadi antrean pengiriman. Tabel notifications konseptual di atas tetap opsi normalisasi/kanal eksternal, bukan tabel yang sudah dipasang. Pemisahan/constraint/index/migrasi lanjutan tetap paket 08.
 
+## Siklus soft-delete arsip 04.5
+
+Soft-delete tidak menghapus baris arsip atau binary. Record menyimpan `deletedAt`, `deletedBy`, `deleteReason` dan cap pemulihan (`restoredAt`, `restoredBy`) pada payload JSON/JSONB. Query daftar, statistik publik, ekspor, detail, disposisi, QC, unggah dan unduh memeriksa status aktif sehingga arsip terhapus tidak muncul atau dapat diakses melalui jalur biasa. Admin memulihkan dengan alasan wajib; operasi delete/restore append audit tanpa menulis ulang versi/lampiran. Uji JSON/PostgreSQL memverifikasi restart, scope pegawai, ekspor dan penolakan role.
+
 ## Histori koreksi metadata 04.4
 
 Record append-only `metadataHistory[]` berada pada payload JSONB siaga_archives (atau arsip yang sama pada JSON): id event, metadataVersion hasil koreksi, array nama field yang berubah, ID admin dan timestamp UTC. Tidak ada before/after, snapshot perihal, lokasi, referensi sumber atau nilai metadata lain dalam event. Label/nama pelaku hanya diproyeksikan saat dibaca; DTO menggunakan allowlist sehingga field ekstra pada histori impor tidak bocor melalui API.

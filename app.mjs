@@ -81,7 +81,7 @@ function parseCookies(req) { return Object.fromEntries((req.headers.cookie || ''
 function getUser(req) { const session=sessions.get(tokenHash(parseCookies(req).sid));if(!session||session.expiresAt<=Date.now()){if(session)sessions.delete(session.id);return null;}return db.users.find(u=>u.id===session.userId&&u.active)||null; }
 function revokeSessions(userId){for(const [key,value]of sessions)if(value.userId===userId)sessions.delete(key);}
 function isWide(user) { return user && (user.role === 'admin' || user.role === 'leader'); }
-function canSee(user, archive) { return isWide(user) || (user && sameSubsection(user.subsection, archive.subsection)); }
+function canSee(user, archive) { return Boolean(archive && !archive.deletedAt && (isWide(user) || (user && sameSubsection(user.subsection, archive.subsection)))); }
 function send(res,status,body,type='application/json',extra={}) { const reply={status,body:type==='application/json'?JSON.stringify(body):body,headers:{'Content-Type':type,'Cache-Control':'no-store',...extra}};if(res._defer){res._reply=reply;return;}res.writeHead(status,reply.headers);res.end(reply.body); }
 async function body(req){if(req._parsedBody)return req._parsedBody;const max=req.url.split('?')[0].endsWith('/files')?24*1024*1024:128*1024;if(Number(req.headers['content-length'])>max)fail(413,'Request terlalu besar.');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)fail(413,'Request terlalu besar.');chunks.push(chunk);}try{const result=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!result||Array.isArray(result)||typeof result!=='object')fail(422,'Body harus berupa objek JSON.');req._parsedBody=result;return result;}catch(error){if(error.status)throw error;fail(400,'JSON tidak valid.');}}
 function requireAuth(req, res) { const user = getUser(req); if (!user) { send(res, 401, { error: 'Silakan login terlebih dahulu.' }); return null; } return user; }
@@ -124,7 +124,7 @@ async function route(req, res) {
   }
   if (pathname === '/api/logout' && req.method === 'POST') { const u = getUser(req); if (u) audit(u.id, 'logout', 'user', u.id); sessions.delete(tokenHash(parseCookies(req).sid)); await persist(); return send(res, 200, { ok: true }, 'application/json', { 'Set-Cookie': cookie('sid', '', 0) }); }
   if (pathname === '/api/me' && req.method === 'GET') { const u = getUser(req); return u ? send(res, 200, { user: safeUser(u) }) : send(res, 401, { error: 'Unauthorized' }); }
-  if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !year || a.letterDate.startsWith(year)); return send(res, 200, { year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length }); }
+  if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !a.deletedAt && (!year || a.letterDate.startsWith(year))); return send(res, 200, { year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length }); }
   if (pathname.startsWith('/api/')) {
     const u = requireAuth(req, res); if (!u) return;
     if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined,qualityCounts:Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,list.filter(a=>a.quality.status===status).length])) }); }
@@ -135,6 +135,18 @@ async function route(req, res) {
       const response={...result,items:result.items.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
       if(u.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
       return send(res,200,response);
+    }
+    if(/^\/api\/archives\/[^/]+\/restore$/.test(pathname)&&req.method==='POST'){
+      if(u.role!=='admin')return send(res,403,{error:'Pemulihan arsip hanya tersedia untuk admin.'});
+      const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a)return send(res,404,{error:'Arsip tidak ditemukan.'});
+      const b=await body(req),reason=text(b.reason,'Alasan pemulihan',2000,true);if(!a.deletedAt)return send(res,409,{error:'Arsip belum dihapus.'});
+      const deletedAt=a.deletedAt;delete a.deletedAt;delete a.deletedBy;delete a.deleteReason;a.restoredAt=now();a.restoredBy=u.id;
+      audit(u.id,'restore_archive','archive',a.id,'Arsip dipulihkan; alasan: '+reason);await persist();return send(res,200,archivePayload(a));
+    }
+    if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='DELETE'){
+      if(u.role!=='admin')return send(res,403,{error:'Penghapusan arsip hanya tersedia untuk admin.'});
+      const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||a.deletedAt)return send(res,404,{error:'Arsip tidak ditemukan.'});
+      const b=await body(req),reason=text(b.reason,'Alasan penghapusan',2000,true);a.deletedAt=now();a.deletedBy=u.id;a.deleteReason=reason;a.deleteVersion=(a.metadataVersion||0);audit(u.id,'delete_archive','archive',a.id,'Arsip disembunyikan; alasan: '+reason);await persist();return send(res,200,{ok:true,id:a.id,deletedAt:a.deletedAt});
     }
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='GET'){const a=db.archives.find(x=>x.id===pathname.split('/')[3]);if(!a||!canSee(u,a))return send(res,404,{error:'Arsip tidak ditemukan.'});audit(u.id,'view','archive',a.id);await persist();return send(res,200,archivePayload(a));}
     if(/^\/api\/archives\/[^/]+$/.test(pathname)&&req.method==='PATCH'){

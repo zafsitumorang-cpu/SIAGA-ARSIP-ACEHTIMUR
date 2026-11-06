@@ -61,6 +61,8 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 - `GET /api/archives/{id}/files/{fileId}/download` — server memeriksa izin dan mengeluarkan akses singkat/stream privat.
 - `GET /api/export.csv`, `GET /api/export.xlsx` — hasil pencarian berizin, seluruh halaman, dengan audit.
 - `DELETE /api/archives/{id}` — penghapusan logis/admin sesuai kebijakan yang kelak disahkan; tidak ada hard delete umum.
+- `DELETE /api/archives/{id}` — admin-only soft-delete dengan `reason` wajib; metadata, berkas, versi, disposisi dan audit tetap tersimpan, tetapi arsip keluar dari daftar, detail, statistik publik, ekspor dan akses berkas biasa.
+- `POST /api/archives/{id}/restore` — admin-only pemulihan dengan `reason` wajib; mengembalikan arsip dan mencatat audit tanpa menulis ulang histori berkas.
 
 ## Disposisi
 
