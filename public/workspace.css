@@ -33,6 +33,9 @@
 .workspace .nav-badge { background: #80301b; color: #fff; }
 .workspace .ws-side-note { color: #e4e5e9; }.workspace .ws-side-note p { color: #b6bac4; }
 .workspace .side .avatar { color: #ffc107; background: #39321d; }.workspace .side .ws-icon-button { color: #d2d5dd; }.workspace .side .ws-icon-button:hover { color: #ffc107; background: #292c32; }
+.settings-row-actions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.settings-row-actions .btn { white-space: nowrap; }
+.settings-row-actions .btn:disabled { color: #9aa3af; background: #f3f4f6; border-color: #e5e7eb; cursor: not-allowed; }
 .workspace .top { background: #bd241f; color: #fff; }
 .workspace .top .ws-icon-button { color: #fff; }.workspace .top .ws-icon-button:hover { background: #a51f1b; color: #ffc107; }
 .workspace .ws-search { background: #a51f1b; border-color: #df7772; color: #ffe8e5; }

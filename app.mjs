@@ -86,7 +86,7 @@ function revokeSessions(userId){for(const [key,value]of sessions)if(value.userId
 function isWide(user) { return user && (user.role === 'admin' || user.role === 'leader'); }
 function canSee(user, archive) { return Boolean(archive && !archive.deletedAt && (isWide(user) || (user && sameSubsection(user.subsection, archive.subsection)))); }
 function send(res,status,body,type='application/json',extra={}) { const reply={status,body:type==='application/json'?JSON.stringify(body):body,headers:{'Content-Type':type,'Cache-Control':'no-store',...extra}};if(res._defer){res._reply=reply;return;}res.writeHead(status,reply.headers);res.end(reply.body); }
-async function body(req){if(req._parsedBody)return req._parsedBody;const max=req.url.split('?')[0].endsWith('/files')?24*1024*1024:128*1024;if(Number(req.headers['content-length'])>max)fail(413,'Request terlalu besar.');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)fail(413,'Request terlalu besar.');chunks.push(chunk);}try{const result=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!result||Array.isArray(result)||typeof result!=='object')fail(422,'Body harus berupa objek JSON.');req._parsedBody=result;return result;}catch(error){if(error.status)throw error;fail(400,'JSON tidak valid.');}}
+async function body(req){if(req._parsedBody)return req._parsedBody;const requestPath=req.url.split('?')[0];const max=requestPath.endsWith('/files')?24*1024*1024:requestPath==='/api/profile'?2*1024*1024:128*1024;if(Number(req.headers['content-length'])>max)fail(413,'Request terlalu besar.');const chunks=[];let size=0;for await(const chunk of req){size+=chunk.length;if(size>max)fail(413,'Request terlalu besar.');chunks.push(chunk);}try{const result=JSON.parse(Buffer.concat(chunks).toString()||'{}');if(!result||Array.isArray(result)||typeof result!=='object')fail(422,'Body harus berupa objek JSON.');req._parsedBody=result;return result;}catch(error){if(error.status)throw error;fail(400,'JSON tidak valid.');}}
 function requireAuth(req, res) { const user = getUser(req); if (!user) { send(res, 401, { error: 'Silakan login terlebih dahulu.' }); return null; } return user; }
 function visibleArchives(user,url){
   const filters=archiveFilters(url.searchParams,db,subsections);
@@ -255,6 +255,12 @@ async function route(req, res) {
       revokeSessions(target.id);
       audit(u.id, 'update_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
     }
+    if (pathname.startsWith('/api/admin/users/') && req.method === 'DELETE') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const uid = pathname.split('/')[4]; const target = db.users.find(x => x.id === uid); if (!target) return send(res, 404, { error: 'Pengguna tidak ditemukan.' });
+      if (target.id === u.id) return send(res, 422, { error: 'Akun admin yang sedang dipakai tidak dapat dihapus.' });
+      target.active = false; revokeSessions(target.id); audit(u.id, 'delete_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
+    }
     if (pathname.startsWith('/api/admin/users/') && pathname.endsWith('/disable') && req.method === 'POST') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
       const uid = pathname.split('/')[4]; const target = db.users.find(x => x.id === uid); if (!target) return send(res, 404, { error: 'Pengguna tidak ditemukan.' });
@@ -287,6 +293,15 @@ async function route(req, res) {
       db.classifications[index]=next;audit(u.id,next.active?'update_classification':'disable_classification','classification',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();
       return send(res,200,{classifications:classificationLabels(db.classifications),classificationCatalog:classificationPayload(db.classifications)});
     }
+    if (pathname.startsWith('/api/admin/classifications/') && req.method === 'DELETE') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const key=decodeURIComponent(pathname.slice('/api/admin/classifications/'.length));const index=db.classifications.findIndex(item=>findClassification([item],key));
+      if(index<0)return send(res,404,{error:'Klasifikasi tidak ditemukan.'});
+      const current=classificationRecords([db.classifications[index]])[0],names=new Set([current.label,...current.aliases]);
+      if(db.archives.some(archive=>names.has(archive.classification)))return send(res,409,{error:'Klasifikasi masih dipakai arsip. Nonaktifkan saja agar riwayat arsip tetap terbaca.'});
+      db.classifications.splice(index,1);audit(u.id,'delete_classification','classification',current.id,current.code?`${current.code} — ${current.label}`:current.label);await persist();
+      return send(res,200,{classifications:classificationLabels(db.classifications),classificationCatalog:classificationPayload(db.classifications)});
+    }
     if ((pathname === '/api/admin/archive-categories' || pathname === '/api/admin/categories') && req.method === 'GET') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
       return send(res, 200, { items: categoryRecords([...archiveCategories, ...(db.categories || [])]) });
@@ -308,6 +323,15 @@ async function route(req, res) {
       const others=categoryRecords([...archiveCategories,...db.categories]).filter((_,i)=>i!==archiveCategories.length+index);
       if(others.some(item=>item.label.toLowerCase()===next.label.toLowerCase()||next.code&&item.code.toLowerCase()===next.code.toLowerCase()||item.aliases.includes(next.label)))return send(res,409,{error:'Nama atau kode kategori sudah digunakan.'});
       db.categories[index]=next;audit(u.id,next.active?'update_category':'disable_category','category',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+    }
+    if (pathname.startsWith('/api/admin/archive-categories/') && req.method === 'DELETE') {
+      if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
+      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));const index=db.categories.findIndex(item=>findArchiveCategory([item],key));
+      if(index<0)return send(res,404,{error:'Kategori tambahan tidak ditemukan.'});
+      const current=categoryRecords([db.categories[index]])[0],names=new Set([current.label,...current.aliases]);
+      if(db.archives.some(archive=>names.has(archive.category)))return send(res,409,{error:'Kategori masih dipakai arsip. Nonaktifkan saja agar riwayat arsip tetap terbaca.'});
+      db.categories.splice(index,1);audit(u.id,'delete_category','category',current.id,current.code?`${current.code} — ${current.label}`:current.label);await persist();
+      return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
     }
     if(pathname==='/api/archives'&&req.method==='POST'){
       if(!['admin','recorder'].includes(u.role))return send(res,403,{error:'Peran ini tidak dapat mencatat arsip.'});
