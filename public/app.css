@@ -502,8 +502,8 @@ body { font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI"
 @media (max-width: 620px) { .auth-page { display: block; }.auth-story { min-height: auto; padding: 24px 6%; gap: 28px; }.auth-brand small { max-width: none; }.auth-message h1 { font-size: 28px; }.auth-message > p { font-size: 13px; margin: 14px 0 0; }.auth-capabilities, .auth-story-foot { display: none; }.auth-main { padding: 24px 6% 32px; gap: 30px; }.auth-form-wrap h2 { font-size: 27px; }.auth-institution { margin-top: 5px; } }
 
 /* Official SIAGA ARSIP mark: used consistently across public and auth surfaces. */
-.brand-logo { display: block; flex: 0 0 auto; object-fit: cover; background: #4b7753; }
+.brand-logo { display: block; flex: 0 0 auto; object-fit: contain; background: transparent; }
 .lp-logo { width: 50px; height: 50px; border-radius: 12px; }
 .auth-logo { width: 48px; height: 48px; border-radius: 12px; }
-.lp-header .lp-logo { background: #fff; }
+.lp-header .lp-logo { background: transparent; }
 @media (max-width: 760px) { .lp-logo { width: 50px; height: 50px; } }

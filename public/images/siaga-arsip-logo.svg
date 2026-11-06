@@ -1,7 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-labelledby="title desc">
   <title id="title">Logo SIAGA ARSIP</title>
   <desc id="desc">Lambang dua bidang emas dan merah dengan pita merah di bagian atas</desc>
-  <rect width="200" height="200" fill="#4b7753"/>
   <g stroke="#fff" stroke-width="2.2" stroke-linejoin="round">
     <path fill="#c4a261" d="M70 8 8 37c-3 2-4 8-4 15v84c0 9 4 17 12 22l69 40v-86c0-15-6-26-19-35L19 50c-5-3-6-8-3-12 8-9 22-16 33-22Z"/>
     <path fill="#e32620" d="m130 8 62 29c3 2 4 8 4 15v84c0 9-4 17-12 22l-69 40v-86c0-15 6-26 19-35l47-27c5-3 6-8 3-12-8-9-22-16-33-22Z"/>
