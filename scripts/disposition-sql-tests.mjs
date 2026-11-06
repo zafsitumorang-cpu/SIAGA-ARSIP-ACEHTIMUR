@@ -1,0 +1,8 @@
+import assert from 'node:assert/strict';
+import {buildDispositionListQuery,dispositionSqlFilters,dispositionSqlPage} from '../lib/disposition-sql.mjs';
+let checks=0;const pass=message=>{checks++;console.log('✓ '+message);};
+const user={role:'employee',id:'u_1',subsection:'Hukum'},filters=dispositionSqlFilters(new URLSearchParams({assignment:'mine',status:'active',year:'2026',q:'surat'}),user,['Hukum','Hukum dan Sengketa Proses']);
+const query=buildDispositionListQuery({user,filters,page:2,pageSize:10});assert.ok(query.count.text.includes('a.subsection = ANY'));assert.ok(query.count.text.includes("d.payload->>'status' <> 'Selesai'"));assert.ok(query.count.text.includes('assignedUserId'));assert.ok(query.rows.text.includes("'canUpdate'"));assert.equal(query.rows.values.at(-2),'u_1');assert.deepEqual(query.rows.values.at(-1),['Hukum','Hukum dan Sengketa Proses']);pass('employee worklist SQL enforces scope, assignment, active status and update permission');
+const admin={role:'admin',id:'u_admin',subsection:null},wide=buildDispositionListQuery({user:admin,filters:dispositionSqlFilters(new URLSearchParams({assignment:'all'}),admin,[]),page:1,pageSize:25});assert.ok(!wide.count.text.includes('a.subsection = ANY'));assert.ok(wide.rows.text.includes("'canUpdate',true"));pass('admin worklist SQL spans all scopes and marks updates allowed');
+assert.deepEqual(dispositionSqlPage(0,10,10),{page:1,page_size:10,total:0,pages:1});assert.deepEqual(dispositionSqlPage(22,99,10),{page:3,page_size:10,total:22,pages:3});pass('worklist SQL pagination clamps safely');
+console.log(`${checks} disposition SQL checks passed.`);
