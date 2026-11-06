@@ -7,7 +7,7 @@
 
 ## Ringkasan
 
-SIAGA ARSIP adalah sistem web untuk menata arsip digital, membantu temu kembali surat, mengelola disposisi surat masuk, dan menyediakan statistik agregat publik. Tahap pertama berfokus pada surat masuk dan surat keluar. Sistem perlu dapat dikembangkan agar admin dapat menambah kategori arsip dan formulir metadata melalui pengaturan.
+SIAGA ARSIP adalah sistem web untuk menata seluruh arsip administrasi digital, membantu temu kembali dokumen, mengelola disposisi pada arsip yang memerlukannya, dan menyediakan statistik agregat publik. Implementasi dilakukan bertahap: surat masuk/keluar menjadi alur awal, sedangkan kategori arsip administrasi lain memakai metadata umum sebelum alur khususnya disahkan. Sistem perlu dapat dikembangkan agar admin dapat menambah kategori dan formulir metadata melalui pengaturan.
 
 ## Masalah
 
@@ -33,12 +33,13 @@ Arsip saat ini tersebar antara sekitar 300 surat fisik dalam map ordner dan seki
 | Pimpinan | Melihat arsip lintas subbagian, disposisi, dan ringkasan dashboard |
 | Pengunjung publik | Melihat jumlah agregat surat masuk dan keluar, termasuk filter tahun; tanpa login |
 
-Setiap pegawai dibatasi pada satu subbagian: Administrasi, Hukum, Pengawasan, atau PPPS. Satu arsip juga ditetapkan ke satu subbagian penanggung jawab. Pimpinan dan admin memiliki cakupan lintas subbagian. Detail pemetaan jabatan ke peran perlu dikonfirmasi oleh kantor.
+Setiap pegawai dibatasi pada satu subbagian: Administrasi; Hukum dan Sengketa Proses; Pencegahan, Partisipasi Masyarakat, dan Humas; atau Penanganan Pelanggaran dan Data Informasi. Satu arsip juga ditetapkan ke satu subbagian penanggung jawab. Pimpinan dan admin memiliki cakupan lintas subbagian. Pemetaan akun nyata dan penetapan jabatan tetap perlu dikonfirmasi oleh kantor.
 
-## Ruang lingkup tahap pertama
+## Ruang lingkup target dan tahap implementasi
 
 - Akun lokal yang dikelola admin; login bagi pegawai dan pimpinan. Sistem dapat diakses melalui internet setelah login.
-- Pengelolaan surat masuk dan surat keluar.
+- Registri seluruh arsip administrasi, dengan alur surat masuk dan surat keluar sebagai alur awal yang paling lengkap.
+- Kategori awal: surat tugas, laporan pengawasan, dokumen kegiatan, keuangan, kepegawaian, produk hukum, notulensi, dokumentasi dan dokumen pendukung menggunakan metadata umum sampai alur khusus disahkan.
 - Metadata, klasifikasi yang dikelola admin, unggah dan unduh berkas PDF/JPG/XLSX/DOCX.
 - Alur disposisi surat masuk dan status tindak lanjut: Belum ditindaklanjuti, Sedang diproses, Selesai.
 - Notifikasi dalam sistem; notifikasi email diupayakan jika konfigurasi email tersedia.

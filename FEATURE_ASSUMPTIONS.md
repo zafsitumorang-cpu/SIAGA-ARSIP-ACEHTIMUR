@@ -1,6 +1,6 @@
-# Asumsi fitur sementara — menunggu pengesahan kantor
+# Asumsi fitur sementara — disetujui pemilik, menunggu pengesahan kantor
 
-Ini default implementasi yang dapat diubah; bukan bukti keputusan paket 00 telah disahkan atau SOP/pelatihan/pilot telah terlaksana. Deployment publik hanya dummy. Paket keamanan dan offsite tetap ditunda sesuai TODO_MASTER.
+Pada 6 November 2026 pemilik menyetujui default penyelarasan: nama SIAGA ARSIP, subbagian mengikuti dokumen RA, target seluruh arsip administrasi, hak minimum, disposisi dalam unit yang sesuai dan metadata umum dengan kategori awal dari RA. Ini default implementasi yang dapat diubah; bukan bukti keputusan formal kantor, SOP/pelatihan/pilot telah terlaksana. Deployment publik hanya dummy. Paket keamanan dan offsite tetap ditunda sesuai TODO_MASTER.
 
 ## 03.1 — orang dan tim
 

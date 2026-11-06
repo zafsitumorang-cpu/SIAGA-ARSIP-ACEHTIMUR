@@ -1,23 +1,34 @@
 # DECISIONS — SIAGA ARSIP
 
-## Pembaruan faktual dan keputusan yang masih diperlukan — 5 November 2026
+## Pembaruan faktual dan keputusan yang masih diperlukan — 6 November 2026
 
 - Stack aktif: Node.js 22+ (24 LTS untuk pengembangan/CI), PostgreSQL, frontend JavaScript/CSS; Caddy dan systemd pada VPS sesuai laporan operator. D-23 di bawah merekam arah awal dan tidak menjadi instruksi migrasi Laravel/Livewire atau deskripsi dependensi rilis kini.
 - Pengguna meminta backup/offsite/restore dilewati untuk sementara. Dicatat sebagai **ditunda**, bukan selesai atau dihapus dari syarat sebelum data nyata.
-- Nama inovasi di RA adalah ARSIP TERPADU; hubungan dengan SIAGA ARSIP dan nomenklatur subbagian perlu validasi kantor. Belum ada keputusan mengganti nama aplikasi atau akses.
-- Izin edit recorder vs admin, semantik penerima individual/tim, lintas subbagian dan cakupan kategori FR-11 perlu keputusan tertulis. Tidak ada izin baru yang diberikan oleh audit.
+- Nama inovasi di RA adalah ARSIP TERPADU; pemilik memilih **SIAGA ARSIP** sebagai nama sistem. Hubungan/nomenklatur ini tetap memerlukan pengesahan formal kantor.
+- Default izin edit recorder vs admin, semantik penerima individual/tim, lintas subbagian dan cakupan kategori FR-11 kini mengikuti bagian “Keputusan kerja pemilik” di bawah. Tidak ada izin baru yang diberikan di luar default tersebut.
 - Rencana kerja terkini: [TODO_MASTER.md](TODO_MASTER.md), paket 00; perbandingan sumber: [AUDIT_MASTER.md](AUDIT_MASTER.md). Keputusan organisasi di tabel awal tetap perlu dibedakan dari keberadaan fitur pada kode.
+
+## Keputusan kerja pemilik — 6 November 2026
+
+Pemilik menyetujui asumsi kerja berikut untuk penyelarasan SIAGA ARSIP. Ini menjadi default implementasi yang dapat diubah melalui keputusan baru; pengesahan formal kantor, SOP, PIC, pelatihan, pilot dan penerimaan pengguna tetap belum diklaim.
+
+- Nama sistem yang digunakan adalah **SIAGA ARSIP**.
+- Nomenklatur subbagian mengikuti dokumen RA: **Administrasi**; **Hukum dan Sengketa Proses**; **Pencegahan, Partisipasi Masyarakat, dan Humas**; serta **Penanganan Pelanggaran dan Data Informasi**.
+- Ruang lingkup target mencakup **seluruh arsip administrasi**, dengan implementasi bertahap menggunakan metadata umum dan kategori yang dapat dikembangkan.
+- Hak akses memakai prinsip hak minimum: admin/pengelola arsip mengelola konfigurasi, QC, koreksi metadata dan audit; pencatat membuat metadata; pengunggah mengelola berkas; pegawai menangani arsip dan disposisi dalam unitnya; pimpinan mengawasi lintas unit.
+- Disposisi individu hanya kepada pegawai aktif pada unit yang sesuai. Penugasan tidak memperluas akses lintas unit dan tidak mengubah pemilik arsip secara diam-diam.
+- Metadata umum berlaku untuk semua kategori. Kategori awal mengikuti RA: surat masuk, surat keluar, surat tugas, laporan pengawasan, dokumen kegiatan, keuangan, kepegawaian, produk hukum, notulensi, dokumentasi dan dokumen pendukung. Alur khusus kategori substantif memerlukan keputusan lanjutan.
 
 ## Keputusan yang telah disepakati
 
 | ID | Keputusan | Status |
 |---|---|---|
 | D-01 | Nama kerja sistem: SIAGA ARSIP, Bawaslu Kabupaten Aceh Timur | Terpakai pada konteks proyek sebelumnya; konfirmasi final organisasi tetap disarankan |
-| D-02 | Tahap pertama berfokus pada surat masuk dan surat keluar | Disepakati |
+| D-02 | Surat masuk dan surat keluar menjadi alur awal yang paling lengkap; target sistem mencakup seluruh arsip administrasi | Digantikan oleh keputusan kerja pemilik 6 Nov 2026 |
 | D-03 | Halaman publik hanya menampilkan angka agregat masuk/keluar, dapat difilter per tahun | Disepakati |
 | D-04 | Kelompok pengguna: admin/pengelola arsip, pencatat, pengunggah, pegawai, pimpinan, publik | Disepakati secara konseptual |
 | D-05 | Pencatatan surat dan unggah berkas adalah peran berbeda | Disepakati; pemetaan orang belum tersedia |
-| D-06 | Pegawai dibatasi satu subbagian; daftar: Administrasi, Hukum, Pengawasan, PPPS | Disepakati |
+| D-06 | Pegawai dibatasi satu subbagian; nomenklatur target mengikuti dokumen RA | Digantikan oleh keputusan kerja pemilik 6 Nov 2026 |
 | D-07 | Setiap arsip ditetapkan ke satu subbagian penanggung jawab; pimpinan dapat melihat lintas subbagian | Disepakati |
 | D-08 | Admin sistem juga pengelola arsip dan mengelola akun | Disepakati |
 | D-09 | Status disposisi: Belum ditindaklanjuti, Sedang diproses, Selesai | Disepakati |

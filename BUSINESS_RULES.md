@@ -1,5 +1,7 @@
 # BUSINESS RULES — SIAGA ARSIP
 
+> **Penyelarasan pemilik, 6 November 2026:** target subbagian mengikuti dokumen RA dan cakupan target mencakup seluruh arsip administrasi. Aturan di bawah yang masih menyebut label runtime lama atau hanya surat masuk/keluar adalah kondisi implementasi sementara sampai TODO 00 dan registri arsip umum selesai. Tidak ada arsip nyata yang boleh dimasukkan selama tahap ini.
+
 ## Pengguna dan ruang lingkup
 
 1. Admin sistem dan pengelola arsip adalah satu peran untuk tahap pertama.

@@ -1,5 +1,9 @@
 # FEATURES — SIAGA ARSIP
 
+## Arah produk yang disetujui pemilik (6 November 2026)
+
+Target produk mencakup seluruh arsip administrasi. Nomenklatur subbagian target mengikuti RA: Administrasi; Hukum dan Sengketa Proses; Pencegahan, Partisipasi Masyarakat, dan Humas; serta Penanganan Pelanggaran dan Data Informasi. Runtime saat ini masih membawa label lama dan alur surat masuk/keluar; pekerjaan penyelarasan pada TODO 00 dan registri arsip umum harus selesai sebelum cakupan ini dianggap tersedia.
+
 ## Pilot / MVP
 
 ### Akun dan akses
@@ -10,6 +14,7 @@
 
 ### Registrasi arsip
 - Form surat masuk dan surat keluar dengan kolom wajib sesuai PRD.
+- Registri kategori arsip administrasi lain dengan metadata umum sebagai tahap awal; formulir khusus hanya diaktifkan setelah proses, akses dan retensi disahkan.
 - Admin mengelola daftar klasifikasi.
 - Pencatatan dan unggah berkas adalah tanggung jawab/peran yang berbeda.
 - Berkas PDF/JPG/XLSX/DOCX privat, dapat dilihat/diunduh oleh pihak berwenang.

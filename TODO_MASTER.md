@@ -6,7 +6,9 @@ Status pekerjaan berurutan tercatat pada checklist di bawah dan [FEATURE_PROGRES
 
 ## Prioritas pemilik terbaru — fitur dan kelengkapan
 
-Urutan aktif: 02.1 → 02.2 → 02.3 → 02.4 → 03 → 04 → 05 → 07 → 08, lalu alat bantu aplikasi/migrasi sesuai dependensi. 01.2, 01.3, seluruh 06.x dan 11.x berstatus **ditunda: keamanan**. Cek izin dasar, validasi data dan regresi yang diperlukan fitur tetap diterapkan. Deployment publik hanya demo dummy; tidak ada perubahan akun/data nyata atau rahasia dalam repo.
+Urutan aktif setelah penyelarasan pemilik: 00.1 → 00.2 → 00.3 → 00.4, lalu model registri seluruh arsip administrasi dan fitur turunannya sesuai dependensi. 01.2, 01.3, seluruh 06.x dan 11.x berstatus **ditunda: keamanan**. Cek izin dasar, validasi data dan regresi yang diperlukan fitur tetap diterapkan. Deployment publik hanya demo dummy; tidak ada perubahan akun/data nyata atau rahasia dalam repo.
+
+Pada 6 November 2026 pemilik menyetujui keputusan kerja: nama **SIAGA ARSIP**, nomenklatur subbagian mengikuti RA, cakupan target seluruh arsip administrasi, hak minimum, disposisi dalam unit yang sesuai, serta metadata umum dan kategori awal dari RA. Keputusan ini membuka pekerjaan penyelarasan; kode runtime masih memiliki label subbagian lama dan masih berfokus pada surat masuk/keluar sampai TODO terkait benar-benar diimplementasikan dan diuji.
 
 SOP/Juknis, pelatihan, pilot kantor, evaluasi/KPI, inventaris fisik dan penetapan tim/PIC adalah pekerjaan kantor. Pengembangan hanya menyiapkan template/alat bantu; pelaksanaannya tidak dicentang tanpa bukti kantor. Bila keputusan 00 belum ada, gunakan asumsi konservatif yang terdokumentasi dan dapat diubah, tanpa mengklaim persetujuan kantor.
 
