@@ -49,6 +49,9 @@ jobs:
       - run: npm run test:category-master
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
+      - run: npm run test:uiux
+        env:
+          PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres
       - run: npm run test:lifecycle
         env:
           PG_TEST_URL: postgres://postgres:ci-test-only@127.0.0.1:5432/postgres

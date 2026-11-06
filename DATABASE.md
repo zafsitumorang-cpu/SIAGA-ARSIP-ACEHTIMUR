@@ -92,3 +92,14 @@ Soft-delete tidak menghapus baris arsip atau binary. Record menyimpan `deletedAt
 Record append-only `metadataHistory[]` berada pada payload JSONB siaga_archives (atau arsip yang sama pada JSON): id event, metadataVersion hasil koreksi, array nama field yang berubah, ID admin dan timestamp UTC. Tidak ada before/after, snapshot perihal, lokasi, referensi sumber atau nilai metadata lain dalam event. Label/nama pelaku hanya diproyeksikan saat dibaca; DTO menggunakan allowlist sehingga field ekstra pada histori impor tidak bocor melalui API.
 
 Pembaruan metadata, kenaikan versi, histori ringkas dan audit nama field berada dalam satu transaksi; JSON memakai publikasi atomik dan PostgreSQL memakai transaksi/advisory lock yang sudah ada. Tidak ada DDL, migrasi massal atau pengisian ulang histori lama. No-op/validasi gagal/konflik tidak menambah event. Ketika tidak ada disposisi, koreksi unit memindahkan scope seluruh arsip beserta file dan historinya. Bila ada disposisi, perubahan unit/jenis diblokir untuk mempertahankan penugasan, termasuk tugas selesai. Izin edit tetap admin-only sementara 00.2 belum disahkan; bukan keputusan matriks kantor baru. Mekanisme ini bukan log tamper-proof atau riwayat isi lengkap.
+
+
+## Persistensi perbaikan UI/UX (6 November 2026)
+
+Tidak ada migrasi schema SQL baru; versi schema tetap 1. `lib/store.mjs` menyinkronkan penghapusan baris sesi, klasifikasi dan kategori yang tidak lagi ada dalam snapshot, di dalam transaksi/advisory lock yang sama. Tidak menghapus baris akun, arsip atau audit secara fisik.
+
+Payload akun dapat memuat `archivedAt`; identitas pelaku dan relasi historis dipertahankan. Pemulihan akun mengaktifkan kembali ID yang sama. Kategori bawaan non-inti yang dihapus memakai tombstone `deletedAt` agar daftar default tidak memasukkannya lagi. Katalog menggabungkan label/ID/alias tersimpan tanpa duplikasi; tiga kategori inti dipertahankan sebagai default.
+
+Transport dashboard tidak lagi meminta seluruh arsip: browser mengambil 10 arsip terbaru dan agregat. Penghitungan QC tetap memeriksa metadata/file seluruh cakupan di server; ini belum pengganti storage snapshot atau bukti performa VPS untuk data besar.
+
+Regresi `npm run test:uiux` menggunakan JSON sementara dan, bila `PG_TEST_URL` localhost tersedia, database PostgreSQL sementara terpisah yang dibuang setelah tes. CI mewajibkan kedua jalur. Tidak mengubah akun/data produksi.

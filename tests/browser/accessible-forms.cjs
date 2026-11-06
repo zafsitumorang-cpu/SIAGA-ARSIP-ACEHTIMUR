@@ -275,6 +275,7 @@ const pass=message=>console.log('PASS',message);
     // 4. ADMIN USER FORMS (CREATE & EDIT) ACCESSIBILITY & 401
     // ----------------------------------------------------
     await page.locator('[data-page=settings]').click();
+    await page.click('#addUser');
     await page.waitForSelector('#userForm');
 
     // User Create Form labels
@@ -315,6 +316,8 @@ const pass=message=>console.log('PASS',message);
     await page.unroute('**/api/admin/users');
     pass('admin user create form: labels, dynamic subsection cues, status element, and draft preservation on 401');
 
+    await page.keyboard.press('Escape');
+    await page.locator('[data-settings-tab="1"]').click();
     // Classification master form: code/name/description and active toggle
     for(const cid of ['newClassificationCode','newClassification','newClassificationDescription']){
       assert.ok(await page.locator(`label[for="${cid}"]`).count()>=1,`Missing label for ${cid}`);
@@ -330,6 +333,7 @@ const pass=message=>console.log('PASS',message);
     await page.waitForFunction(()=>Array.from(document.querySelectorAll('tr')).some(row=>row.textContent.includes('Klasifikasi UI dummy')&&row.textContent.includes('Aktifkan')));
     pass('classification master: fields render, a new coded entry is saved, and inactive state is visible');
 
+    await page.locator('[data-settings-tab="2"]').click();
     for(const cid of ['newCategoryCode','newCategory','newCategoryDescription']){
       assert.ok(await page.locator(`label[for="${cid}"]`).count()>=1,`Missing label for ${cid}`);
     }
@@ -345,6 +349,7 @@ const pass=message=>console.log('PASS',message);
     pass('category master: fields render, a new coded entry is saved, and inactive state is visible');
 
     // User Edit Form modal
+    await page.locator('[data-settings-tab="3"]').click();
     await page.locator('.user-edit').first().click();
     await page.waitForSelector('#editUserForm');
 

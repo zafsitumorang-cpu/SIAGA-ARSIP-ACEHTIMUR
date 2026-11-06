@@ -154,3 +154,11 @@ Bagian ini hanya rencana. Pengguna sudah meminta melewatinya untuk sementara; ja
 ## Titik lanjut setelah 04.4
 
 Status sampai 04.4 beserta tes/CI/demo ada pada checklist dan FEATURE_PROGRESS.md. **04.5 belum dimulai dan menunggu permintaan pemilik.** 01.2, 01.3, 06.x dan paket 11 tetap ditunda: keamanan. Dokumen/alat bantu kantor tidak membuktikan kegiatan kantor terlaksana. Demo publik tetap dummy sampai gerbang keamanan/operasional dipenuhi.
+
+
+## Tindak lanjut audit UI/UX 6 November 2026
+
+- [x] Perbaikan perilaku dan tampilan UI-01–UI-24 di AUDIT_UIUX_2026-11-06.md, berikut regresi browser/API dan dokumentasi kontrak.
+- Bukti lokal: 15 suite browser / 144 checkpoint; API UI/UX 12 checkpoint JSON; jalur PG dijalankan CI. Status CI mengikuti commit, bukan diasumsikan dari pengujian lokal.
+- Optimasi membatasi transfer arsip/foto ke browser; storage snapshot dan pemeriksaan QC server tetap perlu diukur bila data membesar.
+- Keamanan yang ditunda, backup offsite, UAT kantor nyata, SOP/pelatihan/pilot dan kebijakan operasional tidak ditandai selesai oleh paket UI ini.

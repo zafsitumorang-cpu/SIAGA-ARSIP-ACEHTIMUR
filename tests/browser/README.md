@@ -1,5 +1,7 @@
 # Pemeriksaan browser lokal
 
+`uiux-regression.cjs` menjalankan regresi audit UI pada loopback 3578 dengan data sementara: hero desktop/mobile, refresh terlihat, filter bulan, menu/avatar/dialog keyboard, modal tambah akun, tab setelah simpan, pilihan master aktif, nomor halaman, pemulihan arsip, pagination audit, grafik 320/390px dan tahun publik arsip lama. `SIAGA_UIUX_SCREENSHOTS=/tmp/siaga-uiux-fixed` opsional untuk screenshot. `npm run test:uiux` menguji kontrak API terkait pada JSON serta PostgreSQL lokal jika PG_TEST_URL tersedia; CI menjalankan keduanya. Akun/data kantor tidak digunakan.
+
 `edit-metadata.cjs` menjalankan server demo dengan DATA_DIR sementara dan binding loopback 3505, menunggu proses itu sendiri siap, lalu menguji edit admin, teks HTML yang di-escape, pencegahan submit ganda, detail, konflik dua tab/reload, validasi field tipe surat, kegagalan simpan, pembatasan disposisi, mobile dan role pegawai. Server/data sementara dibersihkan setelah tes. Tidak mengakses domain atau credential produksi.
 
 Gunakan Playwright yang sudah tersedia pada lingkungan pengembangan atau pasang pada direktori alat terpisah; bukan dependensi produksi. Contoh:

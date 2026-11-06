@@ -20,7 +20,7 @@ import {archiveQuality} from './lib/archive-quality.mjs';
 import {archiveIndex,indexFields,indexLimits,validateIndexFields,structuredFileName} from './lib/archive-index.mjs';
 import {inspectArchiveIntegrity,archiveDuplicates} from './lib/archive-inspection.mjs';
 import {officialSubsections,isSubsection,sameSubsection,subsectionLabel} from './lib/subsection-taxonomy.mjs';
-import {administrativeArchiveCategories,defaultArchiveCategory,categoryLabels,categoryRecords,findArchiveCategory,validateCategoryInput} from './lib/archive-taxonomy.mjs';
+import {administrativeArchiveCategories,defaultArchiveCategory,categoryLabels,categoryRecords,findArchiveCategory,validateCategoryInput,configuredCategories} from './lib/archive-taxonomy.mjs';
 import {classificationLabels,classificationPayload,findClassification,classificationRecords,validateClassificationInput} from './lib/classification-taxonomy.mjs';
 import {buildArchiveListQuery,archiveSqlPage} from './lib/archive-sql.mjs';
 import {buildDispositionListQuery,dispositionSqlFilters,dispositionSqlPage} from './lib/disposition-sql.mjs';
@@ -51,7 +51,8 @@ const roles = {
 
 function id(prefix = 'id') { return `${prefix}_${crypto.randomUUID()}`; }
 function now() { return new Date().toISOString(); }
-function categoryRegistry() { return categoryLabels([...archiveCategories, ...(db?.categories || [])]); }
+function categoryCatalog(){return configuredCategories(db?.categories||[]);}
+function categoryRegistry() { return categoryLabels(categoryCatalog()); }
 const hash = passwordHash;
 
 async function seed() {
@@ -77,7 +78,7 @@ async function seed() {
 await fs.mkdir(FILE_DIR,{recursive:true,mode:0o700});
 await storage.transaction(async(data,dirty,replace)=>{if(!data)await replace(await seed());});
 async function persist() { db.sessions=[...sessions.values()];markDirty(); }
-function safeUser(user) { const { passwordHash, ...rest } = user; return {...rest, subsectionLabel: subsectionLabel(user.subsection) || null}; }
+function safeUser(user,includePhoto=true) { const { passwordHash, photo, ...rest } = user; return {...rest, ...(includePhoto?{photo:photo||''}:{}), subsectionLabel: subsectionLabel(user.subsection) || null}; }
 function audit(actorId, action, entity, entityId, detail = '') { db.audit.unshift({ id: id('audit'), actorId, action, entity, entityId, at: now(), detail }); }
 function cookie(name, value, maxAge = 60 * 60 * 8) { return `${name}=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${maxAge}${SECURE_COOKIE?'; Secure':''}`; }
 function parseCookies(req) { return Object.fromEntries((req.headers.cookie || '').split(';').filter(Boolean).map(x => { const i = x.indexOf('='); return [x.slice(0, i).trim(), x.slice(i + 1)]; })); }
@@ -112,8 +113,8 @@ async function optimizedArchiveList(req,res,url,user){
     return {meta,rows};
   });
   const years=[...new Set((db.archives||[]).filter(item=>canSee(user,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
-  const response={...(result.meta||{}),items:result.rows.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
-  if(user.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
+  const response={...(result.meta||{}),items:result.rows.map(archivePayload),classifications:classificationLabels(db.classifications),activeClassifications:classificationRecords(db.classifications).filter(item=>item.active).map(item=>item.label),activeCategories:categoryCatalog().filter(item=>item.active).map(item=>item.label),categories:categoryRegistry(),subsections,years};
+  if(user.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryCatalog();}
   send(res,200,response);return true;
 }
 async function optimizedArchiveExport(req,res,url,user){
@@ -137,9 +138,22 @@ async function optimizedDashboard(req,res,url,user){
     const qualityCounts=Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,0]));for(const archive of archiveRows){const status=archiveQuality(archive,fileAvailable).status;if(Object.hasOwn(qualityCounts,status))qualityCounts[status]++;}
     const monthly={};for(const row of monthlyRows){const [year,month]=String(row.month||'').split('-');if(!/^\d{4}$/.test(year)||!/^\d{2}$/.test(month))continue;const index=Number(month)-1;monthly[year]??={incoming:Array(12).fill(0),outgoing:Array(12).fill(0)};if(index>=0&&index<12&&['incoming','outgoing'].includes(row.type))monthly[year][row.type][index]=Number(row.total||0);}
     const distribution=Object.fromEntries(distributionRows.map(row=>[row.subsection,Number(row.total||0)]));
-    return {incoming:Number(archiveAggregate.incoming||0),outgoing:Number(archiveAggregate.outgoing||0),total:Number(archiveAggregate.total||0),pending:Number(taskSummary.active||0),users,qualityCounts,monthly,distribution};
+    return {incoming:Number(archiveAggregate.incoming||0),outgoing:Number(archiveAggregate.outgoing||0),total:Number(archiveAggregate.total||0),pending:Number(taskSummary.active||0),users,qualityCounts,monthly,distribution,...(url.searchParams.get('view')==='overview'?dashboardOverview(archiveRows,user):{})};
   });
   send(res,200,result);return true;
+}
+function dashboardOverview(list,user){
+  const monthly={},taskMonthly={},distribution=Object.fromEntries(subsections.map(name=>[name,0])),tasks=[];
+  for(const a of list){
+    const year=String(a.letterDate||'').slice(0,4),month=Number(String(a.letterDate||'').slice(5,7))-1;
+    if(/^\d{4}$/.test(year)&&month>=0&&month<12){monthly[year]??=Object.fromEntries(['incoming','outgoing','administrative','total'].map(key=>[key,Array(12).fill(0)]));monthly[year].total[month]++;if(monthly[year][a.type])monthly[year][a.type][month]++;}
+    const label=subsectionLabel(a.subsection);if(Object.hasOwn(distribution,label))distribution[label]++;
+    for(const task of a.dispositions||[])if(task.status!=='Selesai'&&canUpdateDisposition(user,task)){
+      if(tasks.length<3)tasks.push({a:{id:a.id,subject:a.subject,number:a.number,subsection:a.subsection},task:{status:task.status,assignedSubsection:task.assignedSubsection}});
+      const ty=String(task.createdAt||'').slice(0,4),tm=Number(String(task.createdAt||'').slice(5,7))-1;if(/^\d{4}$/.test(ty)&&tm>=0&&tm<12){taskMonthly[ty]??=Array(12).fill(0);taskMonthly[ty][tm]++;}
+    }
+  }
+  return {monthly,taskMonthly,distribution,tasks,years:Object.keys(monthly).sort().reverse()};
 }
 async function optimizedDispositionList(req,res,url,user){
   if(!process.env.DATABASE_URL||req.method!=='GET'||url.pathname!=='/api/dispositions')return false;
@@ -187,17 +201,22 @@ async function route(req, res) {
   if (pathname === '/api/logout' && req.method === 'POST') { const u = getUser(req); if (u) audit(u.id, 'logout', 'user', u.id); sessions.delete(tokenHash(parseCookies(req).sid)); await persist(); return send(res, 200, { ok: true }, 'application/json', { 'Set-Cookie': cookie('sid', '', 0) }); }
   if (pathname === '/api/me' && req.method === 'GET') { const u = getUser(req); return u ? send(res, 200, { user: safeUser(u) }) : send(res, 401, { error: 'Unauthorized' }); }
   if (pathname === '/api/profile' && req.method === 'PATCH') { const u=getUser(req); if(!u)return send(res,401,{error:'Unauthorized'}); const b=await body(req); const name=String(b.name??u.name).trim(); if(!name||name.length>120)return send(res,422,{error:'Nama harus 1–120 karakter.'}); let photo=u.photo||''; if(b.photo!==undefined){photo=String(b.photo||'');if(photo&&!/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(photo))return send(res,422,{error:'Foto harus PNG, JPG, atau WebP.'});if(photo.length>900000)return send(res,422,{error:'Ukuran foto maksimal 650 KB.'});}u.name=name;u.photo=photo;audit(u.id,'update_profile','user',u.id,'Profil diperbarui');await persist();return send(res,200,{user:safeUser(u)}); }
-  if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !a.deletedAt && (!year || a.letterDate.startsWith(year))); const counts = new Map(officialSubsections.map(label => [label, 0])); for (const archive of list) { const label = subsectionLabel(archive.subsection) || 'Belum ditetapkan'; counts.set(label, (counts.get(label) || 0) + 1); } return send(res, 200, { year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length, bySubsection: [...counts].map(([label, count]) => ({ label, count })) }); }
+  if (pathname === '/api/public/stats' && req.method === 'GET') { const year = url.searchParams.get('year') || ''; const list = db.archives.filter(a => !a.deletedAt && (!year || a.letterDate.startsWith(year))); const counts = new Map(officialSubsections.map(label => [label, 0])); for (const archive of list) { const label = subsectionLabel(archive.subsection) || 'Belum ditetapkan'; counts.set(label, (counts.get(label) || 0) + 1); } return send(res, 200, { years:[...new Set(db.archives.filter(a=>!a.deletedAt).map(a=>String(a.letterDate||'').slice(0,4)).filter(y=>/^\d{4}$/.test(y)))].sort().reverse(),year: year || 'all', incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, total: list.length, bySubsection: [...counts].map(([label, count]) => ({ label, count })) }); }
   if (pathname.startsWith('/api/')) {
     const u = requireAuth(req, res); if (!u) return;
-    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined,qualityCounts:Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,list.filter(a=>a.quality.status===status).length])) }); }
+    if (pathname === '/api/dashboard' && req.method === 'GET') { const list = visibleArchives(u, url); const open = list.flatMap(a => a.dispositions).filter(d => d.status !== 'Selesai'&&canUpdateDisposition(u,d)).length; return send(res, 200, { incoming: list.filter(a => a.type === 'incoming').length, outgoing: list.filter(a => a.type === 'outgoing').length, pending: open, total: list.length, users: isWide(u) ? db.users.length : undefined,...(url.searchParams.get('view')==='overview'?dashboardOverview(list,u):{}),qualityCounts:Object.fromEntries(['metadata_only','missing_file','missing_attachment','needs_review','needs_correction','complete'].map(status=>[status,list.filter(a=>a.quality.status===status).length])) }); }
     if(pathname==='/api/archives'&&req.method==='GET'){
       const result=archivePage(visibleArchives(u,url),url.searchParams);
       const years=[...new Set(db.archives.filter(item=>canSee(u,item)).map(item=>String(item.letterDate||'').slice(0,4)).filter(year=>/^\d{4}$/.test(year)))].sort().reverse();
       audit(u.id,'view_list','archive','list');await persist();
-      const response={...result,items:result.items.map(archivePayload),classifications:classificationLabels(db.classifications),categories:categoryRegistry(),subsections,years};
-      if(u.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryRecords([...archiveCategories,...(db.categories||[])]);}
+      const response={...result,items:result.items.map(archivePayload),classifications:classificationLabels(db.classifications),activeClassifications:classificationRecords(db.classifications).filter(item=>item.active).map(item=>item.label),activeCategories:categoryCatalog().filter(item=>item.active).map(item=>item.label),categories:categoryRegistry(),subsections,years};
+      if(u.role==='admin'){response.classificationCatalog=classificationPayload(db.classifications);response.categoryCatalog=categoryCatalog();}
       return send(res,200,response);
+    }
+    if(pathname==='/api/admin/deleted-archives'&&req.method==='GET'){
+      if(u.role!=='admin')return send(res,403,{error:'Khusus admin.'});
+      const result=archivePage(db.archives.filter(a=>a.deletedAt),new URLSearchParams({page:url.searchParams.get('page')||'1',page_size:'10'}));
+      return send(res,200,{...result,items:result.items.map(a=>({id:a.id,number:a.number,subject:a.subject,deletedAt:a.deletedAt,reason:a.deleteReason||''}))});
     }
     if(/^\/api\/archives\/[^/]+\/restore$/.test(pathname)&&req.method==='POST'){
       if(u.role!=='admin')return send(res,403,{error:'Pemulihan arsip hanya tersedia untuk admin.'});
@@ -226,8 +245,8 @@ async function route(req, res) {
       }
       return send(res,200,archivePayload(archive));
     }
-    if (pathname === '/api/users' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.users.filter(x => x.active).map(safeUser) }); }
-    if (pathname === '/api/admin/users' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: db.users.map(safeUser) }); }
+    if (pathname === '/api/users' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.users.filter(x => x.active).map(user=>safeUser(user,false)) }); }
+    if (pathname === '/api/admin/users' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: db.users.filter(user=>url.searchParams.get('archived')==='true'||!user.archivedAt).map(user=>safeUser(user,false)) }); }
     if (pathname === '/api/admin/roles' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: Object.values(roles) }); }
     if (pathname === '/api/admin/subsections' && req.method === 'GET') { if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' }); return send(res, 200, { items: subsections }); }
     if (pathname === '/api/admin/users' && req.method === 'POST') {
@@ -251,7 +270,7 @@ async function route(req, res) {
       if(b.password!==undefined&&String(b.password).length&&(String(b.password).length<8||String(b.password).length>1024))return send(res,422,{error:'Kata sandi harus 8–1024 karakter.'});
       target.name = name; target.email = b.email === undefined ? target.email : String(b.email).trim(); target.role = role; target.subsection = subsection;
       if (b.password !== undefined && String(b.password).length) { if (String(b.password).length < 8) return send(res, 422, { error: 'Kata sandi minimal 8 karakter.' }); target.passwordHash = await hash(String(b.password)); }
-      if (b.active !== undefined) target.active = Boolean(b.active);
+      if (b.active !== undefined) {target.active = Boolean(b.active);if(target.active)delete target.archivedAt;}
       revokeSessions(target.id);
       audit(u.id, 'update_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
     }
@@ -259,7 +278,7 @@ async function route(req, res) {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
       const uid = pathname.split('/')[4]; const target = db.users.find(x => x.id === uid); if (!target) return send(res, 404, { error: 'Pengguna tidak ditemukan.' });
       if (target.id === u.id) return send(res, 422, { error: 'Akun admin yang sedang dipakai tidak dapat dihapus.' });
-      target.active = false; revokeSessions(target.id); audit(u.id, 'delete_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
+      target.active = false; target.archivedAt=now(); revokeSessions(target.id); audit(u.id, 'archive_user', 'user', target.id, target.username); await persist(); return send(res, 200, safeUser(target));
     }
     if (pathname.startsWith('/api/admin/users/') && pathname.endsWith('/disable') && req.method === 'POST') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
@@ -304,34 +323,36 @@ async function route(req, res) {
     }
     if ((pathname === '/api/admin/archive-categories' || pathname === '/api/admin/categories') && req.method === 'GET') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
-      return send(res, 200, { items: categoryRecords([...archiveCategories, ...(db.categories || [])]) });
+      return send(res, 200, { items: categoryCatalog() });
     }
     if ((pathname === '/api/admin/archive-categories' || pathname === '/api/admin/categories') && req.method === 'POST') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
-      const input=validateCategoryInput(await body(req));const records=categoryRecords([...archiveCategories,...(db.categories||[])]);
+      const input=validateCategoryInput(await body(req));const records=categoryCatalog();
       if(records.some(item=>item.label.toLowerCase()===input.label.toLowerCase()||input.code&&item.code.toLowerCase()===input.code.toLowerCase()))return send(res,409,{error:'Nama atau kode kategori sudah digunakan.'});
-      const created={id:input.code||id('category'),code:input.code||'',label:input.label,description:input.description||'',active:input.active!==false,aliases:[],createdBy:u.id,createdAt:now(),updatedAt:now()};db.categories.push(created);audit(u.id,'create_category','category',created.id,created.code?`${created.code} — ${created.label}`:created.label);await persist();return send(res,201,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+      const created={id:input.code||id('category'),code:input.code||'',label:input.label,description:input.description||'',active:input.active!==false,aliases:[],createdBy:u.id,createdAt:now(),updatedAt:now()};db.categories.push(created);audit(u.id,'create_category','category',created.id,created.code?`${created.code} — ${created.label}`:created.label);await persist();return send(res,201,{categories:categoryRegistry(),categoryCatalog:categoryCatalog()});
     }
     if (pathname.startsWith('/api/admin/archive-categories/') && req.method === 'PATCH') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
-      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));const index=db.categories.findIndex(item=>findArchiveCategory([item],key));
+      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));let index=db.categories.findIndex(item=>findArchiveCategory([item],key));if(index<0){const fallback=findArchiveCategory(categoryCatalog(),key);if(fallback){db.categories.push(fallback);index=db.categories.length-1;}}
       if(index<0)return send(res,404,{error:'Kategori tambahan tidak ditemukan.'});
       const current=categoryRecords([db.categories[index]])[0],input=validateCategoryInput(await body(req),{partial:true});
+      if(['Surat Masuk','Surat Keluar','Arsip Administrasi Umum'].includes(current.id)&&((input.label!==undefined&&input.label!==current.label)||input.active===false))return send(res,422,{error:'Kategori inti dipakai sebagai nilai awal jenis arsip. Nama dan statusnya harus tetap aktif; kode dan deskripsi boleh diubah.'});
       if(input.label!==undefined&&input.label!==current.label&&!current.code&&!input.code)return send(res,422,{error:'Kategori legacy tanpa kode tidak dapat diganti nama. Tetapkan kode terlebih dahulu agar referensi arsip lama tetap terlacak.'});
       const next={...current,...Object.fromEntries(Object.entries(input).filter(([,value])=>value!==undefined)),id:current.id||input.code||id('category'),aliases:[...new Set(current.aliases)],createdBy:current.createdBy||u.id,createdAt:current.createdAt||now(),updatedAt:now()};
       if(input.label!==undefined&&input.label!==current.label)next.aliases=[...new Set([...next.aliases,current.label])];
-      const others=categoryRecords([...archiveCategories,...db.categories]).filter((_,i)=>i!==archiveCategories.length+index);
+      const others=categoryCatalog().filter(item=>item.id!==current.id);
       if(others.some(item=>item.label.toLowerCase()===next.label.toLowerCase()||next.code&&item.code.toLowerCase()===next.code.toLowerCase()||item.aliases.includes(next.label)))return send(res,409,{error:'Nama atau kode kategori sudah digunakan.'});
-      db.categories[index]=next;audit(u.id,next.active?'update_category':'disable_category','category',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+      db.categories[index]=next;audit(u.id,next.active?'update_category':'disable_category','category',next.id,next.code?`${next.code} — ${next.label}`:next.label);await persist();return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryCatalog()});
     }
     if (pathname.startsWith('/api/admin/archive-categories/') && req.method === 'DELETE') {
       if (u.role !== 'admin') return send(res, 403, { error: 'Khusus admin.' });
-      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));const index=db.categories.findIndex(item=>findArchiveCategory([item],key));
+      const key=decodeURIComponent(pathname.slice('/api/admin/archive-categories/'.length));let index=db.categories.findIndex(item=>findArchiveCategory([item],key));if(index<0){const fallback=findArchiveCategory(categoryCatalog(),key);if(fallback){db.categories.push(fallback);index=db.categories.length-1;}}
       if(index<0)return send(res,404,{error:'Kategori tambahan tidak ditemukan.'});
       const current=categoryRecords([db.categories[index]])[0],names=new Set([current.label,...current.aliases]);
+      if(['Surat Masuk','Surat Keluar','Arsip Administrasi Umum'].includes(current.id))return send(res,422,{error:'Kategori inti tidak dapat dihapus.'});
       if(db.archives.some(archive=>names.has(archive.category)))return send(res,409,{error:'Kategori masih dipakai arsip. Nonaktifkan saja agar riwayat arsip tetap terbaca.'});
-      db.categories.splice(index,1);audit(u.id,'delete_category','category',current.id,current.code?`${current.code} — ${current.label}`:current.label);await persist();
-      return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryRecords([...archiveCategories,...db.categories])});
+      if(archiveCategories.includes(current.id))db.categories[index]={...current,active:false,deletedAt:now()};else db.categories.splice(index,1);audit(u.id,'delete_category','category',current.id,current.code?`${current.code} — ${current.label}`:current.label);await persist();
+      return send(res,200,{categories:categoryRegistry(),categoryCatalog:categoryCatalog()});
     }
     if(pathname==='/api/archives'&&req.method==='POST'){
       if(!['admin','recorder'].includes(u.role))return send(res,403,{error:'Peran ini tidak dapat mencatat arsip.'});
@@ -479,7 +500,10 @@ async function route(req, res) {
       audit(u.id,'export','archive','search',`${rows.length} data; ${xlsx?'XLSX':'CSV'}`);await persist();
       return send(res,200,data,xlsx?'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':'text/csv; charset=utf-8',{'Content-Disposition':`attachment; filename="siaga-arsip-export.${xlsx?'xlsx':'csv'}"`});
     }
-    if (pathname === '/api/admin/audit' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); return send(res, 200, { items: db.audit.slice(0, 100).map(x => ({ ...x, actorName: db.users.find(y => y.id === x.actorId)?.name || 'Publik' })) }); }
+    if (pathname === '/api/admin/audit' && req.method === 'GET') { if (!isWide(u)) return send(res, 403, { error: 'Khusus admin/pimpinan.' }); const q=(url.searchParams.get('q')||'').trim().toLowerCase(),from=url.searchParams.get('from')||'',to=url.searchParams.get('to')||'';
+      const rows=db.audit.map(x=>({...x,actorName:db.users.find(y=>y.id===x.actorId)?.name||'Sistem / publik'})).filter(x=>(!q||[x.actorName,x.action,x.detail].join(' ').toLowerCase().includes(q))&&(!from||x.at.slice(0,10)>=from)&&(!to||x.at.slice(0,10)<=to));
+      if(!url.searchParams.has('page'))return send(res,200,{items:rows.slice(0,100)});
+      const raw=url.searchParams.get('page')||'1';if(!/^[1-9]\d*$/.test(raw))fail(422,'Halaman tidak valid.');const pages=Math.max(1,Math.ceil(rows.length/10)),page=Math.min(pages,Number(raw));return send(res,200,{items:rows.slice((page-1)*10,page*10),page,pages,page_size:10,total:rows.length}); }
   }
   if(pathname.startsWith('/assets/')){const target=path.resolve(PUBLIC,pathname.slice(8));if(!target.startsWith(PUBLIC+path.sep))return send(res,404,{error:'Not found'});return staticFile(target,res);}
   if (pathname === '/' || pathname === '/app') return staticFile(path.join(PUBLIC, 'index.html'), res);

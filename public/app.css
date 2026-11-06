@@ -511,7 +511,7 @@ body { font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI"
 /* Full-bleed hero image: the visual fills the browser width while copy stays above the overlay. */
 @media (min-width: 761px) {
   .lp-hero { position: relative; display: block; min-height: 620px; padding-top: 112px; padding-bottom: 112px; }
-  .lp-hero-copy { position: relative; z-index: 3; max-width: 620px; }
+  .lp-hero-copy { position: relative; z-index: 3; max-width: 620px; padding-bottom: 110px; }
   .lp-hero-image { position: absolute; z-index: 0; inset: 0; min-height: 0; border-radius: 0; }
   .lp-hero-image::after { background: linear-gradient(90deg, rgba(8, 9, 11, .88) 0%, rgba(8, 9, 11, .68) 34%, rgba(8, 9, 11, .32) 68%, rgba(8, 9, 11, .48) 100%), linear-gradient(180deg, rgba(8, 9, 11, .18) 0%, rgba(8, 9, 11, .68) 100%); }
   .lp-hero-image figcaption { padding: 28px max(6%, calc((100% - 1268px)/2)); }

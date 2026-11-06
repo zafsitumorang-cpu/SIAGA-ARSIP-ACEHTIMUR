@@ -204,3 +204,16 @@ Review menyimpan checklist, pageCount, bukti checksum, keputusan duplikat dan al
 Perubahan nyata menambah satu `metadataHistory` pada transaksi yang sama dengan kenaikan metadataVersion: `{id,version,fields,by,at}`. Tidak menyimpan nilai sebelum/sesudah atau salinan isi metadata. No-op dan request ditolak tidak menambah histori/revisi. Audit umum tetap hanya memuat nama kolom yang berubah, tanpa nilai, termasuk perihal/lokasi/referensi sumber. Konflik dua tab dan balapan pemindahan terhadap pembuatan disposisi diperiksa di dalam transaksi/lock yang sama.
 
 GET detail/daftar arsip berizin mengembalikan ringkasan histori `{id,version,fields,fieldLabels,by,byName,at}` melalui allowlist; properti snapshot/nilai/label tambahan dari record impor tidak diteruskan. Izin baca histori sama dengan izin baca arsip, bukan izin edit. Tidak ada endpoint histori publik atau snapshot isi lama. Detail menampilkan versi/pelaku/waktu/kolom, mengakui histori lama yang belum tersedia, dan tidak menebak perubahan sebelum fitur ini. Respons detail terlambat diabaikan setelah navigasi/logout.
+
+
+## Perbaikan UI/UX — 6 November 2026
+
+- `GET /api/archives?page=1&page_size=10`: shell memakai daftar terbatas; respons menambahkan `activeClassifications` dan `activeCategories` untuk pilihan pencatatan. `classifications`/`categories` tetap mencakup referensi historis untuk filter.
+- `GET /api/dashboard?view=overview`: menambahkan agregat bulanan `incoming/outgoing/administrative/total`, tahun, sebaran unit, maksimal tiga tugas aktif berizin, dan agregat bulanan tugas. Tanpa parameter, kontrak lama tetap tersedia.
+- `GET /api/public/stats`: `years` hanya memuat tahun dari arsip tidak terhapus; tetap tanpa metadata individual.
+- Master kategori dideduplikasi. Tiga kategori inti (`Surat Masuk`, `Surat Keluar`, `Arsip Administrasi Umum`) memiliki `system:true`: kode/deskripsi boleh diubah, nama/status/hapus dilindungi agar default jenis arsip valid. Kategori lain, termasuk format lama, dapat dikelola admin.
+- `DELETE /api/admin/classifications/:key` dan `DELETE /api/admin/archive-categories/:key`: admin saja, menolak referensi yang masih dipakai arsip (termasuk arsip terhapus), audit tersimpan, penghapusan bertahan pada JSON/PG.
+- `DELETE /api/admin/users/:id`: **arsipkan akun**, bukan menghapus identitas/riwayat. Mengisi `archivedAt`, menonaktifkan dan mencabut sesi. Tidak dapat dipakai terhadap diri sendiri. GET daftar biasa menyembunyikan akun diarsipkan; `?archived=true` menyertakannya. PATCH `{active:true}` memulihkan akun dan menghapus `archivedAt`. Daftar pengguna tidak membawa foto base64/hash.
+- `GET /api/admin/deleted-archives?page=N`: admin saja, 10 per halaman, metadata daftar terbatas (nomor/perihal/waktu/alasan), tanpa berkas/riwayat privat. POST `/api/archives/:id/restore` dengan `{reason}` memulihkan arsip.
+- `GET /api/admin/audit?page=N&q=...&from=YYYY-MM-DD&to=YYYY-MM-DD`: 10 per halaman, `total/page/pages/page_size/items`. Filter q mencocokkan nama aktor/kode aksi/catatan; tanggal memakai tanggal ISO audit. Tanpa page tetap tersedia maksimal 100 item untuk kompatibilitas.
+- Profil tetap mendukung foto PNG/JPG/WebP; browser menerima foto asal maksimal 8 MB lalu mengecilkannya ke sisi terpanjang 512px. Batas server 900.000 karakter data URI dan request khusus profil 2 MiB tetap berlaku.

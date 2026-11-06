@@ -37,7 +37,8 @@
     "test:quality": "node scripts/quality-tests.mjs",
     "test:index": "node scripts/index-tests.mjs",
     "test:inspection": "node scripts/inspection-tests.mjs",
-    "test:metadata-history": "node scripts/metadata-history-tests.mjs"
+    "test:metadata-history": "node scripts/metadata-history-tests.mjs",
+    "test:uiux": "node scripts/uiux-regression-tests.mjs"
   },
   "engines": {
     "node": ">=22"

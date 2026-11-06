@@ -96,3 +96,12 @@ Gerakan menjelaskan perubahan keadaan: transisi konten 190ms, dialog 220ms masuk
 Request yang berlangsung >120ms menyalakan indikator emas pada topbar. Halaman Pengaturan/Audit memuat skeleton dengan aria-busy, error dan coba lagi; respons terlambat tidak menimpa navigasi baru. Form workspace memiliki status menyimpan dan pencegahan submit ganda. Dialog form memiliki fokus keyboard, Escape dan pemulihan fokus. Toast sukses/gagal dapat ditutup, maksimal tiga, timer berhenti ketika hover/fokus.
 
 Lonceng membuka panel berisi disposisi yang diizinkan server, bukan notifikasi sintetis. Panel mendukung loading, kosong, error/coba lagi, Escape, klik di luar, dan tautan daftar disposisi. Badge berarti penugasan aktif, bukan status belum dibaca. Daftar dimuat saat panel dibuka, tanpa polling atau push real-time. Pengguna luas melihat semua disposisi dalam cakupan; pegawai melihat penugasan untuk dirinya/subbagiannya hanya pada arsip yang diizinkan.
+
+
+## Koreksi hasil audit UI/UX — 6 November 2026
+
+Menu profil hanya di avatar topbar; popover ditutup dengan klik luar/Escape. Semua dialog memakai fokus awal, penahanan Tab, Escape saat aman, dan pemulihan fokus. Pengaturan dibuka pada Daftar akun; Buat akun melalui tombol dan modal. Tab menyimpan seleksi dan mendukung tombol panah/Home/End serta relasi ARIA.
+
+Hero menyediakan ruang caption terpisah dari catatan akses. Dashboard menampilkan judul/cakupan dan Perbarui data secara terlihat. Kartu dan grafik mengambil seri sesuai kategori; filter bulan berlaku pada angka, garis, titik, label dan tabel. Grafik menyesuaikan lebar ponsel; tabel lebar tetap dapat digeser dengan petunjuk. Target sentuh mobile ditingkatkan ke 44px. Nomor tabel arsip meneruskan offset halaman; master/akun/dashboard juga memiliki nomor. Audit memakai pagination/filter, bukan pemotongan 10 hasil permanen.
+
+Tindakan akun dinamai Nonaktifkan dan Arsipkan akun sesuai perilaku; akun diarsipkan dapat ditampilkan dan dipulihkan. Arsip terhapus tersedia dalam Pengaturan, dengan pemulihan beralasan untuk admin. Istilah navigasi/pencarian mencakup seluruh arsip administrasi.
