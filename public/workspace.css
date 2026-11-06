@@ -297,3 +297,16 @@ textarea[aria-invalid="true"]:focus {
 .workspace .ws-stat-body span { font-size: 11px; }.workspace .ws-stat-body b { font-variant-numeric: tabular-nums; }
 @media(max-width:1250px){.workspace .ws-welcome { padding: 30px 34px; }.workspace .ws-welcome-status { width: 125px; }.workspace .ws-welcome-status img { width: 140px; height: 140px; }}
 @media(max-width:620px){.workspace .ws-welcome { min-height: 220px; padding: 24px; }.workspace .ws-welcome-kicker { margin-bottom: 8px; }.workspace .ws-welcome h2 { font-size: 23px; }.workspace .ws-welcome p { margin-bottom: 15px; font-size: 12px; }.workspace .ws-welcome-actions { align-items: flex-start; gap: 7px 12px; }.workspace .ws-welcome-button { padding: 9px 12px; }.workspace .ws-welcome-link { padding: 9px 3px; font-size: 11px; }.workspace .ws-stat-body span { font-size: 10px; }}
+
+/* Consistent button color, table numbering, profile menu, and settings tabs. */
+.workspace .btn-soft { color: #475569; background: #fff; border: 1px solid #cbd5e1; }
+.workspace .btn-soft:hover { color: #a51f1b; border-color: #e5aaa5; background: #fff5f4; }
+.workspace .btn-primary { color: #fff; background: #bd241f; }.workspace .btn-primary:hover { background: #a51f1b; }
+.workspace .archive-row-actions .btn:not(.table-link) { color: #a51f1b; border-color: #efc5c1; background: #fff8f7; }.workspace .archive-row-actions .btn:not(.table-link):hover { background: #ffebe9; }
+.workspace .archive-row-actions .table-link { color: #fff; background: #bd241f; border-color: #bd241f; }
+.workspace .profile-trigger { padding: 0; overflow: hidden; cursor: pointer; }.workspace .profile-trigger img { width: 100%; height: 100%; object-fit: cover; }.workspace .ws-top-right { position: relative; }
+.profile-menu-popover { position: absolute; z-index: 40; top: calc(100% + 8px); right: 0; display: grid; width: 220px; padding: 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; box-shadow: 0 12px 30px #18223024; }.profile-menu-popover[hidden] { display: none; }.profile-menu-popover b { padding: 8px; color: #263238; font-size: 12px; }.profile-menu-popover button { padding: 10px; border-radius: 6px; color: #475569; background: #fff; text-align: left; font-size: 12px; }.profile-menu-popover button:hover { color: #a51f1b; background: #fff1ef; }.profile-menu-popover #logoutTop { color: #a51f1b; }
+.settings-tabs { display: flex; gap: 8px; margin: 0 0 18px; overflow-x: auto; border-bottom: 1px solid #dce2ea; }.settings-tabs button { flex: 0 0 auto; padding: 11px 15px; border-bottom: 3px solid transparent; color: #536176; background: transparent; font-weight: 700; }.settings-tabs button[aria-selected="true"] { border-color: #bd241f; color: #a51f1b; background: #fff4f2; }
+.workspace .table th:first-child, .workspace .table td:first-child { padding-left: 16px; }.workspace .table td:first-child { color: #657180; font-variant-numeric: tabular-nums; }
+.ws-chart-filters { display: flex; align-items: center; gap: 10px; }.ws-chart-filter select { min-width: 112px; }
+@media(max-width:620px){.ws-chart-filters { flex-wrap: wrap; justify-content: flex-end; gap: 6px; }.ws-chart-filter select { min-width: 90px; }.profile-menu-popover { right: 0; }}
