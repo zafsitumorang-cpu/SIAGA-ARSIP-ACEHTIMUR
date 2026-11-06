@@ -13,6 +13,8 @@
     "db:bootstrap": "node scripts/database.mjs bootstrap",
     "db:import": "node scripts/database.mjs import",
     "db:export": "node scripts/database.mjs export",
+    "import:dry-run": "node scripts/import-dry-run.mjs",
+    "test:import-dry-run": "node scripts/import-dry-run-tests.mjs",
     "test:security": "node scripts/security-tests.mjs",
     "test:database": "node scripts/database-tests.mjs",
     "test:migration": "node scripts/migration-tests.mjs",
