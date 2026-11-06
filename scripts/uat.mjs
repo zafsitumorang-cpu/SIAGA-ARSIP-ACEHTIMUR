@@ -16,7 +16,7 @@ async function request(route, options = {}) { const headers = { 'X-SIAGA-Request
 function assert(value, message) { if (!value) throw new Error(message); console.log(`✓ ${message}`); }
 try {
   for(let attempt=0;attempt<100;attempt++){try{if((await fetch(base+'/api/health')).ok)break;}catch{}await wait(50);}
-  const publicStats = await request('/api/public/stats'); assert(publicStats.total === 20, 'statistik publik berisi 20 arsip dummy');
+  const publicStats = await request('/api/public/stats'); assert(publicStats.total === 20, 'statistik publik berisi 20 arsip dummy'); assert(Array.isArray(publicStats.bySubsection) && publicStats.bySubsection.length === 4 && publicStats.bySubsection.reduce((sum, item) => sum + item.count, 0) === publicStats.total, 'statistik publik merangkum arsip berdasarkan empat unit kerja');
   await request('/api/login', { method: 'POST', body: JSON.stringify({ username: 'pegawai.hukum', password: 'pegawai123' }) });
   const scoped = await request('/api/archives'); assert(scoped.items.length === 5 && scoped.items.every(x => x.subsection === 'Hukum'), 'pegawai hanya melihat arsip subbagian Hukum');
   const adminJar = {};

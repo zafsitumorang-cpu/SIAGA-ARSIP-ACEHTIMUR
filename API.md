@@ -42,7 +42,7 @@ XLSX berisi sheet `Arsip surat`, header beku, lebar kolom dan teks terbungkus. S
 
 ## Publik
 
-- `GET /api/public/stats?year={year}` → jumlah agregat masuk/keluar per tahun (nama kontrak produksi yang direncanakan: `/api/public/statistics`).
+- `GET /api/public/stats?year={year}` → agregat publik per tahun: `total`, `incoming`, `outgoing`, dan `bySubsection` (jumlah arsip per unit kerja; hanya label unit dan angka, tanpa metadata surat). Nama kontrak produksi yang direncanakan: `/api/public/statistics`.
 - Tidak ada endpoint publik untuk daftar, detail, file, disposisi, atau identitas pihak.
 
 ## Autentikasi dan akun
