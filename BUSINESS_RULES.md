@@ -11,6 +11,24 @@
 5. Setiap arsip memiliki tepat satu subbagian penanggung jawab. Perubahan pemilik subbagian dilakukan admin dan dicatat.
 6. Pengunjung tanpa akun hanya dapat melihat agregat surat masuk/keluar per tahun.
 
+## Matriks kemampuan kerja 00.2
+
+Matriks ini adalah default pemilik yang konservatif sampai kantor mengesahkan kombinasi peran lain. Cakupan `unit` berarti subbagian pengguna; admin/pimpinan memiliki cakupan lintas unit sesuai peran.
+
+| Kemampuan | Admin/pengelola | Pimpinan | Pencatat | Pengunggah | Pegawai | Publik |
+|---|---:|---:|---:|---:|---:|---:|
+| Login dan baca metadata/berkas sesuai scope | semua | semua | unit | unit | unit | agregat saja |
+| Buat metadata arsip | ya | tidak | unit | tidak | tidak | tidak |
+| Ubah metadata | ya | tidak | tidak | tidak | tidak | tidak |
+| Unggah/ganti/restore berkas | ya | tidak | tidak | unit | tidak | tidak |
+| Buat disposisi | ya | ya | tidak | tidak | tidak | tidak |
+| Perbarui status disposisi | pengawasan | pengawasan | tugas yang ditugaskan | tugas yang ditugaskan | tugas yang ditugaskan | tidak |
+| Ekspor hasil berizin | ya | ya | unit | unit | unit | tidak |
+| Kelola akun, klasifikasi, QC dan audit | ya | baca audit | tidak | tidak | tidak | tidak |
+| Soft-delete/pulihkan arsip | mengikuti kebijakan 04.5 | tidak | tidak | tidak | tidak | tidak |
+
+Penugasan individual hanya dapat menunjuk pegawai aktif pada subbagian arsip. Penugasan tidak memperluas akses baca dan tidak menjadikan rekan satu subbagian sebagai pengubah tugas individual. Peran yang tidak tercantum pada kemampuan ditolak server; perubahan metadata tetap admin-only sampai keputusan baru.
+
 ## Pengelolaan arsip
 
 7. Tahap pertama memiliki kategori Surat Masuk dan Surat Keluar.
