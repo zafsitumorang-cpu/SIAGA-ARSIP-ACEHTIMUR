@@ -266,3 +266,18 @@ textarea[aria-invalid="true"]:focus {
 
 /* Official SIAGA ARSIP mark in the workspace shell. */
 .workspace .ws-logo-image { width: 40px; height: 40px; border-radius: 11px; object-fit: cover; flex: 0 0 auto; }
+
+/* Dashboard polish: shorter welcome block, clearer search, and useful first actions. */
+.workspace .ws-search { background: #fff; border-color: #efc5c1; color: #596779; }
+.workspace .ws-search input { color: #263238; }.workspace .ws-search input::placeholder, .workspace .ws-search kbd { color: #657180; }
+.workspace .ws-search:focus-within { border-color: #ffc107; box-shadow: 0 0 0 3px rgba(255, 193, 7, .28); }
+.workspace .ws-welcome { min-height: 202px; padding: 32px 40px; margin-bottom: 18px; }
+.workspace .ws-welcome-kicker { display: inline-block; margin-bottom: 10px; color: #ffe0dc; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.workspace .ws-welcome h2 { margin-bottom: 8px; font-size: 27px; }.workspace .ws-welcome p { margin-bottom: 18px; }
+.workspace .ws-welcome-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.workspace .ws-welcome-link { display: inline-flex; align-items: center; gap: 7px; padding: 10px 5px; color: #fff; background: transparent; font-size: 12px; font-weight: 600; text-decoration: underline; text-underline-offset: 4px; }
+.workspace .ws-welcome-link:hover { color: #ffc107; }.workspace .ws-welcome-link .icon { width: 14px; height: 14px; }
+.workspace .ws-welcome-status { width: 150px; height: 150px; margin: -8px 10px -8px 0; }.workspace .ws-welcome-status img { width: 160px; height: 160px; }
+.workspace .ws-stat-body span { font-size: 11px; }.workspace .ws-stat-body b { font-variant-numeric: tabular-nums; }
+@media(max-width:1250px){.workspace .ws-welcome { padding: 30px 34px; }.workspace .ws-welcome-status { width: 125px; }.workspace .ws-welcome-status img { width: 140px; height: 140px; }}
+@media(max-width:620px){.workspace .ws-welcome { min-height: 220px; padding: 24px; }.workspace .ws-welcome-kicker { margin-bottom: 8px; }.workspace .ws-welcome h2 { font-size: 23px; }.workspace .ws-welcome p { margin-bottom: 15px; font-size: 12px; }.workspace .ws-welcome-actions { align-items: flex-start; gap: 7px 12px; }.workspace .ws-welcome-button { padding: 9px 12px; }.workspace .ws-welcome-link { padding: 9px 3px; font-size: 11px; }.workspace .ws-stat-body span { font-size: 10px; }}
